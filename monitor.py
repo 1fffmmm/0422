@@ -28,8 +28,11 @@ def check_keywords_and_notify(drive_text):
     supabase = create_client(url, key)
 
     # 1. Supabaseから「特定の文字（キーワード）」を取得
-    # テーブル名が 'keywords'、カラム名が 'word' と想定
-    response = supabase.table("keywords").select("word").execute()
+# 修正：データが空の場合でもエラーにならないようにする
+    if not response.data:
+        print("キーワードが登録されていません。監視をスキップします。")
+        return
+        
     keywords = [item['word'] for item in response.data]
 
     print(f"監視中のキーワード: {keywords}")
