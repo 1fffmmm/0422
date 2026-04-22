@@ -2,7 +2,7 @@ name: Google Drive Monitor
 
 on:
   schedule:
-    # UTC時間で指定 (JST-9時間) [cite: 6]
+    # UTC時間で指定 (JST-9時間)
     # 0:15(9:15), 6:15(15:15), 12:15(21:15)
     - cron: '15 0,6,12 * * *'
   workflow_dispatch: # 手動実行用ボタン
@@ -10,6 +10,9 @@ on:
 jobs:
   monitor:
     runs-on: ubuntu-latest
+    env:
+      # Node.js 20の警告に対応するための設定
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
 
@@ -27,4 +30,3 @@ jobs:
           GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           DRIVE_FILE_ID: ${{ secrets.DRIVE_FILE_ID }}
         run: python monitor.py
-        
