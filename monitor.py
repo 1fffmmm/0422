@@ -1,58 +1,35 @@
-import os
-import json
-import io
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
-from supabase import create_client
-
-def get_drive_text():
-    service_account_info = json.loads(os.environ['GCP_SERVICE_ACCOUNT_KEY'])
-    creds = service_account.Credentials.from_service_account_info(service_account_info)
-    service = build('drive', 'v3', credentials=creds)
-    file_id = os.environ['DRIVE_FILE_ID']
-
-    request = service.files().get_media(fileId=file_id)
-    fh = io.BytesIO()
-    downloader = MediaIoBaseDownload(fh, request)
-    done = False
-    while done is False:
-        status, done = downloader.next_chunk()
-    
-    return fh.getvalue().decode('utf-8')
-
 def check_keywords_and_notify(drive_text):
-    # Supabaseに接続
     url = os.environ.get("SUPABASE_URL")
     key = os.environ.get("SUPABASE_KEY")
-    supabase = create_client(url, key)
-
-    # 1. Supabaseから「特定の文字（キーワード）」を取得
-# 修正：データが空の場合でもエラーにならないようにする
-    if not response.data:
-        print("キーワードが登録されていません。監視をスキップします。")
-        return
-        
-    keywords = [item['word'] for item in response.data]
-
-    print(f"監視中のキーワード: {keywords}")
-
-    # 2. 照合
-    found_keywords = []
-    for word in keywords:
-        if word in drive_text:
-            found_keywords.append(word)
-
-    # 3. 結果の出力（後でここに通知処理を追加します）
-    if found_keywords:
-        print(f"【一致あり】以下の文字が見つかりました: {found_keywords}")
-        # TODO: WebPush通知の実行関数をここに呼ぶ
-    else:
-        print("一致する文字はありませんでした。")
-
-if __name__ == "__main__":
-    text = get_drive_text()
-    print("--- Drive File Content ---")
-    print(text)
-    check_keywords_and_notify(text)
     
+    # 接続情報のデバッグ表示（最初の数文字だけ表示して確認）
+    print(f"DEBUG: Connecting to {url}")
+    if key:
+        print(f"DEBUG: API Key exists (Length: {len(key)})")
+
+    try:
+        supabase = create_client(url, key)
+        
+        # .execute() の結果を直接確認
+        response = supabase.table("keywords").select("word").execute()
+        
+        print(f"DEBUG: Full Response: {response}")
+
+        if not response.data:
+            print("【警告】Supabaseからデータが取得できませんでした（0件）。")
+            # テーブルの中身を全部取得してみるテスト
+            test_res = supabase.table("keywords").select("*").execute()
+            print(f"DEBUG: All columns test: {test_res.data}")
+            return
+
+        keywords = [item['word'] for item in response.data]
+        print(f"監視中のキーワード: {keywords}")
+
+        found_keywords = [word for word in keywords if word in drive_text]
+        if found_keywords:
+            print(f"【一致あり】見つかった文字: {found_keywords}")
+        else:
+            print("一致する文字はありませんでした。")
+            
+    except Exception as e:
+        print(f"ERROR: Supabase連携中に例外が発生しました: {e}")
