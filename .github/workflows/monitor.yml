@@ -27,6 +27,7 @@ jobs:
         env:
           GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           DRIVE_FILE_ID: ${{ secrets.DRIVE_FILE_ID }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}  # ここを追加しました
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}  # ここを追加しました
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}  # ← これを追加！
         run: python monitor.py
