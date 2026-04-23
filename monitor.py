@@ -38,6 +38,15 @@ def check_keywords_and_notify(drive_text):
     try:
         supabase = create_client(url, key)
         
+        # --- 追加機能: 解析結果の保存 ---
+        print("解析結果を analysis_logs に保存中...")
+        # 新規レコードとして挿入（updated_atはSupabase側で現在時刻が入る想定）
+        # もし常に1つのレコードを更新したい場合は .upsert({"id": 1, "content": drive_text}) に変更してください
+        supabase.table("analysis_logs").insert({
+            "content": drive_text
+        }).execute()
+        # ------------------------------
+        
         print("Supabaseからキーワードを取得しています...")
         response = supabase.table("keywords").select("word").execute()
         
