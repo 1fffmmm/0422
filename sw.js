@@ -1,16 +1,19 @@
-self.addEventListener('push', (event) => {
+// 通知を受け取った時の処理
+self.addEventListener('push', function(event) {
     const data = event.data ? event.data.json() : { title: '通知', body: '新着メッセージがあります' };
+    
     event.waitUntil(
         self.registration.showNotification(data.title, {
             body: data.body,
-            icon: 'https://cdn-icons-png.flaticon.com/512/1827/1827349.png'
+            icon: 'icon.png' // アイコンがあれば
         })
     );
 });
 
-self.addEventListener('notificationclick', (event) => {
+// 通知をクリックした時の処理
+self.addEventListener('notificationclick', function(event) {
     event.notification.close();
     event.waitUntil(
-        clients.openWindow('/')
+        clients.openWindow('/') // 通知をクリックしたらサイトを開く
     );
 });
