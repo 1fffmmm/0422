@@ -36,7 +36,7 @@ def send_test_notification():
                     "body": "Supabaseからの通知テストに成功しました！",
                     "url": "https://www.google.com"
                 }),
-                vapid_private_key=PRIVATE_VAPID_KEY,
+                vapid_private_key=VAPID_PRIVATE_KEY,
                 vapid_claims=VAPID_CLAIMS
             )
             print("送信成功！")
