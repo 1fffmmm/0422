@@ -25,5 +25,5 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           # もし PRIVATE_VAPID_KEY をコードに直書きしていない場合は、ここに追加
-          VAPID_PRIVATE_KEY: ${{ secrets.PRIVATE_VAPID_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
         run: python test_push.py
