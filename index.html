@@ -135,33 +135,69 @@
     pushSwitch.addEventListener('change', () => pushSwitch.checked ? subscribeUser() : unsubscribeUser());
 
     // --- 2. キーワード管理ロジック ---
-    async function loadKeywords() {
-        const { data, error } = await supabaseClient.from('keywords').select('*').order('created_at', { ascending: false });
-        if (error) return console.error(error);
-        const container = document.getElementById('keyword-list');
-        container.innerHTML = data.map(k => `
-            <span class="keyword-tag">
-                ${k.word}
-                <button class="btn-del" onclick="deleteKeyword(${k.id})">×</button>
-            </span>
-        `).join('');
+async function loadKeywords() {
+    const { data, error } = await supabaseClient.from('keywords').select('*');
+    if (error) return console.error(error);
+
+    const container = document.getElementById('keywords-list');
+    container.innerHTML = data.map(k => `
+        <div class="keyword-tag">
+            <span>${k.word}</span>
+            <button onclick="deleteKeyword('${k.id}')" style="margin-left:8px; cursor:pointer;">×</button>
+        </div>
+    `).join('');
+}
+    
+
+async function addKeyword() {
+    const input = document.getElementById('keyword-input');
+    const word = input.value.trim();
+    if (!word) return;
+
+    // 1. 現在の件数を確認
+    const { count, error: countError } = await supabaseClient
+        .from('keywords')
+        .select('*', { count: 'exact', head: true });
+
+    if (countError) {
+        console.error("件数取得エラー:", countError);
+        return;
     }
 
-    async function addKeyword() {
-        const input = document.getElementById('keyword-input');
-        const word = input.value.trim();
-        if (!word) return;
-        const { error } = await supabaseClient.from('keywords').insert([{ word }]);
-        if (error) alert("追加失敗: " + error.message);
+    // 2. 10個以上の場合はブロック
+    if (count >= 10) {
+        alert("キーワードは最大10個までしか登録できません。不要なものを削除してください。");
+        return;
+    }
+
+    // 3. 追加実行
+    const { error } = await supabaseClient.from('keywords').insert([{ word }]);
+    if (error) {
+        alert("追加失敗: " + error.message);
+    } else {
         input.value = '';
         loadKeywords();
     }
+}
+    
 
-    async function deleteKeyword(id) {
-        const { error } = await supabaseClient.from('keywords').delete().eq('id', id);
-        if (error) alert("削除失敗");
-        loadKeywords();
+async function deleteKeyword(id) {
+    console.log("削除要求 ID:", id); // ブラウザのコンソールでUUIDが表示されるか確認
+    
+    const { error } = await supabaseClient
+        .from('keywords')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        console.error("削除失敗:", error);
+        alert("削除に失敗しました: " + error.message);
+    } else {
+        console.log("削除成功");
+        loadKeywords(); // リストを更新
     }
+}
+    
 
     // --- 3. 解析結果表示ロジック ---
     async function loadLatestAnalysis() {
