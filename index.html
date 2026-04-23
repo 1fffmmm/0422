@@ -30,75 +30,88 @@
 </div>
 
 <script>
-    // --- 設定（自分の情報に書き換えてください） ---
+    // --- 設定 ---
     const SUPABASE_URL = 'https://ltqqmclfgdxtasvtirtf.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H';
     const PUBLIC_VAPID_KEY = 'BPjCNf2epwHU2U_a4X6d2zEfDzqRvmFYmXJrY2zUMR-h62JZG8bJ2Y5sXr0VaZp_XSaUkn0p3TH3X0_SCoD9p5A';
-    // ------------------------------------------
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 変数名を supabaseClient に変更（ライブラリとの衝突回避）
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
     const pushSwitch = document.getElementById('push-switch');
     const statusText = document.getElementById('status-text');
 
-    // 1. ページ読み込み時に現在の購読状態を確認
+    // 1. ページ読み込み時に購読状態を確認
     async function checkSubscription() {
-        if (!('serviceWorker' in navigator)) return;
-        const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.getSubscription();
-        
-        pushSwitch.checked = !!subscription;
-        statusText.innerText = subscription ? "通知は有効です" : "通知は無効です";
-    }
-
-    // 2. 通知をオンにする（保存）
-    async function subscribeUser() {
+        if (!('serviceWorker' in navigator)) {
+            statusText.innerText = "このブラウザは通知に対応していません";
+            return;
+        }
         try {
             const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+            pushSwitch.checked = !!subscription;
+            statusText.innerText = subscription ? "通知は有効です" : "通知は無効です";
+        } catch (err) {
+            console.error("初期チェックエラー:", err);
+        }
+    }
+
+    // 2. 通知をオンにする
+    async function subscribeUser() {
+        alert("1: 処理を開始しました");
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            alert("2: Service Workerの準備完了");
+
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: PUBLIC_VAPID_KEY
             });
+            alert("3: ブラウザの購読成功！");
 
-            // Supabaseへ保存 (upsertで重複防止)
-            const { error } = await supabase
+            // Supabaseへ保存
+            const { error } = await supabaseClient
                 .from('subscriptions')
                 .upsert({ 
                     endpoint: subscription.endpoint, 
-                    subscription_json: subscription 
+                    subscription_json: JSON.parse(JSON.stringify(subscription)) 
                 }, { onConflict: 'endpoint' });
 
             if (error) throw error;
+            
             statusText.innerText = "通知をオンにしました！";
+            alert("4: Supabaseへの保存完了！");
         } catch (err) {
             console.error(err);
+            alert("エラー発生: " + err.message);
             statusText.innerText = "エラー: " + err.message;
             pushSwitch.checked = false;
         }
     }
 
-    // 3. 通知をオフにする（削除）
+    // 3. 通知をオフにする
     async function unsubscribeUser() {
         try {
             const registration = await navigator.serviceWorker.ready;
             const subscription = await registration.pushManager.getSubscription();
             
             if (subscription) {
-                // Supabaseから削除
-                await supabase
+                await supabaseClient
                     .from('subscriptions')
                     .delete()
                     .eq('endpoint', subscription.endpoint);
                 
-                // ブラウザの購読解除
                 await subscription.unsubscribe();
             }
             statusText.innerText = "通知をオフにしました";
+            alert("通知を解除しました");
         } catch (err) {
-            statusText.innerText = "解除エラー: " + err.message;
+            alert("解除エラー: " + err.message);
         }
     }
 
-    // スイッチの切り替えイベント
+    // イベントリスナー
     pushSwitch.addEventListener('change', () => {
         if (pushSwitch.checked) {
             subscribeUser();
@@ -107,27 +120,17 @@
         }
     });
 
-    // サービスワーカーの登録
+    // サービスワーカー登録
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-        checkSubscription();
-    }
-    
-    async function subscribe() {
-    alert("1: 処理を開始しました");
-    const registration = await navigator.serviceWorker.ready;
-    alert("2: Service Workerの準備完了");
-    
-    try {
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: 'あなたのVAPID公開鍵'
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => {
+                    console.log("Service Worker registered");
+                    checkSubscription();
+                })
+                .catch(err => console.error("SW Registration Error:", err));
         });
-        alert("3: 購読成功！");
-    } catch (err) {
-        alert("エラー発生: " + err.message);
     }
-}
 </script>
 </body>
 </html>
