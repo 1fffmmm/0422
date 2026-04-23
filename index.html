@@ -379,49 +379,40 @@
 
     
     // --- Pull to Refresh 実装 ---
-let touchStart = 0;
-const pullThreshold = 100; // どれくらい引っ張ったら更新するか（ピクセル）
+let touchStartY = 0;
+const pullThreshold = 80; // 80px以上で更新
+const indicator = document.getElementById('pull-indicator');
 
 window.addEventListener('touchstart', (e) => {
-    // 画面の一番上にいる時だけ検知
-    if (window.scrollY === 0) {
-        touchStart = e.touches[0].clientY;
-    }
+    touchStartY = e.touches[0].pageY;
 }, { passive: true });
 
 window.addEventListener('touchmove', (e) => {
-    if (touchStart === 0) return;
-    
-    const touchMove = e.touches[0].clientY;
-    const pullDistance = touchMove - touchStart;
+    const touchY = e.touches[0].pageY;
+    const pullDist = touchY - touchStartY;
 
-    if (pullDistance > 0 && window.scrollY === 0) {
-        const indicator = document.getElementById('pull-indicator');
-        indicator.style.height = Math.min(pullDistance, 50) + 'px';
-        
-        if (pullDistance > pullThreshold) {
-            indicator.innerText = "指を離して更新";
-        } else {
-            indicator.innerText = "引っ張って更新";
-        }
+    // 画面のトップにいて、下に引っ張っている時だけインジケーターを出す
+    if (window.scrollY === 0 && pullDist > 0) {
+        indicator.style.height = Math.min(pullDist, 50) + 'px';
+        indicator.innerText = pullDist > pullThreshold ? "指を離して更新" : "さらに引いて更新";
     }
 }, { passive: true });
 
-window.addEventListener('touchend', async (e) => {
-    const touchEnd = e.changedTouches[0].clientY;
-    const pullDistance = touchEnd - touchStart;
-    const indicator = document.getElementById('pull-indicator');
+window.addEventListener('touchend', async () => {
+    const pullDist = event.changedTouches[0].pageY - touchStartY;
 
-    if (pullDistance > pullThreshold && window.scrollY === 0) {
+    if (window.scrollY === 0 && pullDist > pullThreshold) {
+        indicator.style.height = '40px';
         indicator.innerText = "読み込み中...";
-        await loadLatestAnalysis(); // 既存の更新関数を呼び出し
+        
+        await loadLatestAnalysis(); // 既存の関数を呼ぶ
+        
         setTimeout(() => {
-            indicator.style.height = '0px';
+            indicator.style.height = '0';
         }, 500);
     } else {
-        indicator.style.height = '0px';
+        indicator.style.height = '0';
     }
-    touchStart = 0;
 });
 
 </script>
