@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通知モニター</title>
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button { background: #007aff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .insta-btn { background: #e1306c; text-decoration: none; display: inline-block; color: white; padding: 10px 20px; border-radius: 5px; }
+        input { padding: 8px; width: 80%; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>通知モニター設定</h2>
+
+    <div class="card">
+        <h3>Step 1: 通知を有効にする</h3>
+        <p>ホーム画面に追加してから押してください</p>
+        <button id="subscribe-btn">通知を許可する</button>
+    </div>
+
+    <div class="card">
+        <h3>Step 2: 監視キーワード (最大5つ)</h3>
+        <div id="keyword-container">
+            <input type="text" placeholder="キーワード1"><br>
+            <input type="text" placeholder="キーワード2"><br>
+            <input type="text" placeholder="キーワード3"><br>
+            <input type="text" placeholder="キーワード4"><br>
+            <input type="text" placeholder="キーワード5">
+        </div>
+        <button onclick="alert('キーワード保存機能はSupabase API経由で実装可能です')">保存</button>
+    </div>
+
+    <div class="card">
+        <h3>最新の解析結果 (analysis_results.txt)</h3>
+        <iframe src="analysis_results.txt" style="width:100%; border:none; height:100px;"></iframe>
+    </div>
+
+    <div class="card">
+        <h3>リンク</h3>
+        <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="insta-btn">Instagramストーリーを開く</a>
+    </div>
+
+    <script>
+        const PUBLIC_VAPID_KEY = 'BPjCNf2epwHU2U_a4X6d2zEfDzqRvmFYmXJrY2zUMR-h62JZG8bJ2Y5sXr0VaZp_XSaUkn0p3TH3X0_SCoD9p5A';
+
+        // サービスワーカーの登録
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+
+        document.getElementById('subscribe-btn').addEventListener('click', async () => {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') return alert('通知が拒否されました');
+
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: PUBLIC_VAPID_KEY
+            });
+
+            // ここで本来はSupabaseのsubscriptionsテーブルに保存する処理を書きます
+            console.log(JSON.stringify(subscription));
+            alert('通知購読に成功しました！コンソールの内容をSupabaseに保存してください。');
+        });
+    </script>
+</body>
+</html>
