@@ -67,7 +67,9 @@
 
             // ここで本来はSupabaseのsubscriptionsテーブルに保存する処理を書きます
             console.log(JSON.stringify(subscription));
-            alert('通知購読に成功しました！コンソールの内容をSupabaseに保存してください。');
+            alert("以下の内容をコピーしてSupabaseに保存してください:\n\n" + subJson);
+}).catch(function(error) {
+    console.error("購読失敗:", error);
         });
     </script>
 </body>
