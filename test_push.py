@@ -61,8 +61,8 @@
   <script>
     // --- 1. 設定情報 ---
     const SUPABASE_URL = "https://ltqqmclfgdxtasvtirtf.supabase.co";
-    const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY"; // あなたのAnon Key
-    const VAPID_PUBLIC_KEY = "YOUR_VAPID_PUBLIC_KEY"; // あなたの公開鍵
+    const SUPABASE_KEY = "sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H"; // あなたのAnon Key
+    const VAPID_PUBLIC_KEY = "BPjCNf2epwHU2U_a4X6d2zEfDzqRvmFYmXJrY2zUMR-h62JZG8bJ2Y5sXr0VaZp_XSaUkn0p3TH3X0_SCoD9p5A"; // あなたの公開鍵
     
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
