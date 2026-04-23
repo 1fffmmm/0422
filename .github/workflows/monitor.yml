@@ -2,9 +2,9 @@ name: Google Drive Monitor
 
 on:
   schedule:
-    # 9:15, 15:15, 21:15 (JST)
-    - cron: '15 0,6,12 * * *'
-  workflow_dispatch:
+    # 毎日 日本時間 23:00 に実行 (UTCでは14:00)
+    - cron: '0 14 * * *'
+  workflow_dispatch: # 手動実行のボタンは残しておきます
 
 jobs:
   monitor:
