@@ -55,69 +55,113 @@
     const SUPABASE_KEY = "sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H"; // 公開用(anon)キー
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- キーワード管理ロジック ---
-    async function fetchKeywords() {
-      const { data, error } = await supabaseClient
-        .from('keywords')
-        .select('*')
-        .order('created_at', { ascending: true });
+    // --- XSS対策用のエスケープ関数 ---
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, function(match) {
+    return {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[match];
+  });
+}
 
-      if (error) return console.error(error);
+// --- キーワード管理ロジック ---
+async function fetchKeywords() {
+  const { data, error } = await supabaseClient
+    .from('keywords')
+    .select('*')
+    .order('created_at', { ascending: true });
 
-      const listDiv = document.getElementById('keyword-list');
-      listDiv.innerHTML = data.map(k => `
-        <div class="keyword-item">
-          <span>${k.word}</span>
-          <button class="delete-btn" onclick="deleteKeyword(${k.id})">削除</button>
-        </div>
-      `).join('');
-      window.currentKeywordCount = data.length;
-    }
+  if (error) {
+    console.error("キーワード取得エラー:", error);
+    return;
+  }
 
-    async function addKeyword() {
-      const input = document.getElementById('new-keyword');
-      const word = input.value.trim();
-      if (!word) return;
-      if (window.currentKeywordCount >= 10) {
-        alert("キーワードは最大10個までです");
-        return;
-      }
-      const { error } = await supabaseClient.from('keywords').insert([{ word: word }]);
-      if (error) alert("追加に失敗しました（重複など）");
-      else { input.value = ''; fetchKeywords(); }
-    }
+  const listDiv = document.getElementById('keyword-list');
+  // 取得した data を安全に表示するために escapeHTML を使用
+  listDiv.innerHTML = data.map(k => `
+    <div class="keyword-item">
+      <span>${escapeHTML(k.word)}</span>
+      <button class="delete-btn" onclick="deleteKeyword(${k.id})">削除</button>
+    </div>
+  `).join('');
+  
+  window.currentKeywordCount = data.length;
+}
 
-    async function deleteKeyword(id) {
-      await supabaseClient.from('keywords').delete().eq('id', id);
-      fetchKeywords();
-    }
+async function addKeyword() {
+  const input = document.getElementById('new-keyword');
+  const word = input.value.trim();
+  
+  if (!word) return;
+  
+  if (window.currentKeywordCount >= 10) {
+    alert("キーワードは最大10個までです");
+    return;
+  }
+  
+  const { error } = await supabaseClient.from('keywords').insert([{ word: word }]);
+  
+  if (error) {
+    console.error("追加エラー:", error);
+    alert("追加に失敗しました（重複など）");
+  } else { 
+    input.value = ''; 
+    fetchKeywords(); 
+  }
+}
 
-    // --- 解析結果の表示 ---
-    async function fetchAnalysisResults() {
-      const { data, error } = await supabaseClient
-        .from('analysis_logs')
-        .select('content')
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      const display = document.getElementById('analysis-content');
-      if (data) display.innerText = data.content;
-      else display.innerText = "データがありません";
-    }
-
-    // --- 通知スイッチの初期化（以前のロジックを統合） ---
-    const pushSwitch = document.getElementById('push-switch');
-    pushSwitch.addEventListener('change', async () => {
-      if (pushSwitch.checked) {
-        alert("通知をオンにしました（購読処理を実行）");
-        // ここに以前の subscribeUser() の中身を記述
-      } else {
-        alert("通知をオフにしました");
-      }
-    });
-
-    // 初回読み込み
+async function deleteKeyword(id) {
+  const { error } = await supabaseClient.from('keywords').delete().eq('id', id);
+  if (error) {
+    console.error("削除エラー:", error);
+    alert("削除に失敗しました");
+  } else {
     fetchKeywords();
-    fetchAnalysisResults();
+  }
+}
+
+// --- 解析結果の表示 ---
+async function fetchAnalysisResults() {
+  const { data, error } = await supabaseClient
+    .from('analysis_logs')
+    .select('content')
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  const display = document.getElementById('analysis-content');
+  
+  if (error && error.code !== 'PGRST116') { // PGRST116は「データが0件」のエラーコード
+    console.error("解析結果取得エラー:", error);
+  }
+
+  // innerText は自動でエスケープされるので安全です
+  if (data) {
+    display.innerText = data.content;
+  } else {
+    display.innerText = "データがありません";
+  }
+}
+
+// --- 通知スイッチの初期化 ---
+const pushSwitch = document.getElementById('push-switch');
+pushSwitch.addEventListener('change', async () => {
+  if (pushSwitch.checked) {
+    // alert("通知をオンにしました（購読処理を実行）");
+    // ここに Service Worker の登録や subscribeUser() 処理を記述
+    console.log("通知購読処理を開始します...");
+  } else {
+    // alert("通知をオフにしました");
+    // 購読解除処理を記述
+    console.log("通知購読を解除します...");
+  }
+});
+
+// 初回読み込み
+fetchKeywords();
+fetchAnalysisResults();
       
