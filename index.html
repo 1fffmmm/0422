@@ -33,7 +33,7 @@
     // --- 設定 ---
     const SUPABASE_URL = 'https://ltqqmclfgdxtasvtirtf.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H';
-    const PUBLIC_VAPID_KEY = 'BPjCNf2epwHU2U_a4X6d2zEfDzqRvmFYmXJrY2zUMR-h62JZG8bJ2Y5sXr0VaZp_XSaUkn0p3TH3X0_SCoD9p5A';
+    const VAPID_PUBLIC_KEY = 'BPjCNf2epwHU2U_a4X6d2zEfDzqRvmFYmXJrY2zUMR-h62JZG8bJ2Y5sXr0VaZp_XSaUkn0p3TH3X0_SCoD9p5A';
 
     // 変数名を supabaseClient に変更（ライブラリとの衝突回避）
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -66,7 +66,7 @@
 
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: PUBLIC_VAPID_KEY
+                applicationServerKey: VAPID_PUBLIC_KEY
             });
             alert("3: ブラウザの購読成功！");
 
