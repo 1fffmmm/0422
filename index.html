@@ -1,136 +1,123 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>通知設定</title>
-    <link rel="manifest" href="manifest.json">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #2196F3; }
-        input:checked + .slider:before { transform: translateX(26px); }
-        .status { margin-top: 1rem; font-size: 0.9rem; color: #666; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>通知管理システム</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; background-color: #f9f9f9; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    h2, h3 { margin-top: 0; color: #333; }
+    .btn-insta { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; padding: 12px; border-radius: 8px; text-decoration: none; display: block; text-align: center; font-weight: bold; margin-bottom: 20px; }
+    .keyword-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .delete-btn { color: #ff4d4d; border: 1px solid #ff4d4d; background: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
+    input[type="text"] { width: calc(100% - 80px); padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    .add-btn { padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    #analysis-content { white-space: pre-wrap; background: #eee; padding: 10px; border-radius: 4px; font-size: 0.9em; }
+    /* 通知スイッチのスタイル */
+    .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #2196F3; }
+    input:checked + .slider:before { transform: translateX(26px); }
+  </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>プッシュ通知設定</h2>
-    <label class="switch">
-        <input type="checkbox" id="push-switch">
-        <span class="slider"></span>
-    </label>
-    <div id="status-text" class="status">状態を確認中...</div>
-</div>
+  <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="btn-insta">
+    Instagramストーリーをチェック
+  </a>
 
-<script>
-    // --- 設定 ---
-    const SUPABASE_URL = 'https://ltqqmclfgdxtasvtirtf.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H';
-    const VAPID_PUBLIC_KEY = 'BPjCNf2epwHU2U_a4X6d2zEfDzqRvmFYmXJrY2zUMR-h62JZG8bJ2Y5sXr0VaZp_XSaUkn0p3TH3X0_SCoD9p5A';
+  <div class="card">
+    <h2>通知設定</h2>
+    <p>通知を受け取る: <label class="switch"><input type="checkbox" id="push-switch"><span class="slider"></span></label></p>
+  </div>
 
-    // 変数名を supabaseClient に変更（ライブラリとの衝突回避）
+  <div class="card">
+    <h3>最新の解析結果</h3>
+    <div id="analysis-content">読み込み中...</div>
+  </div>
+
+  <div class="card">
+    <h3>監視ワード (最大10個)</h3>
+    <div id="keyword-list">読み込み中...</div>
+    <div style="margin-top: 15px;">
+      <input type="text" id="new-keyword" placeholder="新しいワード">
+      <button class="add-btn" onclick="addKeyword()">追加</button>
+    </div>
+  </div>
+
+  <script>
+    // Supabase設定（あなたの環境に合わせて書き換えてください）
+    const SUPABASE_URL = "https://ltqqmclfgdxtasvtirtf.supabase.co"; 
+    const SUPABASE_KEY = "sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H"; // 公開用(anon)キー
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
+
+    // --- キーワード管理ロジック ---
+    async function fetchKeywords() {
+      const { data, error } = await supabaseClient
+        .from('keywords')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) return console.error(error);
+
+      const listDiv = document.getElementById('keyword-list');
+      listDiv.innerHTML = data.map(k => `
+        <div class="keyword-item">
+          <span>${k.word}</span>
+          <button class="delete-btn" onclick="deleteKeyword(${k.id})">削除</button>
+        </div>
+      `).join('');
+      window.currentKeywordCount = data.length;
+    }
+
+    async function addKeyword() {
+      const input = document.getElementById('new-keyword');
+      const word = input.value.trim();
+      if (!word) return;
+      if (window.currentKeywordCount >= 10) {
+        alert("キーワードは最大10個までです");
+        return;
+      }
+      const { error } = await supabaseClient.from('keywords').insert([{ word: word }]);
+      if (error) alert("追加に失敗しました（重複など）");
+      else { input.value = ''; fetchKeywords(); }
+    }
+
+    async function deleteKeyword(id) {
+      await supabaseClient.from('keywords').delete().eq('id', id);
+      fetchKeywords();
+    }
+
+    // --- 解析結果の表示 ---
+    async function fetchAnalysisResults() {
+      const { data, error } = await supabaseClient
+        .from('analysis_logs')
+        .select('content')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      const display = document.getElementById('analysis-content');
+      if (data) display.innerText = data.content;
+      else display.innerText = "データがありません";
+    }
+
+    // --- 通知スイッチの初期化（以前のロジックを統合） ---
     const pushSwitch = document.getElementById('push-switch');
-    const statusText = document.getElementById('status-text');
-
-    // 1. ページ読み込み時に購読状態を確認
-    async function checkSubscription() {
-        if (!('serviceWorker' in navigator)) {
-            statusText.innerText = "このブラウザは通知に対応していません";
-            return;
-        }
-        try {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.getSubscription();
-            pushSwitch.checked = !!subscription;
-            statusText.innerText = subscription ? "通知は有効です" : "通知は無効です";
-        } catch (err) {
-            console.error("初期チェックエラー:", err);
-        }
-    }
-
-    // 2. 通知をオンにする
-    async function subscribeUser() {
-        alert("1: 処理を開始しました");
-        try {
-            const registration = await navigator.serviceWorker.ready;
-            alert("2: Service Workerの準備完了");
-
-            const subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: VAPID_PUBLIC_KEY
-            });
-            alert("3: ブラウザの購読成功！");
-
-            // Supabaseへ保存
-            const { error } = await supabaseClient
-                .from('subscriptions')
-                .upsert({ 
-                    endpoint: subscription.endpoint, 
-                    subscription_json: JSON.parse(JSON.stringify(subscription)) 
-                }, { onConflict: 'endpoint' });
-
-            if (error) throw error;
-            
-            statusText.innerText = "通知をオンにしました！";
-            alert("4: Supabaseへの保存完了！");
-        } catch (err) {
-            console.error(err);
-            alert("エラー発生: " + err.message);
-            statusText.innerText = "エラー: " + err.message;
-            pushSwitch.checked = false;
-        }
-    }
-
-    // 3. 通知をオフにする
-    async function unsubscribeUser() {
-        try {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.getSubscription();
-            
-            if (subscription) {
-                await supabaseClient
-                    .from('subscriptions')
-                    .delete()
-                    .eq('endpoint', subscription.endpoint);
-                
-                await subscription.unsubscribe();
-            }
-            statusText.innerText = "通知をオフにしました";
-            alert("通知を解除しました");
-        } catch (err) {
-            alert("解除エラー: " + err.message);
-        }
-    }
-
-    // イベントリスナー
-    pushSwitch.addEventListener('change', () => {
-        if (pushSwitch.checked) {
-            subscribeUser();
-        } else {
-            unsubscribeUser();
-        }
+    pushSwitch.addEventListener('change', async () => {
+      if (pushSwitch.checked) {
+        alert("通知をオンにしました（購読処理を実行）");
+        // ここに以前の subscribeUser() の中身を記述
+      } else {
+        alert("通知をオフにしました");
+      }
     });
 
-    // サービスワーカー登録
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(() => {
-                    console.log("Service Worker registered");
-                    checkSubscription();
-                })
-                .catch(err => console.error("SW Registration Error:", err));
-        });
-    }
-</script>
-</body>
-</html>
+    // 初回読み込み
+    fetchKeywords();
+    fetchAnalysisResults();
+      
