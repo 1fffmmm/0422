@@ -60,6 +60,7 @@
         <h2>🔍 監視キーワード</h2>
         <div class="input-group">
             <input type="text" id="keyword-input" placeholder="新しい単語を入力...">
+            <div id="keywords-list" style="margin-top: 10px;"></div>
             <button class="btn-add" onclick="addKeyword()">追加</button>
         </div>
         <div id="keyword-list">
@@ -136,14 +137,24 @@
 
     // --- 2. キーワード管理ロジック ---
 async function loadKeywords() {
-    const { data, error } = await supabaseClient.from('keywords').select('*');
-    if (error) return console.error(error);
+    console.log("キーワード読み込み中...");
+    const { data, error } = await supabaseClient
+        .from('keywords')
+        .select('*');
+
+    if (error) {
+        console.error("データ取得エラー:", error);
+        return;
+    }
 
     const container = document.getElementById('keywords-list');
+    if (!container) return;
+
+    // 取得したデータを画面に表示する処理
     container.innerHTML = data.map(k => `
-        <div class="keyword-tag">
-            <span>${k.word}</span>
-            <button onclick="deleteKeyword('${k.id}')" style="margin-left:8px; cursor:pointer;">×</button>
+        <div style="display: inline-block; background: #e3f2fd; padding: 5px 12px; margin: 5px; border-radius: 20px; border: 1px solid #2196F3;">
+            <span style="color: #1976d2; font-weight: bold;">${k.word}</span>
+            <button onclick="deleteKeyword('${k.id}')" style="border:none; background:none; color:red; cursor:pointer; margin-left:8px; font-weight:bold;">×</button>
         </div>
     `).join('');
 }
