@@ -8,9 +8,9 @@
     <style>
         body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
         .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        button { background: #007aff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-        .insta-btn { background: #e1306c; text-decoration: none; display: inline-block; color: white; padding: 10px 20px; border-radius: 5px; }
-        input { padding: 8px; width: 80%; margin-bottom: 10px; }
+        button { background: #007aff; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; }
+        .insta-btn { background: #e1306c; text-decoration: none; display: block; color: white; padding: 10px; border-radius: 5px; text-align: center; margin-top: 10px; }
+        pre { background: #eee; padding: 10px; overflow-x: auto; font-size: 12px; border-radius: 5px; white-space: pre-wrap; word-break: break-all; }
     </style>
 </head>
 <body>
@@ -19,25 +19,14 @@
 
     <div class="card">
         <h3>Step 1: 通知を有効にする</h3>
-        <p>ホーム画面に追加してから押してください</p>
+        <p>「ホーム画面に追加」した状態で押してください。</p>
         <button id="subscribe-btn">通知を許可する</button>
     </div>
 
     <div class="card">
-        <h3>Step 2: 監視キーワード (最大5つ)</h3>
-        <div id="keyword-container">
-            <input type="text" placeholder="キーワード1"><br>
-            <input type="text" placeholder="キーワード2"><br>
-            <input type="text" placeholder="キーワード3"><br>
-            <input type="text" placeholder="キーワード4"><br>
-            <input type="text" placeholder="キーワード5">
-        </div>
-        <button onclick="alert('キーワード保存機能はSupabase API経由で実装可能です')">保存</button>
-    </div>
-
-    <div class="card">
-        <h3>最新の解析結果 (analysis_results.txt)</h3>
-        <iframe src="analysis_results.txt" style="width:100%; border:none; height:100px;"></iframe>
+        <h3>Step 2: 宛先情報 (JSON)</h3>
+        <p>ボタンを押して成功すると、ここに住所が表示されます。これをコピーしてSupabaseに保存してください。</p>
+        <pre id="subscription-output">まだ購読されていません</pre>
     </div>
 
     <div class="card">
@@ -46,31 +35,56 @@
     </div>
 
     <script>
+        // あなたのPublic VAPID Key
         const PUBLIC_VAPID_KEY = 'BPjCNf2epwHU2U_a4X6d2zEfDzqRvmFYmXJrY2zUMR-h62JZG8bJ2Y5sXr0VaZp_XSaUkn0p3TH3X0_SCoD9p5A';
+
+        // Base64変換用関数
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
 
         // サービスワーカーの登録
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js');
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    console.log('SW registered', reg);
+                }).catch(err => {
+                    console.error('SW registration failed', err);
+                });
             });
         }
 
+        // 通知購読処理
         document.getElementById('subscribe-btn').addEventListener('click', async () => {
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') return alert('通知が拒否されました');
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    alert('通知が拒否されました。設定アプリから通知を許可してください。');
+                    return;
+                }
 
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: PUBLIC_VAPID_KEY
-            });
+                const registration = await navigator.serviceWorker.ready;
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
+                });
 
-            // ここで本来はSupabaseのsubscriptionsテーブルに保存する処理を書きます
-            console.log(JSON.stringify(subscription));
-            alert("以下の内容をコピーしてSupabaseに保存してください:\n\n" + subJson);
-}).catch(function(error) {
-    console.error("購読失敗:", error);
-        });
-    </script>
-</body>
-</html>
+                // JSON文字列に変換
+                const subJson = JSON.stringify(subscription);
+                
+                // 画面に表示
+                document.getElementById('subscription-output').innerText = subJson;
+                
+                // アラートでも表示（コピーしやすくするため）
+                console.log('Subscription:', subJson);
+                alert("購読成功！表示されたJSONをコピーしてSupabaseに保存してください。");
+
+            } catch (error) {
+                console.error
