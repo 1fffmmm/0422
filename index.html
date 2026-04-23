@@ -192,6 +192,30 @@
     font-weight: bold;
 }
         
+   /* 画像カード用のスタイル */
+.image-grid {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto; /* スマホで横に並びきらない場合にスクロール可能に */
+    padding-bottom: 5px;
+}
+
+.image-item {
+    flex: 1; /* 横幅を均等に */
+    min-width: 100px; /* 最小サイズ */
+    aspect-ratio: 1 / 1; /* 正方形に統一 */
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 枠いっぱいにトリミング表示 */
+    display: block;
+}
+        
     </style>
 </head>
 <body>
@@ -243,6 +267,34 @@
         <div id="status-text" class="status">状態を確認中…</div>
     </div>
 
+        <div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <div class="icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+            </div>
+            更新された画像
+        </div>
+    </div>
+    <div class="image-grid">
+        <div class="image-item">
+            <img src="https://lh3.googleusercontent.com/d/1JlP_9aDbSkJSPI6JTtRXW5w4EHNGVkJH" alt="Latest image 1">
+        </div>
+        <div class="image-item">
+            <img src="https://lh3.googleusercontent.com/d/1JlP_9aDbSkJSPI6JTtRXW5w4EHNGVkJH" alt="Latest image 2">
+        </div>
+        <div class="image-item">
+            <img src="https://lh3.googleusercontent.com/d/1N18SGdHE8kmZeflUyhGrtcvtPNSY5UGT" alt="Latest image 3">
+        </div>
+    </div>
+</div>
+        
+        
+        
     <div class="card">
         <div class="card-header">
             <div class="card-title">
