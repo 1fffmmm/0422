@@ -1,167 +1,194 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>通知管理システム</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; background-color: #f9f9f9; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    h2, h3 { margin-top: 0; color: #333; }
-    .btn-insta { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; padding: 12px; border-radius: 8px; text-decoration: none; display: block; text-align: center; font-weight: bold; margin-bottom: 20px; }
-    .keyword-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
-    .delete-btn { color: #ff4d4d; border: 1px solid #ff4d4d; background: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
-    input[type="text"] { width: calc(100% - 80px); padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-    .add-btn { padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    #analysis-content { white-space: pre-wrap; background: #eee; padding: 10px; border-radius: 4px; font-size: 0.9em; }
-    /* 通知スイッチのスタイル */
-    .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: #2196F3; }
-    input:checked + .slider:before { transform: translateX(26px); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>監視コントロールパネル</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --insta-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: 0 auto; }
+        
+        .card { background: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        h2 { font-size: 1.2rem; margin-top: 0; display: flex; align-items: center; gap: 8px; }
+        
+        /* スイッチスタイル */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* キーワードリスト */
+        .input-group { display: flex; gap: 8px; margin-bottom: 15px; }
+        input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .btn-add { background: var(--primary-color); color: white; border: none; padding: 0 15px; border-radius: 8px; cursor: pointer; }
+        .keyword-tag { display: inline-flex; align-items: center; background: #e9ecef; padding: 5px 12px; border-radius: 20px; margin: 4px; font-size: 0.9rem; }
+        .btn-del { margin-left: 8px; color: #ff4d4d; cursor: pointer; font-weight: bold; border: none; background: none; }
+
+        /* 解析結果 */
+        .log-content { background: #1e1e1e; color: #00ff00; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.85rem; min-height: 50px; white-space: pre-wrap; }
+        
+        /* Instagramボタン */
+        .btn-insta { display: flex; align-items: center; justify-content: center; background: var(--insta-gradient); color: white; text-decoration: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 10px; box-shadow: 0 4px 15px rgba(220, 39, 67, 0.3); }
+        
+        .status { font-size: 0.8rem; color: #888; margin-top: 8px; }
+    </style>
 </head>
 <body>
 
-  <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="btn-insta">
-    Instagramストーリーをチェック
-  </a>
-
-  <div class="card">
-    <h2>通知設定</h2>
-    <p>通知を受け取る: <label class="switch"><input type="checkbox" id="push-switch"><span class="slider"></span></label></p>
-  </div>
-
-  <div class="card">
-    <h3>最新の解析結果</h3>
-    <div id="analysis-content">読み込み中...</div>
-  </div>
-
-  <div class="card">
-    <h3>監視ワード (最大10個)</h3>
-    <div id="keyword-list">読み込み中...</div>
-    <div style="margin-top: 15px;">
-      <input type="text" id="new-keyword" placeholder="新しいワード">
-      <button class="add-btn" onclick="addKeyword()">追加</button>
+<div class="container">
+    <div class="card">
+        <div class="flex-between">
+            <h2>🔔 プッシュ通知</h2>
+            <label class="switch">
+                <input type="checkbox" id="push-switch">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div id="status-text" class="status">状態を確認中...</div>
     </div>
-  </div>
 
-  <script>
-    // Supabase設定（あなたの環境に合わせて書き換えてください）
-    const SUPABASE_URL = "https://ltqqmclfgdxtasvtirtf.supabase.co"; 
-    const SUPABASE_KEY = "sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H"; // 公開用(anon)キー
+    <div class="card">
+        <h2>🔍 監視キーワード</h2>
+        <div class="input-group">
+            <input type="text" id="keyword-input" placeholder="新しい単語を入力...">
+            <button class="btn-add" onclick="addKeyword()">追加</button>
+        </div>
+        <div id="keyword-list">
+            </div>
+    </div>
+
+    <div class="card">
+        <h2>📄 最新の取得テキスト</h2>
+        <div id="latest-analysis" class="log-content">読み込み中...</div>
+        <div id="update-time" class="status"></div>
+    </div>
+
+    <a href="https://www.instagram.com/reels/" target="_blank" class="btn-insta">
+        Instagramストーリーを開く
+    </a>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://ltqqmclfgdxtasvtirtf.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H';
+    const VAPID_PUBLIC_KEY = 'BPjCNf2epwHU2U_a4X6d2zEfDzqRvmFYmXJrY2zUMR-h62JZG8bJ2Y5sXr0VaZp_XSaUkn0p3TH3X0_SCoD9p5A';
+
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // --- 1. プッシュ通知ロジック (既存機能維持) ---
+    const pushSwitch = document.getElementById('push-switch');
+    const statusText = document.getElementById('status-text');
 
-    // --- XSS対策用のエスケープ関数 ---
-function escapeHTML(str) {
-  return str.replace(/[&<>'"]/g, function(match) {
-    return {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    }[match];
-  });
-}
+    async function checkSubscription() {
+        if (!('serviceWorker' in navigator)) {
+            statusText.innerText = "非対応ブラウザです";
+            return;
+        }
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        pushSwitch.checked = !!subscription;
+        statusText.innerText = subscription ? "通知は有効です" : "通知は無効です";
+    }
 
-// --- キーワード管理ロジック ---
-async function fetchKeywords() {
-  const { data, error } = await supabaseClient
-    .from('keywords')
-    .select('*')
-    .order('created_at', { ascending: true });
+    async function subscribeUser() {
+        alert("1: 処理を開始しました");
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: VAPID_PUBLIC_KEY
+            });
+            alert("3: ブラウザの購読成功！");
+            const { error } = await supabaseClient.from('subscriptions').upsert({ 
+                endpoint: subscription.endpoint, 
+                subscription_json: JSON.parse(JSON.stringify(subscription)) 
+            }, { onConflict: 'endpoint' });
+            if (error) throw error;
+            statusText.innerText = "通知をオンにしました！";
+            alert("4: Supabaseへの保存完了！");
+        } catch (err) {
+            alert("エラー: " + err.message);
+            pushSwitch.checked = false;
+        }
+    }
 
-  if (error) {
-    console.error("キーワード取得エラー:", error);
-    return;
-  }
+    async function unsubscribeUser() {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+            await supabaseClient.from('subscriptions').delete().eq('endpoint', subscription.endpoint);
+            await subscription.unsubscribe();
+        }
+        statusText.innerText = "通知をオフにしました";
+        alert("通知を解除しました");
+    }
 
-  const listDiv = document.getElementById('keyword-list');
-  // 取得した data を安全に表示するために escapeHTML を使用
-  listDiv.innerHTML = data.map(k => `
-    <div class="keyword-item">
-      <span>${escapeHTML(k.word)}</span>
-      <button class="delete-btn" onclick="deleteKeyword(${k.id})">削除</button>
-    </div>
-  `).join('');
-  
-  window.currentKeywordCount = data.length;
-}
+    pushSwitch.addEventListener('change', () => pushSwitch.checked ? subscribeUser() : unsubscribeUser());
 
-async function addKeyword() {
-  const input = document.getElementById('new-keyword');
-  const word = input.value.trim();
-  
-  if (!word) return;
-  
-  if (window.currentKeywordCount >= 10) {
-    alert("キーワードは最大10個までです");
-    return;
-  }
-  
-  const { error } = await supabaseClient.from('keywords').insert([{ word: word }]);
-  
-  if (error) {
-    console.error("追加エラー:", error);
-    alert("追加に失敗しました（重複など）");
-  } else { 
-    input.value = ''; 
-    fetchKeywords(); 
-  }
-}
+    // --- 2. キーワード管理ロジック ---
+    async function loadKeywords() {
+        const { data, error } = await supabaseClient.from('keywords').select('*').order('created_at', { ascending: false });
+        if (error) return console.error(error);
+        const container = document.getElementById('keyword-list');
+        container.innerHTML = data.map(k => `
+            <span class="keyword-tag">
+                ${k.word}
+                <button class="btn-del" onclick="deleteKeyword(${k.id})">×</button>
+            </span>
+        `).join('');
+    }
 
-async function deleteKeyword(id) {
-  const { error } = await supabaseClient.from('keywords').delete().eq('id', id);
-  if (error) {
-    console.error("削除エラー:", error);
-    alert("削除に失敗しました");
-  } else {
-    fetchKeywords();
-  }
-}
+    async function addKeyword() {
+        const input = document.getElementById('keyword-input');
+        const word = input.value.trim();
+        if (!word) return;
+        const { error } = await supabaseClient.from('keywords').insert([{ word }]);
+        if (error) alert("追加失敗: " + error.message);
+        input.value = '';
+        loadKeywords();
+    }
 
-// --- 解析結果の表示 ---
-async function fetchAnalysisResults() {
-  const { data, error } = await supabaseClient
-    .from('analysis_logs')
-    .select('content')
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .single();
+    async function deleteKeyword(id) {
+        const { error } = await supabaseClient.from('keywords').delete().eq('id', id);
+        if (error) alert("削除失敗");
+        loadKeywords();
+    }
 
-  const display = document.getElementById('analysis-content');
-  
-  if (error && error.code !== 'PGRST116') { // PGRST116は「データが0件」のエラーコード
-    console.error("解析結果取得エラー:", error);
-  }
+    // --- 3. 解析結果表示ロジック ---
+    async function loadLatestAnalysis() {
+        const { data, error } = await supabaseClient
+            .from('analysis_logs')
+            .select('*')
+            .order('updated_at', { ascending: false })
+            .limit(1);
+        
+        if (data && data[0]) {
+            document.getElementById('latest-analysis').innerText = data[0].content;
+            document.getElementById('update-time').innerText = "最終更新: " + new Date(data[0].updated_at).toLocaleString();
+        } else {
+            document.getElementById('latest-analysis').innerText = "データがありません";
+        }
+    }
 
-  // innerText は自動でエスケープされるので安全です
-  if (data) {
-    display.innerText = data.content;
-  } else {
-    display.innerText = "データがありません";
-  }
-}
-
-// --- 通知スイッチの初期化 ---
-const pushSwitch = document.getElementById('push-switch');
-pushSwitch.addEventListener('change', async () => {
-  if (pushSwitch.checked) {
-    // alert("通知をオンにしました（購読処理を実行）");
-    // ここに Service Worker の登録や subscribeUser() 処理を記述
-    console.log("通知購読処理を開始します...");
-  } else {
-    // alert("通知をオフにしました");
-    // 購読解除処理を記述
-    console.log("通知購読を解除します...");
-  }
-});
-
-// 初回読み込み
-fetchKeywords();
-fetchAnalysisResults();
-      
+    // 初期化
+    window.addEventListener('load', () => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(() => {
+                checkSubscription();
+                loadKeywords();
+                loadLatestAnalysis();
+            });
+        }
+    });
+</script>
+</body>
+</html>
