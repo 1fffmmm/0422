@@ -112,6 +112,22 @@
         navigator.serviceWorker.register('sw.js');
         checkSubscription();
     }
+    
+    async function subscribe() {
+    alert("1: 処理を開始しました");
+    const registration = await navigator.serviceWorker.ready;
+    alert("2: Service Workerの準備完了");
+    
+    try {
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: 'あなたのVAPID公開鍵'
+        });
+        alert("3: 購読成功！");
+    } catch (err) {
+        alert("エラー発生: " + err.message);
+    }
+}
 </script>
 </body>
 </html>
