@@ -195,8 +195,10 @@
     </style>
 </head>
 <body>
-<div class="container">
+<div id="pull-indicator">更新中...</div>
+    <div class="container">
 
+    
     <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="btn-insta">
         Instagramストーリーを開く
     </a>
@@ -374,6 +376,51 @@
             });
         }
     });
+    // --- Pull to Refresh 実装 ---
+let touchStart = 0;
+const pullThreshold = 100; // どれくらい引っ張ったら更新するか（ピクセル）
+
+window.addEventListener('touchstart', (e) => {
+    // 画面の一番上にいる時だけ検知
+    if (window.scrollY === 0) {
+        touchStart = e.touches[0].clientY;
+    }
+}, { passive: true });
+
+window.addEventListener('touchmove', (e) => {
+    if (touchStart === 0) return;
+    
+    const touchMove = e.touches[0].clientY;
+    const pullDistance = touchMove - touchStart;
+
+    if (pullDistance > 0 && window.scrollY === 0) {
+        const indicator = document.getElementById('pull-indicator');
+        indicator.style.height = Math.min(pullDistance, 50) + 'px';
+        
+        if (pullDistance > pullThreshold) {
+            indicator.innerText = "指を離して更新";
+        } else {
+            indicator.innerText = "引っ張って更新";
+        }
+    }
+}, { passive: true });
+
+window.addEventListener('touchend', async (e) => {
+    const touchEnd = e.changedTouches[0].clientY;
+    const pullDistance = touchEnd - touchStart;
+    const indicator = document.getElementById('pull-indicator');
+
+    if (pullDistance > pullThreshold && window.scrollY === 0) {
+        indicator.innerText = "読み込み中...";
+        await loadLatestAnalysis(); // 既存の更新関数を呼び出し
+        setTimeout(() => {
+            indicator.style.height = '0px';
+        }, 500);
+    } else {
+        indicator.style.height = '0px';
+    }
+    touchStart = 0;
+});
 </script>
 </body>
 </html>
