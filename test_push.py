@@ -7,7 +7,7 @@ from supabase import create_client
 SUPABASE_URL = "https://ltqqmclfgdxtasvtirtf.supabase.co"
 SUPABASE_KEY = "sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H"  # もしくはサービスロールキー
 # 秘密鍵（Private Key）が必要です！
-PRIVATE_VAPID_KEY = "h_Je98KmCdJL-7-2noyW80ApN__yQ1dkdP3h8UFvfW4" 
+VAPID_PRIVATE_KEY = "h_Je98KmCdJL-7-2noyW80ApN__yQ1dkdP3h8UFvfW4" 
 VAPID_CLAIMS = {"sub": "mailto:test@example.com"}
 
 def send_test_notification():
