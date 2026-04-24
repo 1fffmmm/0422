@@ -54,7 +54,7 @@ def check_keywords_and_notify(drive_text):
 
             try:
                 webpush(
-                    subscription_info=json.loads(sub['subscription_json']),
+                    subscription_info = row['subscription_json'],
                     data=json.dumps(payload),
                     vapid_private_key=vapid_private_key,
                     vapid_claims={"sub": "mailto:your-email@example.com"}
