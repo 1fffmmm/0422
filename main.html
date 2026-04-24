@@ -407,9 +407,16 @@ async function signInWithGoogle() {
 }
 
 // 2. ログアウト実行
-async function signOut() {
+async function handleLogout() {
     const { error } = await supabaseClient.auth.signOut();
-    if (error) console.error("Logout error:", error.message);
+    if (error) {
+        console.error("ログアウト失敗:", error.message);
+        alert("ログアウトに失敗しました");
+    } else {
+        console.log("ログアウト成功");
+        // ログアウト後は紹介ページへ
+        window.location.href = 'index.html';
+    }
 }
 
 // 3. 認証状態の監視 (ここが最重要！)
