@@ -1,78 +1,72 @@
+import firebase_admin
+from firebase_admin import credentials, firestore, messaging
 import os
-from supabase import create_client
-from pywebpush import webpush, WebPushException
 import json
 
+# Firebaseの初期化（GitHub Secretsのサービスアカウントを使用）
+if not firebase_admin._apps:
+    cred_json = os.environ.get('GCP_SERVICE_ACCOUNT_KEY')
+    if cred_json:
+        cred_dict = json.loads(cred_json)
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred)
+    else:
+        raise ValueError("GCP_SERVICE_ACCOUNT_KEY が設定されていません")
+
+db = firestore.client()
+
 def check_keywords_and_notify(drive_text):
-    print("--- 2. Supabase 照合 & 通知処理開始 ---")
-    url = os.environ.get("SUPABASE_URL")
-    key = os.environ.get("SUPABASE_KEY")
-    vapid_private_key = os.environ.get("VAPID_PRIVATE_KEY")
+    print("=== Firestore 照合 & FCM通知処理を開始 ===")
     
+    # 1. 全ユーザーのキーワード設定を取得
+    keywords_ref = db.collection('keywords')
+    docs = keywords_ref.stream()
+    
+    user_matches = {}
+    for doc in docs:
+        data = doc.to_dict()
+        uid = data.get('user_id')
+        word = data.get('keyword') or data.get('word') # 両方の可能性に対応
+        if uid and word and word in drive_text:
+            if uid not in user_matches:
+                user_matches[uid] = []
+            user_matches[uid].append(word)
+
+    # 2. 一致したユーザーに通知を送信
+    for uid, matched_words in user_matches.items():
+        print(f"一致確認 (User: {uid}): {matched_words}")
+        send_fcm_notification(uid, matched_words)
+
+    # 3. 解析ログをFirestoreに保存（フロントエンド表示用）
     try:
-        supabase = create_client(url, key)
-        
-        # ログの保存
-        try:
-            supabase.table("analysis_logs").insert({"content": drive_text}).execute()
-        except Exception as log_err:
-            print(f"ログ保存エラー（続行します）: {log_err}")
-        
-        # 1. キーワード取得
-        response = supabase.table("keywords").select("word, user_id").execute()
-        if not response.data:
-            print("キーワードが登録されていません。")
-            return
-
-        # 2. マッチング処理
-        user_matches = {}
-        for item in response.data:
-            word = item['word']
-            user_id = item['user_id']
-            if word in drive_text:
-                if user_id not in user_matches:
-                    user_matches[user_id] = []
-                user_matches[user_id].append(word)
-        
-        if not user_matches:
-            print("どのユーザーのキーワードとも一致しませんでした。")
-            return
-
-        print(f"【一致したユーザー数】: {len(user_matches)}人")
-        
-        # 3. 通知送信ループ
-        subs_response = supabase.table("subscriptions").select("*").in_("user_id", list(user_matches.keys())).execute()
-        
-        for sub in subs_response.data:
-            # --- ループ内全体を try-except で囲む ---
-            try:
-                user_id = sub['user_id']
-                matched_words = user_matches.get(user_id, [])
-                
-                payload = {
-                    "title": "監視アラート",
-                    "body": f"登録キーワード「{', '.join(matched_words)}」が見つかりました。",
-                    "icon": "/icon.png"
-                }
-
-                # 通知送信
-                webpush(
-                    subscription_info = sub['subscription_json'],
-                    data=json.dumps(payload),
-                    vapid_private_key=vapid_private_key,
-                    vapid_claims={"sub": "mailto:your-email@example.com"}
-                )
-                print(f"通知送信成功: ユーザー {user_id}")
-
-            except WebPushException as ex:
-                # ブラウザ側の期限切れやエンドポイントエラーなど
-                print(f"通知送信失敗 (WebPushエラー): ユーザー {user_id}, 内容: {ex}")
-            except Exception as e:
-                # それ以外の予期せぬエラー（データ形式の不備など）
-                print(f"通知処理中の予期せぬエラー: ユーザー {user_id}, エラー: {e}")
-                # continue は書かなくても次のループへ進みますが、明示的に書くことも可能です
-                continue 
-
+        db.collection('analysis_logs').add({
+            'content': drive_text,
+            'updated_at': firestore.SERVER_TIMESTAMP
+        })
     except Exception as e:
-        # DB接続自体に失敗した場合など、致命的なエラーのみここでキャッチ
-        print(f"致命的なエラーが発生しました: {e}")
+        print(f"ログ保存エラー: {e}")
+
+def send_fcm_notification(user_id, matched_keywords):
+    # そのユーザーに紐づくFCMトークンを取得
+    subs_ref = db.collection('subscriptions').where('user_id', '==', user_id)
+    tokens = [doc.to_dict().get('fcm_token') for doc in subs_ref.stream() if doc.to_dict().get('fcm_token')]
+
+    if not tokens:
+        print(f"通知先トークンが見つかりません: {user_id}")
+        return
+
+    message_body = f"登録キーワード「{', '.join(matched_keywords)}」が見つかりました。"
+    
+    for token in tokens:
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title='監視アラート',
+                body=message_body
+            ),
+            token=token
+        )
+        try:
+            response = messaging.send(message)
+            print(f"通知送信成功: {response}")
+        except Exception as e:
+            print(f"通知送信エラー ({token}): {e}")
