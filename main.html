@@ -66,7 +66,7 @@
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    const token = await getToken(messaging, { vapidKey: 'YOUR_PUBLIC_VAPID_KEY' });
+                    const token = await getToken(messaging, { vapidKey: 'BFfTYmGpeE2ts6TGdboKiHvX7qlGkum04E1RkMrfSVmOryVGXFEDM8SC3OuAdvhoJRpzFpZu1S36XEin9weDzkQ' });
                     if (token) {
                         // 重複保存を防ぐため、一旦全削除して入れ直すか、特定の方法で保存
                         await addDoc(collection(db, "subscriptions"), {
