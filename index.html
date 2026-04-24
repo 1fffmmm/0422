@@ -385,6 +385,14 @@
     const SUPABASE_KEY = 'sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H';
     const VAPID_PUBLIC_KEY = 'BPjCNf2epwHU2U_a4X6d2zEfDzqRvmFYmXJrY2zUMR-h62JZG8bJ2Y5sXr0VaZp_XSaUkn0p3TH3X0_SCoD9p5A';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 【追加】ログイン状態をチェックし、未ログインなら紹介ページへ戻す
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (!session) {
+    // セッションがなければ index.html へ強制リダイレクト
+    window.location.href = 'index.html';
+  }
+});
     
 // 1. Googleログイン実行
 async function signInWithGoogle() {
