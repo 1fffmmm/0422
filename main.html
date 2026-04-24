@@ -407,7 +407,7 @@ async function signInWithGoogle() {
 }
 
 // 2. ログアウト実行
-async function handleLogout() {
+async function signOut() {
     const { error } = await supabaseClient.auth.signOut();
     if (error) {
         console.error("ログアウト失敗:", error.message);
