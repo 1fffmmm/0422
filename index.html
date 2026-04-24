@@ -4,320 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>サービス紹介 — Instagram ストーリー監視パネル</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg: #fdf6ee;
-      --card: #fffaf5;
-      --border: #f0e4d0;
-      --accent: #d97a4a;
-      --accent-light: #faeee4;
-      --accent-mid: #e8a07a;
-      --text-main: #3a2c1e;
-      --text-sub: #a08060;
-      --tag-bg: #fdecd8;
-      --tag-text: #a05a2a;
-      --tag-border: #f5d4b0;
-      --shadow: 0 2px 18px rgba(180,110,60,0.09);
-      --shadow-hover: 0 6px 28px rgba(180,110,60,0.16);
-      --insta: linear-gradient(135deg, #f9c784 0%, #f07167 42%, #d63384 78%, #9b59b6 100%);
-    }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    // 【重要】新しいFirebaseプロジェクトの設定をここに貼る
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-    html { scroll-behavior: smooth; }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
 
-    body {
-      font-family: 'Outfit', sans-serif;
-      background: var(--bg);
-      background-image:
-        radial-gradient(ellipse at 15% 0%, rgba(240,160,100,0.18) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 100%, rgba(249,200,140,0.15) 0%, transparent 55%);
-      min-height: 100vh;
-      padding: 32px 16px 64px;
-      color: var(--text-main);
-    }
+    // ログイン済みならメイン画面へ
+    onAuthStateChanged(auth, (user) => {
+      if (user) window.location.href = 'main.html';
+    });
 
-    .container {
-      max-width: 440px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .card {
-      background: var(--card);
-      border-radius: 22px;
-      padding: 24px 22px 22px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      transition: box-shadow 0.25s, transform 0.25s;
-    }
-    .card:hover { box-shadow: var(--shadow-hover); transform: translateY(-1px); }
-
-    .card-title {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text-main);
-      margin-bottom: 18px;
-    }
-
-    .icon-wrap {
-      width: 34px; height: 34px;
-      border-radius: 11px;
-      background: var(--accent-light);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .icon-wrap svg {
-      width: 17px; height: 17px;
-      stroke: var(--accent);
-      fill: none;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    /* ── HERO ── */
-    .hero-card { text-align: center; padding: 36px 22px 28px; }
-
-    .insta-badge {
-      display: inline-flex;
-      align-items: center; justify-content: center;
-      width: 58px; height: 58px;
-      border-radius: 18px;
-      background: var(--insta);
-      margin-bottom: 20px;
-      box-shadow: 0 6px 22px rgba(214,51,132,0.22);
-    }
-    .insta-badge svg {
-      width: 28px; height: 28px;
-      stroke: white; fill: none;
-      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-    }
-
-    .hero-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 2rem;
-      line-height: 1.2;
-      color: var(--text-main);
-      margin-bottom: 12px;
-    }
-    .hero-title span {
-      background: var(--insta);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-sub {
-      font-size: 0.87rem;
-      color: var(--text-sub);
-      line-height: 1.75;
-      margin-bottom: 26px;
-    }
-
-    /* ── BUTTONS ── */
-    .btn-insta {
-      display: flex;
-      align-items: center; justify-content: center;
-      gap: 10px;
-      background: var(--insta);
-      color: white;
-      border: none; cursor: pointer;
-      padding: 17px 20px;
-      border-radius: 18px;
-      font-family: 'Outfit', sans-serif;
-      font-weight: 600; font-size: 0.93rem;
-      letter-spacing: 0.03em;
-      box-shadow: 0 6px 22px rgba(214,51,132,0.22);
-      transition: transform 0.2s, box-shadow 0.2s;
-      width: 100%;
-    }
-    .btn-insta:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(214,51,132,0.3); }
-    .btn-insta:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    .login-status {
-      font-size: 0.77rem;
-      color: var(--text-sub);
-      margin-top: 10px;
-      text-align: center;
-    }
-
-    /* ── FEATURES ── */
-    .feat-list { display: flex; flex-direction: column; gap: 0; }
-
-    .feat-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 14px 0;
-    }
-    .feat-item:first-child { padding-top: 0; }
-    .feat-item:last-child { padding-bottom: 0; }
-    .feat-item + .feat-item { border-top: 1px solid var(--border); }
-
-    .feat-icon { flex-shrink: 0; margin-top: 1px; }
-    .feat-title { font-size: 0.88rem; font-weight: 600; color: var(--text-main); margin-bottom: 3px; }
-    .feat-desc { font-size: 0.8rem; color: var(--text-sub); line-height: 1.65; }
-
-    /* ── STEPS ── */
-    .steps { display: flex; flex-direction: column; }
-
-    .step { display: flex; gap: 14px; position: relative; }
-    .step:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      left: 16px; top: 34px; bottom: 0;
-      width: 1.5px;
-      background: var(--border);
-    }
-
-    .step-num {
-      flex-shrink: 0;
-      width: 33px; height: 33px;
-      border-radius: 50%;
-      background: var(--accent-light);
-      border: 1.5px solid var(--tag-border);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'DM Serif Display', serif;
-      font-size: 0.95rem;
-      color: var(--accent);
-      position: relative; z-index: 1;
-    }
-
-    .step-body { padding: 6px 0 22px; }
-    .step-body:last-child { padding-bottom: 0; }
-    .step-title { font-size: 0.88rem; font-weight: 600; color: var(--text-main); margin-bottom: 3px; }
-    .step-desc { font-size: 0.8rem; color: var(--text-sub); line-height: 1.65; }
-
-    /* ── TECH TAGS ── */
-    .tech-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
-    .tech-tag {
-      background: var(--tag-bg);
-      color: var(--tag-text);
-      border: 1px solid var(--tag-border);
-      border-radius: 20px;
-      padding: 5px 13px;
-      font-size: 0.78rem;
-      font-weight: 500;
-    }
-
-    /* ── FADE IN ── */
-    .fade-up { opacity: 0; transform: translateY(18px); animation: fadeUp 0.55s ease forwards; }
-    .d1 { animation-delay: 0.05s; }
-    .d2 { animation-delay: 0.18s; }
-    .d3 { animation-delay: 0.3s; }
-    .d4 { animation-delay: 0.42s; }
-
-    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-  </style>
-</head>
-<body>
-  <div class="container">
-
-    <!-- HERO + LOGIN -->
-    <div class="card hero-card fade-up d1">
-      <div class="insta-badge">
-        <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-      </div>
-      <p class="hero-sub">
-        ジュニア公式Instagramのストーリーを取得・解析<br>
-        指定キーワードを検知した瞬間にプッシュ通知で<br>
-        お知らせするwebアプリです。
-      </p>
-      <button id="btn-login" class="btn-insta" onclick="signInWithGoogle()">
-        <svg width="17" height="17" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908C16.658 14.013 17.64 11.705 17.64 9.2z" fill="white" opacity=".95"/>
-          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="white" opacity=".85"/>
-          <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="white" opacity=".75"/>
-          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="white" opacity=".65"/>
-        </svg>
-        Googleでログインしてはじめる
-      </button>
-      <p id="login-status" class="login-status">Googleの安全な認証システムを利用<br>ログイン情報は暗号化された状態で管理されます。</p>
-    </div>
-
-
-    <!-- HOW IT WORKS -->
-    <div class="card fade-up d3">
-      <div class="card-title">
-        <div class="icon-wrap">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        </div>
-        使い方
-      </div>
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-body">
-            <div class="step-title">Googleアカウントでログイン</div>
-            <div class="step-desc">上のボタンをタップして認証します。<br>Googleアカウントがあればすぐに始められます。</div>
-          </div>
-        </div>
-                <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-body">
-            <div class="step-title">プッシュ通知をオン</div>
-            <div class="step-desc">通知スイッチをオンにするとブラウザの許可ダイアログが表示されます。許可するとキーワード検出時に即座に通知が届きます。</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-body">
-            <div class="step-title">監視キーワードを登録</div>
-            <div class="step-desc">人名、グループ名、LIVEなど気になるキーワードを最大10個まで設定できます。</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-body">
-            <div class="step-title">あとはお任せ</div>
-            <div class="step-desc">パネルを閉じていても通知は届きます。いつでもパネルを開いて最新情報を確認できます。</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <script>
-    const SUPABASE_URL = 'https://ltqqmclfgdxtasvtirtf.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // すでにログイン済みなら即 main.htmlへ
-supabaseClient.auth.getSession().then(({ data: { session } }) => {
-  if (session) window.location.href = 'main.html'; // index.html から main.html に変更
-});
-
-
-    async function signInWithGoogle() {
-      const btn = document.getElementById('btn-login');
-      const status = document.getElementById('login-status');
-      btn.disabled = true;
-      status.textContent = 'ログイン中…';
-
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin + '/index.html'
-        }
-      });
-
-      if (error) {
-        console.error("Login error:", error.message);
-        status.textContent = 'ログインに失敗しました。もう一度お試しください。';
-        btn.disabled = false;
+    window.signInWithGoogle = async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Login failed", error);
+        alert("ログインに失敗しました");
       }
-    }
+    };
   </script>
+  </head>
+<body>
+  <div id="login-container">
+    <button id="btn-login" onclick="signInWithGoogle()">Googleでログイン</button>
+  </div>
 </body>
 </html>
