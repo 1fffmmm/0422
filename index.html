@@ -221,6 +221,20 @@
 <body>
     <div class="container">
 
+         <!-- ログイン状態を表示 -->
+        <div id="auth-section" style="padding: 20px; text-align: right; border-bottom: 1px solid var(--border);">
+    <div id="logged-out-ui">
+        <button onclick="signInWithGoogle()" class="btn-primary">Googleでログイン</button>
+    </div>
+    <div id="logged-in-ui" style="display: none;">
+        <span id="user-email" style="margin-right: 15px; font-size: 0.9rem;"></span>
+        <button onclick="signOut()" class="btn-sub">ログアウト</button>
+    </div>
+</div>
+
+<div id="main-content" style="display: none;">
+    </div>
+        
     <!-- プッシュ通知カード（一番上） -->
     <div class="card">
         <div class="card-header" style="margin-bottom:0;">
@@ -315,7 +329,54 @@
     const SUPABASE_KEY = 'sb_publishable_iPDG85-2s9n0TBw-kVs55g_xC3ZSt-H';
     const VAPID_PUBLIC_KEY = 'BPjCNf2epwHU2U_a4X6d2zEfDzqRvmFYmXJrY2zUMR-h62JZG8bJ2Y5sXr0VaZp_XSaUkn0p3TH3X0_SCoD9p5A';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+// 1. Googleログイン実行
+async function signInWithGoogle() {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            // ログイン後に戻ってくるURL（VercelのURLやlocalhostなど）
+            redirectTo: window.location.origin 
+        }
+    });
+    if (error) console.error("Login error:", error.message);
+}
 
+// 2. ログアウト実行
+async function signOut() {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) console.error("Logout error:", error.message);
+}
+
+// 3. 認証状態の監視 (ここが最重要！)
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    const loggedOutUI = document.getElementById('logged-out-ui');
+    const loggedInUI = document.getElementById('logged-in-ui');
+    const mainContent = document.getElementById('main-content');
+    const userEmailSpan = document.getElementById('user-email');
+
+    if (session) {
+        // ログインしている時
+        console.log("状態: ログイン中", session.user);
+        loggedOutUI.style.display = 'none';
+        loggedInUI.style.display = 'block';
+        mainContent.style.display = 'block';
+        userEmailSpan.innerText = session.user.email;
+
+        // ログインした時だけデータを読み込む
+        loadKeywords();
+        loadLatestAnalysis();
+        checkSubscription();
+    } else {
+        // ログアウトしている時
+        console.log("状態: 未ログイン");
+        loggedOutUI.style.display = 'block';
+        loggedInUI.style.display = 'none';
+        mainContent.style.display = 'none';
+    }
+});
+
+    
     const pushSwitch = document.getElementById('push-switch');
     const statusText = document.getElementById('status-text');
 
