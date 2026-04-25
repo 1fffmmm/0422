@@ -464,7 +464,7 @@
     try {
       await addDoc(collection(db, 'keywords'), {
         keyword: kw,
-        userId: currentUser.uid,
+        user_id: currentUser.uid, // ★ここを user_id に
         createdAt: serverTimestamp()
       });
       input.value = '';
