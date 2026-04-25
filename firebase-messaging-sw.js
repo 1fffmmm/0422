@@ -17,9 +17,14 @@ const messaging = firebase.messaging();
 // バックグラウンドでの通知受け取り
 messaging.onBackgroundMessage(function(payload) {
   console.log('バックグラウンド通知を受信:', payload);
-  const notificationTitle = payload.notification.title;
+  
+  // payload.notification が無い場合（dataのみの場合）への対策
+  const notificationTitle = payload.notification?.title || "監視アラート";
   const notificationOptions = {
-    body: payload.notification.body,
+    body: payload.notification?.body || "新着メッセージがあります",
+    icon: '/icon-192.png', // manifest.jsonで設定したアイコンなど
+    badge: '/icon-192.png'
   };
-  self.registration.showNotification(notificationTitle, notificationOptions);
+
+  return self.registration.showNotification(notificationTitle, notificationOptions);
 });
