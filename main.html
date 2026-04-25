@@ -133,16 +133,19 @@
         .status { font-size: 0.8rem; color: var(--text-sub); margin-top: 12px; }
 
         /* キーワード入力 */
-        .input-group { display: flex; gap: 10px; margin-bottom: 16px; }
+        .input-group { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
         input[type="text"] {
-            flex: 1; padding: 12px 16px; border: 1.5px solid var(--border);
+            flex: 1; min-width: 0; padding: 12px 16px; border: 1.5px solid var(--border);
             border-radius: 14px; font-family: inherit; font-size: 0.95rem;
             background: #fffdf9; outline: none; transition: border-color 0.2s;
         }
         input[type="text"]:focus { border-color: var(--accent-mid); }
         .btn-add {
-            background: var(--accent); color: white; border: none; width: 48px; height: 48px;
-            border-radius: 14px; font-size: 1.4rem; cursor: pointer; flex-shrink: 0;
+            background: var(--accent); color: white; border: none;
+            width: 44px; height: 44px;
+            border-radius: 14px; font-size: 1.4rem; cursor: pointer;
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            line-height: 1;
         }
         
         #keywords-list { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -531,3 +534,4 @@ window.signInWithGoogle = async () => {
 </script>
 </body>
 </html>
+
