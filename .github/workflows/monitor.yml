@@ -2,7 +2,7 @@ name: Google Drive Monitor
 
 on:
   schedule:
-# 30分ごとに実行 (*/30 を指定)
+    # 30分ごとに実行 (再読み込み用のコメント)
     - cron: '*/30 * * * *'
   workflow_dispatch: # 手動実行ボタン
 
