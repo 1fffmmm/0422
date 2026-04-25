@@ -2,8 +2,8 @@ name: Google Drive Monitor
 
 on:
   schedule:
-    # 毎日 日本時間 23:00 に実行 (UTCでは14:00)
-    - cron: '0 14 * * *'
+# 30分ごとに実行 (*/30 を指定)
+    - cron: '*/30 * * * *'
   workflow_dispatch: # 手動実行ボタン
 
 jobs:
