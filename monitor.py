@@ -4,14 +4,31 @@ import json
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload
-from supabase import create_client
-from pywebpush import webpush, WebPushException
+import firebase_admin
+from firebase_admin import credentials, firestore, messaging
 
+# ---------------------------------------------------------
+# Firebaseの初期化（プログラム起動時に1回だけ実行）
+# ---------------------------------------------------------
+if not firebase_admin._apps:
+    service_account_info_str = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+    if service_account_info_str:
+        cred_dict = json.loads(service_account_info_str)
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred)
+    else:
+        print("エラー: FIREBASE_SERVICE_ACCOUNT_JSONが設定されていません。")
+
+# ---------------------------------------------------------
+# 1. Google Driveからテキスト取得
+# ---------------------------------------------------------
 def get_drive_text():
     print("--- 1. Google Drive 処理開始 ---")
     file_id = os.environ.get("DRIVE_FILE_ID")
-    service_account_info = eval(os.environ.get("GCP_SERVICE_ACCOUNT_KEY"))
     
+    # Drive APIの認証 (既存の仕組みを維持)
+    gcp_key_str = os.environ.get("GCP_SERVICE_ACCOUNT_KEY")
+    service_account_info = eval(gcp_key_str) 
     creds = service_account.Credentials.from_service_account_info(service_account_info)
     service = build('drive', 'v3', credentials=creds)
 
@@ -27,67 +44,79 @@ def get_drive_text():
     print(f"Google Driveからの読み込み成功（文字数: {len(drive_text)}文字）")
     return drive_text
 
+# ---------------------------------------------------------
+# 2. Firestore照合と通知送信
+# ---------------------------------------------------------
 def check_keywords_and_notify(drive_text):
-    print("--- 2. Supabase 照合と通知処理開始 ---")
-    url = os.environ.get("SUPABASE_URL")
-    key = os.environ.get("SUPABASE_KEY")
-    vapid_private_key = os.environ.get("VAPID_PRIVATE_KEY") # 秘密鍵を取得
-    
-    try:
-        supabase = create_client(url, key)
-        
-        # 解析結果の保存
-        supabase.table("analysis_logs").insert({"content": drive_text}).execute()
-        
-        # キーワードの照合
-        response = supabase.table("keywords").select("word").execute()
-        if not response.data:
-            print("【警告】監視対象キーワードが登録されていません。")
-            return
+    print("--- 2. Firestore 照合 & FCM 通知処理開始 ---")
+    db = firestore.client()
 
-        keywords = [item['word'] for item in response.data]
-        found_keywords = [word for word in keywords if word in drive_text]
-        
-        print("==============================")
-        if found_keywords:
-            print(f"【一致あり】見つかった文字: {found_keywords}")
-            print("プッシュ通知の送信を開始します...")
+    # ログの保存
+    try:
+        db.collection("analysis_logs").add({
+            "content": drive_text,
+            "created_at": firestore.SERVER_TIMESTAMP
+        })
+        print("最新ログをFirestoreに保存しました。")
+    except Exception as log_err:
+        print(f"ログ保存エラー（続行します）: {log_err}")
+
+    # Firestoreから全キーワードを取得
+    keywords_ref = db.collection("keywords").stream()
+    keywords_data = [doc.to_dict() for doc in keywords_ref]
+
+    if not keywords_data:
+        print("キーワードが登録されていません。")
+        return
+
+    # マッチング処理
+    user_matches = {}
+    for item in keywords_data:
+        word = item.get('word')
+        user_id = item.get('user_id')
+        if word and user_id and word in drive_text:
+            if user_id not in user_matches:
+                user_matches[user_id] = []
+            user_matches[user_id].append(word)
+
+    if not user_matches:
+        print("どのユーザーのキーワードとも一致しませんでした。")
+        return
+
+    print(f"【一致したユーザー数】: {len(user_matches)}人")
+
+    # ユーザーごとに通知を送信
+    for user_id, matched_words in user_matches.items():
+        try:
+            # 該当ユーザーのプッシュ通知トークンを取得
+            subs_ref = db.collection("subscriptions").where("user_id", "==", user_id).stream()
             
-            # Supabaseから購読者（通知先）を取得
-            subs_response = supabase.table("subscriptions").select("*").execute()
-            subscribers = subs_response.data
+            for sub_doc in subs_ref:
+                token = sub_doc.to_dict().get("fcm_token")
+                if not token:
+                    continue
+                
+                # FCM通知メッセージの組み立て
+                message = messaging.Message(
+                    notification=messaging.Notification(
+                        title="監視アラート",
+                        body=f"登録キーワード「{', '.join(matched_words)}」が見つかりました。"
+                    ),
+                    token=token,
+                )
+                
+                # 送信実行
+                response = messaging.send(message)
+                print(f"通知送信成功: ユーザー {user_id} (Message ID: {response})")
+
+        except Exception as e:
+            print(f"通知処理中の予期せぬエラー: ユーザー {user_id}, エラー: {e}")
             
-            if not subscribers:
-                print("通知の送信先（購読者）が誰も登録されていません。")
-            else:
-                for sub in subscribers:
-                    try:
-                        sub_info = sub['subscription_json']
-                        # 通知の中身を作成
-                        message_text = f"キーワード「{', '.join(found_keywords)}」を検知しました！"
-                        payload = json.dumps({"title": "監視アラート", "body": message_text})
-                        
-                        # WebPush送信
-                        webpush(
-                            subscription_info=sub_info,
-                            data=payload,
-                            vapid_private_key=vapid_private_key,
-                            vapid_claims={"sub": "mailto:admin@example.com"} # 必須項目
-                        )
-                        print("通知送信成功！")
-                    except WebPushException as ex:
-                        print(f"通知送信失敗: {ex}")
-        else:
-            print("一致する文字はありませんでした。")
-        print("==============================")
-            
-    except Exception as e:
-        print(f"ERROR: 処理中にエラーが発生しました: {e}")
-    
     print("--- 3. 全ての処理が終了しました ---")
 
 if __name__ == "__main__":
     print("プログラムを起動しました。")
     text = get_drive_text()
-    check_keywords_and_notify(text)
-    
+    if text:
+        check_keywords_and_notify(text)
+
