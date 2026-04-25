@@ -8,10 +8,9 @@ import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 
 # ---------------------------------------------------------
-# Firebaseの初期化（プログラム起動時に1回だけ実行）
+# Firebaseの初期化
 # ---------------------------------------------------------
 if not firebase_admin._apps:
-    # GitHub Secretsに保存したFirebaseのサービスアカウントJSONを取得
     service_account_info_str = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
     if service_account_info_str:
         try:
@@ -29,24 +28,19 @@ if not firebase_admin._apps:
 def get_drive_text():
     print("--- 1. Google Drive 処理開始 ---")
     file_id = os.environ.get("DRIVE_FILE_ID")
-    
-    # Drive APIの認証 (既存の仕組みを維持)
     gcp_key_str = os.environ.get("GCP_SERVICE_ACCOUNT_KEY")
-    if not gcp_key_str:
-        print("エラー: GCP_SERVICE_ACCOUNT_KEYが設定されていません。")
+    
+    if not gcp_key_str or not file_id:
+        print(f"エラー: 環境変数が不足しています (FILE_ID: {file_id})")
         return None
 
-    # eval() または json.loads() で辞書形式に変換
     try:
-        service_account_info = eval(gcp_key_str) 
-    except:
+        # evalは危険なため json.loads を推奨
         service_account_info = json.loads(gcp_key_str)
+        creds = service_account.Credentials.from_service_account_info(service_account_info)
+        service = build('drive', 'v3', credentials=creds)
 
-    creds = service_account.Credentials.from_service_account_info(service_account_info)
-    service = build('drive', 'v3', credentials=creds)
-
-    print("Google Driveからファイルをダウンロード中...")
-    try:
+        print(f"Google Drive(ID: {file_id}) からダウンロード中...")
         request = service.files().get_media(fileId=file_id)
         fh = io.BytesIO()
         downloader = MediaIoBaseDownload(fh, request)
@@ -55,7 +49,7 @@ def get_drive_text():
             status, done = downloader.next_chunk()
         
         drive_text = fh.getvalue().decode('utf-8')
-        print(f"Google Driveからの読み込み成功（文字数: {len(drive_text)}文字）")
+        print(f"読み込み成功: {len(drive_text)}文字取得しました。")
         return drive_text
     except Exception as e:
         print(f"Driveダウンロードエラー: {e}")
@@ -65,79 +59,64 @@ def get_drive_text():
 # 2. Firestore照合と通知送信
 # ---------------------------------------------------------
 def check_keywords_and_notify(drive_text):
-    print("--- 2. Firestore 照合 & FCM 通知処理開始 ---")
+    print("--- 2. Firestore 照合 & 通知処理開始 ---")
     db = firestore.client()
 
-    # ログの保存
+    # ログの保存 (main.htmlに合わせて updated_at に修正)
     try:
         db.collection("analysis_logs").add({
             "content": drive_text,
-            "updated_at": firestore.SERVER_TIMESTAMP  # ★修正1: created_at から updated_at に変更
+            "updated_at": firestore.SERVER_TIMESTAMP  # ★修正: created_at から変更
         })
-        print("最新ログをFirestoreに保存しました。")
+        print("✅ Firestoreに最新ログを保存しました。")
     except Exception as log_err:
-        print(f"ログ保存エラー（続行します）: {log_err}")
+        print(f"❌ ログ保存失敗: {log_err}")
 
-    # Firestoreから全キーワードを取得
+    # キーワード取得
     keywords_ref = db.collection("keywords").stream()
-    keywords_data = [doc.to_dict() for doc in keywords_ref]
-
-    if not keywords_data:
-        print("キーワードが登録されていません。")
-        return
-
-    # マッチング処理
+    
     user_matches = {}
-    for item in keywords_data:
-        # ★修正2: HTML側のデータ構造(keyword, userId)に合わせる
-        word = item.get('keyword') 
-        user_id = item.get('userId') 
+    count = 0
+    for doc in keywords_ref:
+        item = doc.to_dict()
+        count += 1
+        # ★修正: main.html側の保存名 (keyword / userId) に合わせる
+        word = item.get('keyword')
+        uid = item.get('userId')
         
-        if word and user_id and word in drive_text:
-            if user_id not in user_matches:
-                user_matches[user_id] = []
-            user_matches[user_id].append(word)
+        if word and uid and word in drive_text:
+            if uid not in user_matches:
+                user_matches[uid] = []
+            user_matches[uid].append(word)
 
-    if not user_matches:
-        print("どのユーザーのキーワードとも一致しませんでした。")
-        return
+    print(f"登録キーワード数: {count}個 / ヒットしたユーザー: {len(user_matches)}人")
 
-    print(f"【一致したユーザー数】: {len(user_matches)}人")
-
-    # ユーザーごとに通知を送信
-    for user_id, matched_words in user_matches.items():
+    # 通知送信
+    for uid, matched_words in user_matches.items():
         try:
-            # 該当ユーザーのプッシュ通知トークンを取得
-            # ★修正3: user_id はPython側の変数なのでそのまま。Firestoreのフィールド名は 'user_id' (main.htmlの保存形式に依存)
-            # ※main.htmlで subscriptions に保存する際、 user_id: currentUser.uid としていればここは "user_id" でOKです。
-            subs_ref = db.collection("subscriptions").where("user_id", "==", user_id).stream()
+            # main.htmlで保存している user_id フィールドを検索
+            subs_ref = db.collection("subscriptions").where("user_id", "==", uid).stream()
             
-            send_count = 0
             for sub_doc in subs_ref:
                 token = sub_doc.to_dict().get("fcm_token")
-                if not token:
-                    continue
-                
-                # FCM通知メッセージの組み立て
-                message = messaging.Message(
-                    notification=messaging.Notification(
-                        title="監視アラート",
-                        body=f"登録キーワード「{', '.join(matched_words)}」が見つかりました。"
-                    ),
-                    token=token,
-                )
-                
-                # 送信実行
-                response = messaging.send(message)
-                send_count += 1
-            
-            if send_count > 0:
-                print(f"通知送信成功: ユーザー {user_id} ({send_count}個のデバイス)")
-            else:
-                print(f"通知対象のトークンが見つかりませんでした: ユーザー {user_id}")
-
+                if token:
+                    message = messaging.Message(
+                        notification=messaging.Notification(
+                            title="監視アラート",
+                            body=f"キーワード「{', '.join(matched_words)}」を検知"
+                        ),
+                        token=token,
+                    )
+                    messaging.send(message)
+                    print(f"🚀 通知送信完了: ユーザー {uid}")
         except Exception as e:
-            print(f"通知処理中の予期せぬエラー: ユーザー {user_id}, エラー: {e}")
-            
-    print("--- 3. 全ての処理が終了しました ---")
-    
+            print(f"通知エラー (UID: {uid}): {e}")
+
+if __name__ == "__main__":
+    print("=== プログラム実行開始 ===")
+    text = get_drive_text()
+    if text is not None: # 空文字でも保存処理に回す
+        check_keywords_and_notify(text)
+    else:
+        print("エラー: テキストが取得できなかったため、Firestore処理をスキップしました。")
+    print("=== 全処理終了 ===")
