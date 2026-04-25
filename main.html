@@ -4,46 +4,110 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>監視コントロールパネル</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fdf6ee; --card: #fffaf5; --border: #f0e4d0; --accent: #d97a4a;
+            --text-main: #3a2c1e; --text-sub: #a08060; --tag-bg: #fdecd8;
+        }
+        body { background: var(--bg); font-family: 'Outfit', sans-serif; padding: 20px; }
+        .card { background: var(--card); border-radius: 24px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .keyword-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); }
+        .btn-delete { color: #e57373; background: none; border: none; cursor: pointer; font-size: 0.8rem; }
+        .input-group { display: flex; gap: 10px; margin-top: 15px; }
+        input { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border); outline: none; }
+        button.add { background: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 12px; cursor: pointer; }
+        .latest-box { background: #3a2c1e; color: #e8dcc4; padding: 15px; border-radius: 16px; font-family: monospace; font-size: 0.9rem; min-height: 80px; }
+        .toggle-switch { display: flex; align-items: center; justify-content: space-between; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <div id="app" style="max-width: 500px; margin: 0 auto;">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="font-family: 'DM Serif Display'; font-size: 1.8rem; margin: 0;">Panel</h1>
+            <button onclick="signOut()" style="background: none; border: none; color: var(--text-sub); cursor: pointer;">ログアウト</button>
+        </header>
+
+        <div class="card">
+            <div style="font-weight: 600; margin-bottom: 10px;">プッシュ通知設定</div>
+            <div class="toggle-switch">
+                <span id="push-status" style="font-size: 0.9rem; color: var(--text-sub);">通知はオフです</span>
+                <button id="btn-push" onclick="togglePush()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;">設定する</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="font-weight: 600; margin-bottom: 15px;">監視キーワード (最大10個)</div>
+            <div id="keywords-list">読み込み中...</div>
+            <div class="input-group">
+                <input type="text" id="keyword-input" placeholder="例: LIVE">
+                <button class="add" onclick="addKeyword()">追加</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div style="font-weight: 600;">最新の解析ログ</div>
+                <div id="update-time" style="font-size: 0.7rem; color: var(--text-sub);"></div>
+            </div>
+            <div id="latest-analysis" class="latest-box">読み込み中...</div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, onSnapshot, serverTimestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
-     // 【重要】新しいFirebaseプロジェクトの設定をここに貼る
-    const firebaseConfig = {
-        apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
-  authDomain: "user-cd2c1.firebaseapp.com",
-  projectId: "user-cd2c1",
-  storageBucket: "user-cd2c1.firebasestorage.app",
-  messagingSenderId: "990277200920",
-  appId: "1:990277200920:web:952d974484fa76ed89e76d",
-    };
+        const firebaseConfig = {
+          apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
+          authDomain: "user-cd2c1.firebaseapp.com",
+          projectId: "user-cd2c1",
+          storageBucket: "user-cd2c1.firebasestorage.app",
+          messagingSenderId: "990277200920",
+          appId: "1:990277200920:web:952d974484fa76ed89e76d",
+          measurementId: "G-30QNZ04PDZ"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const messaging = getMessaging(app);
 
+        let currentUser = null;
+
+        // ログイン状態確認
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = 'index.html';
             } else {
-                loadKeywords(user.uid);
+                currentUser = user;
+                loadKeywords();
                 loadLatestAnalysis();
-                setupNotifications(user.uid);
             }
         });
 
-        // キーワード読み込み
-        async function loadKeywords(uid) {
-            const q = query(collection(db, "keywords"), where("user_id", "==", uid));
+        // ログアウト
+        window.signOut = () => firebaseSignOut(auth);
+
+        // キーワード読み込み (リアルタイム)
+        function loadKeywords() {
+            const q = query(collection(db, "keywords"), where("user_id", "==", currentUser.uid));
             onSnapshot(q, (snapshot) => {
                 const list = document.getElementById('keywords-list');
-                list.innerHTML = '';
-                snapshot.forEach((d) => {
-                    const data = d.data();
-                    list.innerHTML += `<li>${data.keyword} <button onclick="deleteKeyword('${d.id}')">削除</button></li>`;
+                list.innerHTML = "";
+                if (snapshot.empty) list.innerHTML = "登録されていません";
+                snapshot.forEach((doc) => {
+                    const k = doc.data();
+                    list.innerHTML += `<div class="keyword-item">
+                        <span>${k.word}</span>
+                        <button class="btn-delete" onclick="deleteKeyword('${doc.id}')">削除</button>
+                    </div>`;
                 });
             });
         }
@@ -51,104 +115,57 @@
         // キーワード追加
         window.addKeyword = async () => {
             const input = document.getElementById('keyword-input');
-            if (input.value && auth.currentUser) {
+            const word = input.value.trim();
+            if (!word) return;
+
+            try {
                 await addDoc(collection(db, "keywords"), {
-                    user_id: auth.currentUser.uid,
-                    keyword: input.value,
+                    user_id: currentUser.uid,
+                    word: word,
                     created_at: serverTimestamp()
                 });
-                input.value = '';
-            }
+                input.value = "";
+            } catch (e) { alert("追加に失敗しました"); }
         };
 
-        // 通知設定
-        async function setupNotifications(uid) {
-            try {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    const token = await getToken(messaging, { vapidKey: 'BFfTYmGpeE2ts6TGdboKiHvX7qlGkum04E1RkMrfSVmOryVGXFEDM8SC3OuAdvhoJRpzFpZu1S36XEin9weDzkQ' });
-                    if (token) {
-                        // 重複保存を防ぐため、一旦全削除して入れ直すか、特定の方法で保存
-                        await addDoc(collection(db, "subscriptions"), {
-                            user_id: uid,
-                            fcm_token: token,
-                            updated_at: serverTimestamp()
-                        });
-                    }
-                }
-            } catch (e) { console.error("通知設定エラー", e); }
-        }
+        // キーワード削除
+        window.deleteKeyword = async (id) => {
+            await deleteDoc(doc(db, "keywords", id));
+        };
 
-        // 最新解析結果
-        async function loadLatestAnalysis() {
-            const q = query(collection(db, "analysis_logs"), orderBy("updated_at", "desc"), limit(1));
+        // 解析ログ読み込み
+        function loadLatestAnalysis() {
+            const q = query(collection(db, "analysis_logs"), orderBy("created_at", "desc"), limit(1));
             onSnapshot(q, (snapshot) => {
                 if (!snapshot.empty) {
                     const data = snapshot.docs[0].data();
                     document.getElementById('latest-analysis').innerText = data.content;
+                    document.getElementById('update-time').innerText = data.created_at?.toDate().toLocaleString() || "更新中...";
                 }
             });
         }
 
-        window.deleteKeyword = async (id) => { await deleteDoc(doc(db, "keywords", id)); };
-        window.logout = () => signOut(auth);
-
-        // ... (Firebase初期化部分はそのまま) ...
-
-const messaging = getMessaging(app);
-const db = getFirestore(app);
-
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        // ログインしたら実行する3点セット
-        loadKeywords(user.uid);
-        loadLatestAnalysis();
-        setupNotifications(user.uid); // ここであなたのVAPID鍵を使用
-    } else {
-        window.location.href = 'index.html';
-    }
-});
-
-// 通知の許可とトークン保存のコア関数
-async function setupNotifications(uid) {
-    try {
-        // 1. ブラウザに通知の許可を求める
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-            console.log("通知がブロックされました");
-            return;
-        }
-
-        // 2. FCMトークンを取得（あなたのVAPID鍵を使用）
-        const token = await getToken(messaging, { 
-            vapidKey: 'BFfTYmGpeE2ts6TGdboKiHvX7qlGkum04E1RkMrfSVmOryVGXFEDM8SC3OuAdvhoJRpzFpZu1S36XEin9weDzkQ' 
-        });
-
-        if (token) {
-            console.log("FCMトークン取得成功:", token);
-            
-            // 3. Firestoreの 'subscriptions' コレクションに保存
-            // トークン自体をドキュメントIDにすることで、重複登録を防ぎます
-            const { setDoc, doc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-            await setDoc(doc(db, "subscriptions", token), {
-                user_id: uid,
-                fcm_token: token,
-                last_updated: serverTimestamp(),
-                device_type: navigator.userAgent.includes("iPhone") ? "iPhone" : "Browser"
-            });
-            console.log("Firestoreにトークンを保存しました");
-        }
-    } catch (error) {
-        console.error("通知設定中にエラーが発生:", error);
-    }
-}
-        
+        // 通知設定
+        window.togglePush = async () => {
+            try {
+                // VAPIDキーをここに貼り付けてください（Firebaseコンソールから取得）
+                const vapidKey = "YOUR_PUBLIC_VAPID_KEY_HERE";
+                const token = await getToken(messaging, { vapidKey });
+                
+                if (token) {
+                    await addDoc(collection(db, "subscriptions"), {
+                        user_id: currentUser.uid,
+                        fcm_token: token,
+                        updated_at: serverTimestamp()
+                    });
+                    document.getElementById('push-status').innerText = "通知はオンです";
+                    alert("通知設定を保存しました");
+                }
+            } catch (err) {
+                console.error("通知エラー:", err);
+                alert("通知を許可してください");
+            }
+        };
     </script>
-</head>
-<body>
-    <button onclick="logout()">ログアウト</button>
-    <input type="text" id="keyword-input"><button onclick="addKeyword()">追加</button>
-    <ul id="keywords-list"></ul>
-    <div id="latest-analysis"></div>
 </body>
 </html>
