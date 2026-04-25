@@ -56,11 +56,10 @@
   </div>
 
   <script type="module">
-    // Firebase SDKの読み込み
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    // あなたのFirebaseプロジェクトの設定（プロジェクト設定 > マイアプリ からコピーして貼り付けます）
+    // あなたのFirebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
     authDomain: "user-cd2c1.firebaseapp.com",
@@ -71,12 +70,11 @@
     measurementId: "G-30QNZ04PDZ"
   };
 
-    // Firebaseの初期化
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    // 1. Googleログイン実行
+    // 1. Googleログイン実行（ポップアップが開きます）
     window.signInWithGoogle = () => {
         signInWithPopup(auth, provider).catch((error) => {
             console.error("ログインエラー:", error.message);
@@ -84,34 +82,14 @@
         });
     };
 
-    // 2. ログアウト実行
-    window.signOutUser = () => {
-        signOut(auth).catch((error) => console.error("ログアウトエラー:", error));
-    };
-
-    // 3. 認証状態の監視
+    // 2. 認証状態の監視（ログイン成功したら自動で移動する）
     onAuthStateChanged(auth, (user) => {
-        const loggedOutUI = document.getElementById('logged-out-ui');
-        const loggedInUI = document.getElementById('logged-in-ui');
-        const mainContent = document.getElementById('main-content');
-        const userEmailSpan = document.getElementById('user-email');
-
         if (user) {
-            console.log("状態: ログイン中", user.email);
-            loggedOutUI.style.display = 'none';
-            loggedInUI.style.display = 'block';
-            mainContent.style.display = 'block';
-            userEmailSpan.innerText = user.email;
-            
-            // ログイン後のデータ読み込み処理をここに書く
-            // loadKeywords();
-        } else {
-            console.log("状態: 未ログイン");
-            loggedOutUI.style.display = 'block';
-            loggedInUI.style.display = 'none';
-            mainContent.style.display = 'none';
+            console.log("ログイン成功！main.htmlへ移動します");
+            window.location.href = "main.html"; // ←ここでページ遷移！
         }
     });
 </script>
+  
 </body>
 </html>
