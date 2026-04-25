@@ -498,7 +498,62 @@
       }
     });
   }
+// ---------------------------------------------------------
+  // 7. プッシュ通知のON/OFFスイッチ連動処理（ここを追記！）
+  // ---------------------------------------------------------
+  const pushSwitch = document.getElementById('push-switch');
+  const statusText = document.getElementById('status-text');
 
+  pushSwitch.addEventListener('change', async (e) => {
+    if (!currentUser) {
+      alert("ログインしてから操作してください。");
+      e.target.checked = false;
+      return;
+    }
+
+    if (e.target.checked) {
+      statusText.innerText = "通知を許可してトークンを取得中...";
+      try {
+        // ブラウザの通知許可ダイアログを表示
+        const permission = await Notification.requestPermission();
+        
+        if (permission === 'granted') {
+          // FCMトークンの取得
+          // 【重要】vapidKey はFirebaseコンソール(Cloud Messaging設定)で生成したWebプッシュ証明書の鍵に書き換えてください
+          const currentToken = await getToken(messaging, { 
+            vapidKey: 'ここに_VAPIDキー_を貼り付けます' 
+          });
+
+          if (currentToken) {
+            console.log('FCMトークン取得:', currentToken);
+            
+            // Python(monitor.py)が探しに来る「subscriptions」コレクションに保存する
+            await addDoc(collection(db, 'subscriptions'), {
+              user_id: currentUser.uid,   // monitor.pyの "user_id" == user_id に対応
+              fcm_token: currentToken,    // monitor.pyの sub_doc.to_dict().get("fcm_token") に対応
+              created_at: serverTimestamp()
+            });
+            
+            statusText.innerText = "通知設定：ON (準備完了)";
+          } else {
+            statusText.innerText = "トークンを取得できませんでした";
+            e.target.checked = false;
+          }
+        } else {
+          statusText.innerText = "ブラウザの通知がブロックされています";
+          e.target.checked = false;
+        }
+      } catch (err) {
+        console.error('トークン取得エラー:', err);
+        statusText.innerText = "エラーが発生しました";
+        e.target.checked = false;
+      }
+    } else {
+      // スイッチをOFFにした場合のUI表示
+      statusText.innerText = "通知設定：OFF";
+      // ※本格的に運用する場合は、ここでFirestoreから該当トークンを削除する処理を追加することをおすすめします。
+    }
+  });
 </script>
 </body>
 </html>
