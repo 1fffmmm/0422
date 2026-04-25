@@ -6,7 +6,6 @@ from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload
 
 # ファイル1から関数をインポート
-from notifier import check_keywords_and_notify
 
 def get_drive_text():
     """
