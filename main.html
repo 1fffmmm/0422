@@ -417,9 +417,15 @@
 
   let currentUser = null;
 
-  // --- 追加：Googleログイン関数 ---
+// --- 追加：Googleログイン関数 ---
   window.signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
+    
+    // 💡 常にアカウント選択画面を出す設定
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+
     try {
       await signInWithPopup(auth, provider);
     } catch (error) {
