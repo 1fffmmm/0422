@@ -385,7 +385,9 @@
   import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 　// ※FCM（プッシュ通知）の設定を行っていない場合は一旦エラーを防ぐためコメントアウト等で対応も可能です
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
-
+// 追加で getDoc をインポートに加える
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    
   const firebaseConfig = {
     apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
     authDomain: "user-cd2c1.firebaseapp.com",
@@ -426,25 +428,50 @@
 
   let currentUser = null;
 
-  // 1. 認証状態の監視 (ここがループ解消の鍵です)
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // ログインしている場合の処理
-      currentUser = user;
+  // 1. 認証状態の監視
+onAuthStateChanged(auth, async (user) => { // async を追加
+  if (user) {
+    currentUser = user;
       
-      // ログイン・ログアウトUIの切り替え
-      document.getElementById('logged-out-ui').style.display = 'none';
-      document.getElementById('logged-in-ui').style.display = 'block';
-      document.getElementById('user-email').innerText = user.email;
-      document.getElementById('main-content').style.display = 'block';
+     // ログイン・ログアウトUIの切り替え
+    document.getElementById('logged-out-ui').style.display = 'none';
+    document.getElementById('logged-in-ui').style.display = 'block';
+    document.getElementById('user-email').innerText = user.email;
+    document.getElementById('main-content').style.display = 'block';
 
-      // データの読み込み
-      loadKeywords();
-      loadLatestAnalysis();
+    // ★ ここに「現在の通知設定状況を確認する処理」を追加
+    checkPushSubscription(user.uid);
+
+    loadKeywords();
+    loadLatestAnalysis();
+  } else {
+    window.location.href = 'index.html';
+  }
+});
+
+// ★ 追加：DBを確認してスイッチの状態を復元する関数
+async function checkPushSubscription(uid) {
+  const pushSwitch = document.getElementById('push-switch');
+  const statusText = document.getElementById('status-text');
+  
+  try {
+    const docRef = doc(db, 'subscriptions', uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      // DBにデータがあればスイッチをONにする
+      pushSwitch.checked = true;
+      statusText.innerText = "通知設定：ON (準備完了)";
     } else {
-      // ログインしていなければ index.html に強制送還
-      window.location.href = 'index.html';
+      // データがなければOFF（デフォルト）
+      pushSwitch.checked = false;
+      statusText.innerText = "通知設定：OFF";
     }
+  } catch (error) {
+    console.error("通知状態の確認に失敗:", error);
+    statusText.innerText = "状態の取得に失敗しました";
+  }
+}
   });
 
   // 2. ログアウト処理
