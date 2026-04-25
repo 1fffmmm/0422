@@ -55,11 +55,11 @@
       </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    // あなたのFirebase Config
+  // 提供いただいたFirebase設定
   const firebaseConfig = {
     apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
     authDomain: "user-cd2c1.firebaseapp.com",
@@ -70,26 +70,35 @@
     measurementId: "G-30QNZ04PDZ"
   };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
 
-    // 1. Googleログイン実行（ポップアップが開きます）
-    window.signInWithGoogle = () => {
-        signInWithPopup(auth, provider).catch((error) => {
-            console.error("ログインエラー:", error.message);
-            alert("ログインに失敗しました: " + error.message);
-        });
-    };
+  // すでにログイン済みなら main.html へリダイレクト
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      window.location.href = 'main.html';
+    }
+  });
 
-    // 2. 認証状態の監視（ログイン成功したら自動で移動する）
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            console.log("ログイン成功！main.htmlへ移動します");
-            window.location.href = "main.html"; // ←ここでページ遷移！
-        }
-    });
+  // グローバル関数としてGoogleログインを定義（HTMLのonclickで呼び出せるようにする）
+  window.signInWithGoogle = async () => {
+    // 既存のUI要素に合わせてIDを取得
+    const btn = document.querySelector('button[onclick="signInWithGoogle()"]');
+    const status = document.getElementById('login-status') || document.createElement('div');
+    
+    if(btn) btn.disabled = true;
+    status.textContent = 'ログイン中…';
+
+    try {
+      await signInWithPopup(auth, provider);
+      // 成功時は onAuthStateChanged が発火し遷移します
+    } catch (error) {
+      console.error("ログインエラー:", error);
+      status.textContent = 'ログインに失敗しました: ' + error.message;
+      if(btn) btn.disabled = false;
+    }
+  };
 </script>
-  
 </body>
 </html>
