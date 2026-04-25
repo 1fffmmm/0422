@@ -72,31 +72,21 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-
-  // すでにログイン済みなら main.html へリダイレクト
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      window.location.href = 'main.html';
-    }
+const provider = new GoogleAuthProvider();
+  
+  // ★追加: 毎回Googleアカウントの選択画面を強制的に表示させる設定
+  provider.setCustomParameters({
+    prompt: 'select_account'
   });
 
-  // グローバル関数としてGoogleログインを定義（HTMLのonclickで呼び出せるようにする）
+  // グローバル関数としてGoogleログインを定義
   window.signInWithGoogle = async () => {
-    // 既存のUI要素に合わせてIDを取得
-    const btn = document.querySelector('button[onclick="signInWithGoogle()"]');
-    const status = document.getElementById('login-status') || document.createElement('div');
-    
-    if(btn) btn.disabled = true;
-    status.textContent = 'ログイン中…';
-
     try {
       await signInWithPopup(auth, provider);
-      // 成功時は onAuthStateChanged が発火し遷移します
+      // ※ログイン成功後の画面遷移は、すぐ上にある onAuthStateChanged が自動で行います
     } catch (error) {
       console.error("ログインエラー:", error);
-      status.textContent = 'ログインに失敗しました: ' + error.message;
-      if(btn) btn.disabled = false;
+      alert("ログインに失敗しました。もう一度お試しください。");
     }
   };
 </script>
