@@ -387,22 +387,27 @@
 
   let currentUser = null;
 
-// --- 追加：Googleログイン関数 ---
-  window.signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    
-    // 💡 常にアカウント選択画面を出す設定
-    provider.setCustomParameters({
-      prompt: 'select_account'
-    });
+// --- Googleログイン関数 ---
+window.signInWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+  
+  // 💡 ここが重要：常にアカウント選択画面を出す設定
+  provider.setCustomParameters({
+    prompt: 'select_account'
+  });
 
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("ログインエラー:", error);
+  try {
+    // signInWithPopup を使用してログインを実行
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    console.error("ログインエラー:", error);
+    // ユーザーがポップアップを閉じた場合などのエラーハンドリング
+    if (error.code !== 'auth/cancelled-popup-request') {
       alert("ログインに失敗しました: " + error.message);
     }
-  };
+  }
+};
+    
 
   // 1. 認証状態の監視
   onAuthStateChanged(auth, async (user) => {
