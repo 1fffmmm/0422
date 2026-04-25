@@ -315,22 +315,7 @@
         </div>
     </div>
 
-    <script>
-        function setTheme(theme) {
-            const root = document.documentElement;
-            root.setAttribute('data-theme', theme === 'warm' ? '' : theme);
-            ['warm','cool','mono'].forEach(t => {
-                document.getElementById('btn-' + t).classList.toggle('active', t === theme);
-            });
-            localStorage.setItem('color-theme', theme);
-        }
-        (function() {
-            const saved = localStorage.getItem('color-theme') || 'warm';
-            if (saved !== 'warm') setTheme(saved);
-        })();
-    </script>
-
-<script type="module">
+ <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -367,9 +352,10 @@
 
   let currentUser = null;
 
+  // Googleログイン（アカウント選択を強制）
   window.signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
+    provider.setCustomParameters({ prompt: 'select_account' }); // 【課題2解決】
     try {
       await signInWithPopup(auth, provider);
     } catch (error) {
@@ -380,6 +366,7 @@
     }
   };
 
+  // 認証状態の監視
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser = user;
@@ -392,12 +379,12 @@
       loadKeywords();
       loadLatestAnalysis();
     } else {
-      document.getElementById('logged-out-ui').style.display = 'block';
-      document.getElementById('logged-in-ui').style.display = 'none';
-      document.getElementById('main-content').style.display = 'none';
+      // 【課題1解決】未ログイン状態なら index.html へ戻す
+      window.location.href = 'index.html';
     }
   });
 
+  // 通知購読状態の確認
   async function checkPushSubscription(uid) {
     const pushSwitch = document.getElementById('push-switch');
     const statusText = document.getElementById('status-text');
@@ -416,22 +403,31 @@
     }
   }
 
+  // 【課題1・4解決】ログアウト処理
   window.signOut = async () => {
     try {
+      if (currentUser) {
+        // ログアウト前にFirestoreからトークン情報を削除して整理する
+        await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
+        console.log("通知トークンを削除しました");
+      }
+      // Firebaseからサインアウト
       await firebaseSignOut(auth);
+      // リダイレクトは onAuthStateChanged 側でも行われますが、念のため
       window.location.href = 'index.html';
     } catch (error) {
-      alert("ログアウトエラー: " + error.message);
+      console.error("ログアウトエラー:", error);
+      alert("ログアウト中にエラーが発生しました。");
     }
   };
 
-function loadKeywords() {
-    if (!currentUser) return; // ユーザーがいない場合は実行しない
+  // キーワード読み込み（自分のデータのみ）
+  function loadKeywords() {
+    if (!currentUser) return;
 
-    // 修正：where 句を追加して自分のキーワードのみに絞り込む
     const q = query(
         collection(db, 'keywords'),
-        where('user_id', '==', currentUser.uid), // ここが重要
+        where('user_id', '==', currentUser.uid),
         orderBy('createdAt', 'desc')
     );
 
@@ -446,8 +442,7 @@ function loadKeywords() {
             list.appendChild(el);
         });
     });
-}
-    
+  }
 
   window.addKeyword = async () => {
     const input = document.getElementById('keyword-input');
@@ -489,6 +484,7 @@ function loadKeywords() {
     });
   }
 
+  // 通知スイッチの切り替え
   const pushSwitch = document.getElementById('push-switch');
   const statusText = document.getElementById('status-text');
 
@@ -503,6 +499,7 @@ function loadKeywords() {
             vapidKey: 'BFfTYmGpeE2ts6TGdboKiHvX7qlGkum04E1RkMrfSVmOryVGXFEDM8SC3OuAdvhoJRpzFpZu1S36XEin9weDzkQ' 
           });
           if (currentToken) {
+            // ドキュメントIDをUIDにすることで、1ユーザー1トークンに制限
             await setDoc(doc(db, 'subscriptions', currentUser.uid), {
               user_id: currentUser.uid,
               fcm_token: currentToken,
