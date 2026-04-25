@@ -333,7 +333,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
   const firebaseConfig = {
@@ -425,20 +425,29 @@
     }
   };
 
-  function loadKeywords() {
-    const q = query(collection(db, 'keywords'), orderBy('createdAt', 'desc'));
+function loadKeywords() {
+    if (!currentUser) return; // ユーザーがいない場合は実行しない
+
+    // 修正：where 句を追加して自分のキーワードのみに絞り込む
+    const q = query(
+        collection(db, 'keywords'),
+        where('user_id', '==', currentUser.uid), // ここが重要
+        orderBy('createdAt', 'desc')
+    );
+
     onSnapshot(q, (snapshot) => {
-      const list = document.getElementById('keywords-list');
-      list.innerHTML = '';
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const el = document.createElement('div');
-        el.className = 'keyword-tag';
-        el.innerHTML = `${data.keyword} <button class="btn-del" onclick="deleteKeyword('${docSnap.id}')">×</button>`;
-        list.appendChild(el);
-      });
+        const list = document.getElementById('keywords-list');
+        list.innerHTML = '';
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const el = document.createElement('div');
+            el.className = 'keyword-tag';
+            el.innerHTML = `${data.keyword} <button class="btn-del" onclick="deleteKeyword('${docSnap.id}')">×</button>`;
+            list.appendChild(el);
+        });
     });
-  }
+}
+    
 
   window.addKeyword = async () => {
     const input = document.getElementById('keyword-input');
