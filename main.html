@@ -60,11 +60,11 @@
             background: var(--card);
             border-radius: 24px;
             padding: 24px;
-            box-shadow: var(--shadow);
+            box-shadow: none;
             border: 1px solid var(--border);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+        .card:hover { transform: translateY(-2px); box-shadow: none; }
 
         .card-header {
             display: flex;
@@ -233,7 +233,7 @@
             <div id="status-text" class="status">状態を確認中…</div>
         </div>
 
-        <div id="main-content" style="display: none;">
+        <div id="main-content" style="display: none; flex-direction: column; gap: var(--gap-main);">
             
             <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="btn-insta">
                 Instagramストーリーを開く
@@ -387,7 +387,7 @@ window.signInWithGoogle = async () => {
       document.getElementById('logged-out-ui').style.display = 'none';
       document.getElementById('logged-in-ui').style.display = 'block';
       document.getElementById('user-email').innerText = user.email;
-      document.getElementById('main-content').style.display = 'block';
+      document.getElementById('main-content').style.display = 'flex';
 
       // 前回の修正：通知状況のチェック
       checkPushSubscription(user.uid);
