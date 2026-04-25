@@ -381,13 +381,11 @@
   
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-　// ※FCM（プッシュ通知）の設定を行っていない場合は一旦エラーを防ぐためコメントアウト等で対応も可能です
+  // GoogleAuthProvider と signInWithPopup を追加
+  import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
-// 追加で getDoc をインポートに加える
-import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    
+
   const firebaseConfig = {
     apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
     authDomain: "user-cd2c1.firebaseapp.com",
@@ -402,89 +400,85 @@ import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, or
   const auth = getAuth(app);
   const db = getFirestore(app);
   let messaging;
+  
   try {
       messaging = getMessaging(app);
-
-      // --- ここから追加 ---
-      // アプリ（main.html）を開いている時に通知が届いた場合の処理
       onMessage(messaging, (payload) => {
-        console.log('フォアグラウンドで通知を受信:', payload);
-
-        // 方法B: ブラウザの通知として表示させる（許可が必要）
         if (Notification.permission === 'granted') {
           new Notification(payload.notification.title, {
             body: payload.notification.body,
-            icon: '/icon-192.png' // 必要に応じてアイコンを指定
+            icon: '/icon-192.png'
           });
         }
       });
-      // --- ここまで追加 ---
-
   } catch(e) {
       console.log("通知機能が現在無効です", e);
   }
 
-    
-
   let currentUser = null;
 
-  // 1. 認証状態の監視
-onAuthStateChanged(auth, async (user) => { // async を追加
-  if (user) {
-    currentUser = user;
-      
-     // ログイン・ログアウトUIの切り替え
-    document.getElementById('logged-out-ui').style.display = 'none';
-    document.getElementById('logged-in-ui').style.display = 'block';
-    document.getElementById('user-email').innerText = user.email;
-    document.getElementById('main-content').style.display = 'block';
-
-    // ★ ここに「現在の通知設定状況を確認する処理」を追加
-    checkPushSubscription(user.uid);
-
-    loadKeywords();
-    loadLatestAnalysis();
-  } else {
-    window.location.href = 'index.html';
-  }
-});
-
-// ★ 追加：DBを確認してスイッチの状態を復元する関数
-async function checkPushSubscription(uid) {
-  const pushSwitch = document.getElementById('push-switch');
-  const statusText = document.getElementById('status-text');
-  
-  try {
-    const docRef = doc(db, 'subscriptions', uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      // DBにデータがあればスイッチをONにする
-      pushSwitch.checked = true;
-      statusText.innerText = "通知設定：ON (準備完了)";
-    } else {
-      // データがなければOFF（デフォルト）
-      pushSwitch.checked = false;
-      statusText.innerText = "通知設定：OFF";
+  // --- 追加：Googleログイン関数 ---
+  window.signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("ログインエラー:", error);
+      alert("ログインに失敗しました: " + error.message);
     }
-  } catch (error) {
-    console.error("通知状態の確認に失敗:", error);
-    statusText.innerText = "状態の取得に失敗しました";
-  }
-}
+  };
+
+  // 1. 認証状態の監視
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      document.getElementById('logged-out-ui').style.display = 'none';
+      document.getElementById('logged-in-ui').style.display = 'block';
+      document.getElementById('user-email').innerText = user.email;
+      document.getElementById('main-content').style.display = 'block';
+
+      // 前回の修正：通知状況のチェック
+      checkPushSubscription(user.uid);
+      loadKeywords();
+      loadLatestAnalysis();
+    } else {
+      // ログインしていない場合
+      document.getElementById('logged-out-ui').style.display = 'block';
+      document.getElementById('logged-in-ui').style.display = 'none';
+      document.getElementById('main-content').style.display = 'none';
+    }
   });
+
+  // 通知設定の復元
+  async function checkPushSubscription(uid) {
+    const pushSwitch = document.getElementById('push-switch');
+    const statusText = document.getElementById('status-text');
+    try {
+      const docRef = doc(db, 'subscriptions', uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        pushSwitch.checked = true;
+        statusText.innerText = "通知設定：ON (準備完了)";
+      } else {
+        pushSwitch.checked = false;
+        statusText.innerText = "通知設定：OFF";
+      }
+    } catch (error) {
+      console.error("通知状態の確認失敗:", error);
+    }
+  }
 
   // 2. ログアウト処理
   window.signOut = async () => {
     try {
       await firebaseSignOut(auth);
-      // onAuthStateChanged が発火し、自動的に index.html へ戻ります
+      location.reload(); // 状態をリセットするためにリロード
     } catch (error) {
       alert("ログアウトエラー: " + error.message);
     }
   };
 
-  // 3. キーワードの読み込み (Firestore)
+  // 3. キーワードの読み込み
   function loadKeywords() {
     const q = query(collection(db, 'keywords'), orderBy('createdAt', 'desc'));
     onSnapshot(q, (snapshot) => {
@@ -504,17 +498,16 @@ async function checkPushSubscription(uid) {
   window.addKeyword = async () => {
     const input = document.getElementById('keyword-input');
     const kw = input.value.trim();
-    if (!kw) return;
-
+    if (!kw || !currentUser) return;
     try {
       await addDoc(collection(db, 'keywords'), {
         keyword: kw,
-        user_id: currentUser.uid, // ★ここを user_id に
+        user_id: currentUser.uid,
         createdAt: serverTimestamp()
       });
       input.value = '';
     } catch (error) {
-      alert("追加に失敗しました: " + error.message);
+      alert("追加に失敗しました");
     }
   };
 
@@ -523,7 +516,7 @@ async function checkPushSubscription(uid) {
     try {
       await deleteDoc(doc(db, 'keywords', id));
     } catch (error) {
-      alert("削除に失敗しました: " + error.message);
+      alert("削除に失敗しました");
     }
   };
 
@@ -543,68 +536,43 @@ async function checkPushSubscription(uid) {
       }
     });
   }
-// ---------------------------------------------------------
-  // 7. プッシュ通知のON/OFFスイッチ連動処理（ここを追記！）
-  // ---------------------------------------------------------
+
+  // 7. プッシュ通知のスイッチ
   const pushSwitch = document.getElementById('push-switch');
   const statusText = document.getElementById('status-text');
 
   pushSwitch.addEventListener('change', async (e) => {
-    if (!currentUser) {
-      alert("ログインしてから操作してください。");
-      e.target.checked = false;
-      return;
-    }
-
+    if (!currentUser) return;
     if (e.target.checked) {
-      statusText.innerText = "通知を許可してトークンを取得中...";
+      statusText.innerText = "設定中...";
       try {
-        // ブラウザの通知許可ダイアログを表示
         const permission = await Notification.requestPermission();
-        
         if (permission === 'granted') {
-          // FCMトークンの取得
-          // 【重要】vapidKey はFirebaseコンソール(Cloud Messaging設定)で生成したWebプッシュ証明書の鍵に書き換えてください
           const currentToken = await getToken(messaging, { 
             vapidKey: 'BFfTYmGpeE2ts6TGdboKiHvX7qlGkum04E1RkMrfSVmOryVGXFEDM8SC3OuAdvhoJRpzFpZu1S36XEin9weDzkQ' 
           });
-
           if (currentToken) {
-            console.log('FCMトークン取得:', currentToken);
-            
-            // Python(monitor.py)が探しに来る「subscriptions」コレクションに保存する
-            // ユーザーUIDをドキュメントIDとして指定し、常に1つのドキュメントを更新する
             await setDoc(doc(db, 'subscriptions', currentUser.uid), {
               user_id: currentUser.uid,
               fcm_token: currentToken,
-              updated_at: serverTimestamp() // 何度も更新されるため created_at より updated_at が自然です
-            }, { merge: true }); // merge: true をつけると、既存の他のデータがあれば消さずに結合します
-
-              
-            
+              updated_at: serverTimestamp()
+            }, { merge: true });
             statusText.innerText = "通知設定：ON (準備完了)";
-          } else {
-            statusText.innerText = "トークンを取得できませんでした";
-            e.target.checked = false;
           }
         } else {
-          statusText.innerText = "ブラウザの通知がブロックされています";
+          statusText.innerText = "通知がブロックされています";
           e.target.checked = false;
         }
       } catch (err) {
-        console.error('トークン取得エラー:', err);
         statusText.innerText = "エラーが発生しました";
         e.target.checked = false;
       }
     } else {
-      // スイッチをOFFにした場合の処理
       try {
-        // ユーザーUIDを指定してドキュメントを削除
         await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
         statusText.innerText = "通知設定：OFF";
       } catch (err) {
-        console.error('トークン削除エラー:', err);
-        statusText.innerText = "エラーが発生しました";
+        console.error(err);
       }
     }
   });
