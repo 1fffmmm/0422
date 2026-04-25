@@ -379,11 +379,13 @@
 </div>
 
   
-    <script type="module">
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  // ※FCM（プッシュ通知）の設定を行っていない場合は一旦エラーを防ぐためコメントアウト等で対応も可能です
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
-  // 提供いただいたFirebase設定
   const firebaseConfig = {
     apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
     authDomain: "user-cd2c1.firebaseapp.com",
@@ -396,33 +398,107 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
+  const db = getFirestore(app);
+  let messaging;
+  try {
+      messaging = getMessaging(app);
+  } catch(e) {
+      console.log("通知機能が現在無効です", e);
+  }
 
-  // すでにログイン済みなら main.html へリダイレクト
+  let currentUser = null;
+
+  // 1. 認証状態の監視 (ここがループ解消の鍵です)
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      window.location.href = 'main.html';
+      // ログインしている場合の処理
+      currentUser = user;
+      
+      // ログイン・ログアウトUIの切り替え
+      document.getElementById('logged-out-ui').style.display = 'none';
+      document.getElementById('logged-in-ui').style.display = 'block';
+      document.getElementById('user-email').innerText = user.email;
+      document.getElementById('main-content').style.display = 'block';
+
+      // データの読み込み
+      loadKeywords();
+      loadLatestAnalysis();
+    } else {
+      // ログインしていなければ index.html に強制送還
+      window.location.href = 'index.html';
     }
   });
 
-  // グローバル関数としてGoogleログインを定義（HTMLのonclickで呼び出せるようにする）
-  window.signInWithGoogle = async () => {
-    // 既存のUI要素に合わせてIDを取得
-    const btn = document.querySelector('button[onclick="signInWithGoogle()"]');
-    const status = document.getElementById('login-status') || document.createElement('div');
-    
-    if(btn) btn.disabled = true;
-    status.textContent = 'ログイン中…';
-
+  // 2. ログアウト処理
+  window.signOut = async () => {
     try {
-      await signInWithPopup(auth, provider);
-      // 成功時は onAuthStateChanged が発火し遷移します
+      await firebaseSignOut(auth);
+      // onAuthStateChanged が発火し、自動的に index.html へ戻ります
     } catch (error) {
-      console.error("ログインエラー:", error);
-      status.textContent = 'ログインに失敗しました: ' + error.message;
-      if(btn) btn.disabled = false;
+      alert("ログアウトエラー: " + error.message);
     }
   };
+
+  // 3. キーワードの読み込み (Firestore)
+  function loadKeywords() {
+    const q = query(collection(db, 'keywords'), orderBy('createdAt', 'desc'));
+    onSnapshot(q, (snapshot) => {
+      const list = document.getElementById('keywords-list');
+      list.innerHTML = '';
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const el = document.createElement('div');
+        el.className = 'keyword-tag';
+        el.innerHTML = `${data.keyword} <button class="btn-del" onclick="deleteKeyword('${docSnap.id}')">×</button>`;
+        list.appendChild(el);
+      });
+    });
+  }
+
+  // 4. キーワードの追加
+  window.addKeyword = async () => {
+    const input = document.getElementById('keyword-input');
+    const kw = input.value.trim();
+    if (!kw) return;
+
+    try {
+      await addDoc(collection(db, 'keywords'), {
+        keyword: kw,
+        userId: currentUser.uid,
+        createdAt: serverTimestamp()
+      });
+      input.value = '';
+    } catch (error) {
+      alert("追加に失敗しました: " + error.message);
+    }
+  };
+
+  // 5. キーワードの削除
+  window.deleteKeyword = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'keywords', id));
+    } catch (error) {
+      alert("削除に失敗しました: " + error.message);
+    }
+  };
+
+  // 6. 最新解析結果の読み込み
+  function loadLatestAnalysis() {
+    const q = query(collection(db, 'analysis_logs'), orderBy('updated_at', 'desc'), limit(1));
+    onSnapshot(q, (snapshot) => {
+      const latestEl = document.getElementById('latest-analysis');
+      const timeEl = document.getElementById('update-time');
+      if (!snapshot.empty) {
+        const data = snapshot.docs[0].data();
+        latestEl.innerText = data.content;
+        const date = data.updated_at ? data.updated_at.toDate() : new Date();
+        timeEl.innerText = "最終更新: " + date.toLocaleString('ja-JP');
+      } else {
+        latestEl.innerText = "データがありません";
+      }
+    });
+  }
+
 </script>
 </body>
 </html>
