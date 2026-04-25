@@ -72,7 +72,7 @@ def check_keywords_and_notify(drive_text):
     try:
         db.collection("analysis_logs").add({
             "content": drive_text,
-            "created_at": firestore.SERVER_TIMESTAMP
+            "updated_at": firestore.SERVER_TIMESTAMP  # ★修正1: created_at から updated_at に変更
         })
         print("最新ログをFirestoreに保存しました。")
     except Exception as log_err:
@@ -89,8 +89,10 @@ def check_keywords_and_notify(drive_text):
     # マッチング処理
     user_matches = {}
     for item in keywords_data:
-        word = item.get('word')
-        user_id = item.get('user_id')
+        # ★修正2: HTML側のデータ構造(keyword, userId)に合わせる
+        word = item.get('keyword') 
+        user_id = item.get('userId') 
+        
         if word and user_id and word in drive_text:
             if user_id not in user_matches:
                 user_matches[user_id] = []
@@ -106,6 +108,8 @@ def check_keywords_and_notify(drive_text):
     for user_id, matched_words in user_matches.items():
         try:
             # 該当ユーザーのプッシュ通知トークンを取得
+            # ★修正3: user_id はPython側の変数なのでそのまま。Firestoreのフィールド名は 'user_id' (main.htmlの保存形式に依存)
+            # ※main.htmlで subscriptions に保存する際、 user_id: currentUser.uid としていればここは "user_id" でOKです。
             subs_ref = db.collection("subscriptions").where("user_id", "==", user_id).stream()
             
             send_count = 0
@@ -136,9 +140,4 @@ def check_keywords_and_notify(drive_text):
             print(f"通知処理中の予期せぬエラー: ユーザー {user_id}, エラー: {e}")
             
     print("--- 3. 全ての処理が終了しました ---")
-
-if __name__ == "__main__":
-    print("プログラムを起動しました。")
-    text = get_drive_text()
-    if text:
-        check_keywords_and_notify(text)
+    
