@@ -402,9 +402,27 @@
   let messaging;
   try {
       messaging = getMessaging(app);
+
+      // --- ここから追加 ---
+      // アプリ（main.html）を開いている時に通知が届いた場合の処理
+      onMessage(messaging, (payload) => {
+        console.log('フォアグラウンドで通知を受信:', payload);
+
+        // 方法B: ブラウザの通知として表示させる（許可が必要）
+        if (Notification.permission === 'granted') {
+          new Notification(payload.notification.title, {
+            body: payload.notification.body,
+            icon: '/icon-192.png' // 必要に応じてアイコンを指定
+          });
+        }
+      });
+      // --- ここまで追加 ---
+
   } catch(e) {
       console.log("通知機能が現在無効です", e);
   }
+
+    
 
   let currentUser = null;
 
