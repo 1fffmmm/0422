@@ -4,7 +4,7 @@ on:
   schedule:
     # 毎日 日本時間 23:00 に実行 (UTCでは14:00)
     - cron: '0 14 * * *'
-  workflow_dispatch: # 手動実行のボタンは残しておきます
+  workflow_dispatch: # 手動実行ボタン
 
 jobs:
   monitor:
@@ -21,13 +21,15 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install google-api-python-client google-auth pywebpush supabase
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run monitor script
         env:
+          # Google Drive用 (既存)
           GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           DRIVE_FILE_ID: ${{ secrets.DRIVE_FILE_ID }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}  # ← これを追加！
-        run: python main.py
+          # Firebase用 (新規)
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: python monitor.py
+        
