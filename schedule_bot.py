@@ -6,54 +6,53 @@ async def get_tomorrow_schedule():
     async with async_playwright() as p:
         now = datetime.now()
         tomorrow = now + timedelta(days=1)
-        
         url_ym = tomorrow.strftime("%Y%m")
-        # 2パターンの日付形式を用意 (04.26 と 4.26)
         search_date_full = tomorrow.strftime("%m.%d")
         search_date_short = f"{tomorrow.month}.{tomorrow.day}"
         
         print(f"=== 実行ログ開始: {now.strftime('%Y-%m-%d %H:%M:%S')} ===")
         
+        # ブラウザの起動（偽装設定を追加）
         browser = await p.chromium.launch(headless=True)
-        # 画面サイズを大きめに設定（要素が隠れないようにするため）
-        page = await browser.new_page(viewport={'width': 1280, 'height': 800})
+        context = await browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
+        page = await context.new_page()
         
         url = f"https://jr-official.starto.jp/s/jr/media/list?dy={url_ym}"
         print(f"アクセス中: {url}")
         
-        # ページ遷移
-        await page.goto(url, wait_until="networkidle")
-        
-        # --- 重要：データが読み込まれるまで待機 ---
-        # スケジュールの枠組み（.p-media-list__item）が表示されるまで最大10秒待つ
+        # タイムアウトを長めに設定し、ネットワークが落ち着くまで待つ
         try:
-            await page.wait_for_selector(".p-media-list__item", timeout=10000)
-            print("[INFO] スケジュール要素の読み込みを確認しました。")
-        except:
-            print("[ERROR] タイムアウト：スケジュールが見つかりません。")
-            # ページ全体のテキストをデバッグ用に少し出す
-            body_text = await page.inner_text("body")
-            print(f"ページ冒頭テキスト: {body_text[:100]}...")
+            await page.goto(url, wait_until="load", timeout=60000)
+            
+            # 少し待機（JavaScriptが完全に実行されるのを待つ）
+            await page.wait_for_timeout(5000) 
+            
+            # .p-media-list__item が出るまで、あるいは body 全体がロードされるまで待つ
+            await page.wait_for_selector(".p-media-list__item", timeout=20000)
+            print("[INFO] スケジュール要素を確認しました。")
+            
+        except Exception as e:
+            print(f"[ERROR] 読み込みに失敗しました。")
+            # 失敗した時のページタイトルを確認
+            title = await page.title()
+            print(f"現在のページタイトル: {title}")
             await browser.close()
             return
 
-        # アイテムを全取得
         items = await page.query_selector_all(".p-media-list__item")
         print(f"ページ内の項目数: {len(items)} 件をスキャン中...\n")
         
         tomorrow_schedules = []
-        
         for item in items:
             text = await item.inner_text()
             clean_text = " ".join(text.split())
-            
-            # 両方の形式でチェック
             if (search_date_full in text) or (search_date_short in text):
-                print(f"  → ★一致確認: {clean_text[:30]}...")
+                print(f"  → ★一致確認: {clean_text[:50]}...")
                 tomorrow_schedules.append(clean_text)
 
         print(f"\n--- 【最終抽出結果: {tomorrow.strftime('%Y年%m月%d日')}】 ---")
-        
         if tomorrow_schedules:
             for i, sch in enumerate(tomorrow_schedules, 1):
                 print(f"【案件 {i}】\n内容: {sch}\n" + "-"*30)
