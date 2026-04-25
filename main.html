@@ -382,8 +382,8 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-  // ※FCM（プッシュ通知）の設定を行っていない場合は一旦エラーを防ぐためコメントアウト等で対応も可能です
+  import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+　// ※FCM（プッシュ通知）の設定を行っていない場合は一旦エラーを防ぐためコメントアウト等で対応も可能です
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
   const firebaseConfig = {
@@ -528,11 +528,14 @@
             console.log('FCMトークン取得:', currentToken);
             
             // Python(monitor.py)が探しに来る「subscriptions」コレクションに保存する
-            await addDoc(collection(db, 'subscriptions'), {
-              user_id: currentUser.uid,   // monitor.pyの "user_id" == user_id に対応
-              fcm_token: currentToken,    // monitor.pyの sub_doc.to_dict().get("fcm_token") に対応
-              created_at: serverTimestamp()
-            });
+            // ユーザーUIDをドキュメントIDとして指定し、常に1つのドキュメントを更新する
+            await setDoc(doc(db, 'subscriptions', currentUser.uid), {
+              user_id: currentUser.uid,
+              fcm_token: currentToken,
+              updated_at: serverTimestamp() // 何度も更新されるため created_at より updated_at が自然です
+            }, { merge: true }); // merge: true をつけると、既存の他のデータがあれば消さずに結合します
+
+              
             
             statusText.innerText = "通知設定：ON (準備完了)";
           } else {
@@ -549,9 +552,15 @@
         e.target.checked = false;
       }
     } else {
-      // スイッチをOFFにした場合のUI表示
-      statusText.innerText = "通知設定：OFF";
-      // ※本格的に運用する場合は、ここでFirestoreから該当トークンを削除する処理を追加することをおすすめします。
+      // スイッチをOFFにした場合の処理
+      try {
+        // ユーザーUIDを指定してドキュメントを削除
+        await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
+        statusText.innerText = "通知設定：OFF";
+      } catch (err) {
+        console.error('トークン削除エラー:', err);
+        statusText.innerText = "エラーが発生しました";
+      }
     }
   });
 </script>
