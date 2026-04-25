@@ -36,14 +36,11 @@ def check_keywords_and_notify(drive_text):
         print(f"❌ ログ保存失敗: {log_err}")
 
     # 2. キーワード一覧の取得
-    keywords_ref = db.collection("keywords").stream()
+for doc in keywords_ref:
+    item = doc.to_dict()
+    word = item.get('keyword')
+    uid = item.get('user_id')  # ★ userId から user_id に統一
     
-    user_matches = {}
-    for doc in keywords_ref:
-        item = doc.to_dict()
-        word = item.get('keyword')
-        uid = item.get('userId')
-        
         if word and uid and word in drive_text:
             if uid not in user_matches:
                 user_matches[uid] = []
