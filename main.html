@@ -10,9 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* 余白の基本単位 */
             --gap-main: 5px;
-            
+
             --bg: #fdf6ee;
             --card: #fffaf5;
             --border: #f0e4d0;
@@ -46,7 +45,6 @@
             justify-content: center;
         }
 
-        /* コンテナとメインコンテンツの間隔を統一 */
         .container, #main-content {
             width: 100%;
             max-width: 440px;
@@ -55,7 +53,6 @@
             gap: var(--gap-main);
         }
 
-        /* カードの基本デザイン */
         .card {
             background: var(--card);
             border-radius: 24px;
@@ -87,9 +84,8 @@
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
-        .icon-wrap svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; }
+        .icon-wrap svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-        /* ボタンデザイン */
         .btn-insta {
             display: flex; align-items: center; justify-content: center; gap: 10px;
             background: var(--insta); color: white; text-decoration: none;
@@ -116,7 +112,6 @@
         }
         .btn-sub:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
 
-        /* スイッチ */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
@@ -132,7 +127,6 @@
 
         .status { font-size: 0.8rem; color: var(--text-sub); margin-top: 12px; }
 
-        /* キーワード入力 */
         .input-group { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
         input[type="text"] {
             flex: 1; min-width: 0; padding: 12px 16px; border: 1.5px solid var(--border);
@@ -147,24 +141,38 @@
             flex-shrink: 0; display: flex; align-items: center; justify-content: center;
             line-height: 1;
         }
-        
+
         #keywords-list { display: flex; flex-wrap: wrap; gap: 8px; }
         .keyword-tag {
             background: var(--tag-bg); color: var(--tag-text);
             padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
             border: 1px solid var(--tag-border); display: flex; align-items: center;
+            animation: pop 0.2s cubic-bezier(0.34,1.56,0.64,1);
         }
+        @keyframes pop { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
         .btn-del { margin-left: 8px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; }
 
-        /* ログ・画像 */
         .log-content {
             background: #fdf0e4; color: #7a4020; padding: 16px; border-radius: 16px;
             font-family: 'Courier New', monospace; font-size: 0.85rem;
-            line-height: 1.6; border: 1px solid #f0d8b8; max-height: 120px; overflow-y: auto;
+            line-height: 1.6; border: 1px solid #f0d8b8;
+            max-height: 300px; overflow-y: auto;
+            white-space: pre-wrap;
         }
+
+        #pull-indicator {
+            text-align: center;
+            height: 0;
+            overflow: hidden;
+            transition: height 0.2s ease;
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
         .image-grid { display: flex; gap: 12px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
-        .image-item { flex: 0 0 110px; aspect-ratio: 1; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
-        .image-item img { width: 100%; height: 100%; object-fit: cover; }
+        .image-item { flex: 1; min-width: 100px; aspect-ratio: 1; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
+        .image-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
         /* テーマ切替 */
         .theme-btn-group { display: flex; gap: 10px; }
@@ -179,7 +187,6 @@
         .swatch-cool { background: linear-gradient(135deg, #e8f0fb, #6fa3d8); }
         .swatch-mono { background: linear-gradient(135deg, #e8e8e8, #444444); }
 
-        /* 各テーマのスタイル定義 */
         :root[data-theme="cool"] {
             --bg: #f0f5fc; --card: #f8fbff; --border: #d0e0f0; --accent: #4a7abf;
             --accent-light: #e4eef9; --accent-mid: #7aaad8; --text-main: #1e2c3a; --text-sub: #607080;
@@ -252,7 +259,7 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <input type="text" id="keyword-input" placeholder="キーワードを追加…">
+                    <input type="text" id="keyword-input" placeholder="新しいキーワードを入力…">
                     <button class="btn-add" onclick="addKeyword()">＋</button>
                 </div>
                 <div id="keywords-list"></div>
@@ -290,22 +297,22 @@
                     </div>
                 </div>
                 <div class="image-grid">
-                    <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1JlP_9aDbSkJSPI6JTtRXW5w4EHNGVkJH" alt="Latest 1"></div>
-                    <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1v-lvwJloxr61ddIkYlr4JJWOOU9W8EZ-" alt="Latest 2"></div>
-                    <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1N18SGdHE8kmZeflUyhGrtcvtPNSY5UGT" alt="Latest 3"></div>
+                    <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1JlP_9aDbSkJSPI6JTtRXW5w4EHNGVkJH" alt="Latest image 1"></div>
+                    <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1v-lvwJloxr61ddIkYlr4JJWOOU9W8EZ-" alt="Latest image 2"></div>
+                    <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1N18SGdHE8kmZeflUyhGrtcvtPNSY5UGT" alt="Latest image 3"></div>
                 </div>
                 <div style="border-top: 1px solid var(--border); padding-top: 20px;">
                     <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
                         <div class="icon-wrap">
-                            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line></svg>
+                            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                         </div>
-                        <span style="font-weight:600;">取得テキスト</span>
+                        <span style="font-size:0.95rem; font-weight:600; color:var(--text-main);">取得テキスト</span>
                     </div>
                     <div id="latest-analysis" class="log-content">読み込み中…</div>
                     <div id="update-time" class="status"></div>
                 </div>
             </div>
-        </div> 
+        </div>
     </div>
 
     <script>
@@ -325,7 +332,6 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  // GoogleAuthProvider と signInWithPopup を追加
   import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
@@ -361,29 +367,19 @@
 
   let currentUser = null;
 
-// --- Googleログイン関数 ---
-window.signInWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-  
-  // 💡 ここが重要：常にアカウント選択画面を出す設定
-  provider.setCustomParameters({
-    prompt: 'select_account'
-  });
-
-  try {
-    // signInWithPopup を使用してログインを実行
-    await signInWithPopup(auth, provider);
-  } catch (error) {
-    console.error("ログインエラー:", error);
-    // ユーザーがポップアップを閉じた場合などのエラーハンドリング
-    if (error.code !== 'auth/cancelled-popup-request') {
-      alert("ログインに失敗しました: " + error.message);
+  window.signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("ログインエラー:", error);
+      if (error.code !== 'auth/cancelled-popup-request') {
+        alert("ログインに失敗しました: " + error.message);
+      }
     }
-  }
-};
-    
+  };
 
-  // 1. 認証状態の監視
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser = user;
@@ -392,19 +388,16 @@ window.signInWithGoogle = async () => {
       document.getElementById('user-email').innerText = user.email;
       document.getElementById('main-content').style.display = 'flex';
 
-      // 前回の修正：通知状況のチェック
       checkPushSubscription(user.uid);
       loadKeywords();
       loadLatestAnalysis();
     } else {
-      // ログインしていない場合
       document.getElementById('logged-out-ui').style.display = 'block';
       document.getElementById('logged-in-ui').style.display = 'none';
       document.getElementById('main-content').style.display = 'none';
     }
   });
 
-  // 通知設定の復元
   async function checkPushSubscription(uid) {
     const pushSwitch = document.getElementById('push-switch');
     const statusText = document.getElementById('status-text');
@@ -423,17 +416,15 @@ window.signInWithGoogle = async () => {
     }
   }
 
-// 2. ログアウト処理
   window.signOut = async () => {
     try {
       await firebaseSignOut(auth);
-      window.location.href = 'index.html'; // index.htmlへ飛ばす
+      window.location.href = 'index.html';
     } catch (error) {
       alert("ログアウトエラー: " + error.message);
     }
   };
 
-  // 3. キーワードの読み込み
   function loadKeywords() {
     const q = query(collection(db, 'keywords'), orderBy('createdAt', 'desc'));
     onSnapshot(q, (snapshot) => {
@@ -449,7 +440,6 @@ window.signInWithGoogle = async () => {
     });
   }
 
-  // 4. キーワードの追加
   window.addKeyword = async () => {
     const input = document.getElementById('keyword-input');
     const kw = input.value.trim();
@@ -466,7 +456,6 @@ window.signInWithGoogle = async () => {
     }
   };
 
-  // 5. キーワードの削除
   window.deleteKeyword = async (id) => {
     try {
       await deleteDoc(doc(db, 'keywords', id));
@@ -475,7 +464,6 @@ window.signInWithGoogle = async () => {
     }
   };
 
-  // 6. 最新解析結果の読み込み
   function loadLatestAnalysis() {
     const q = query(collection(db, 'analysis_logs'), orderBy('updated_at', 'desc'), limit(1));
     onSnapshot(q, (snapshot) => {
@@ -492,7 +480,6 @@ window.signInWithGoogle = async () => {
     });
   }
 
-  // 7. プッシュ通知のスイッチ
   const pushSwitch = document.getElementById('push-switch');
   const statusText = document.getElementById('status-text');
 
@@ -534,4 +521,3 @@ window.signInWithGoogle = async () => {
 </script>
 </body>
 </html>
-
