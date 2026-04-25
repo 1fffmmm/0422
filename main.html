@@ -26,7 +26,14 @@
             --shadow: 0 4px 20px rgba(180,110,60,0.08);
             --shadow-hover: 0 8px 30px rgba(180,110,60,0.14);
             --insta: linear-gradient(135deg, #f9c784 0%, #f07167 42%, #d63384 78%, #9b59b6 100%);
-        }
+    
+    /* 👇ここから追加👇（デフォルト/warmテーマ用のログ色） */
+    --log-bg: #fdf0e4;
+    --log-text: #7a4020;
+    --log-border: #f0d8b8;
+    --scroll-thumb: #d97a4a; /* スクロールバーのつまみ部分 */
+    --scroll-track: #fdecd8; /* スクロールバーの背景部分 */
+}
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -152,14 +159,34 @@
         @keyframes pop { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
         .btn-del { margin-left: 8px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; }
 
-        .log-content {
-            background: #fdf0e4; color: #7a4020; padding: 16px; border-radius: 16px;
-            font-family: 'Courier New', monospace; font-size: 0.85rem;
-            line-height: 1.6; border: 1px solid #f0d8b8;
-            max-height: 300px; overflow-y: auto;
-            white-space: pre-wrap;
-        }
-
+.log-content {
+    background: var(--log-bg);
+    color: var(--log-text);
+    border: 1px solid var(--log-border);
+    padding: 16px; 
+    border-radius: 16px;
+    font-family: 'Courier New', monospace; 
+    font-size: 0.85rem;
+    line-height: 1.6; 
+    max-height: 300px; 
+    overflow-y: auto;
+    white-space: pre-wrap;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* テーマ変更時にフワッと色が変わるように */
+}
+/* 👇スクロールバーのデザインを追加👇 */
+.log-content::-webkit-scrollbar {
+    width: 10px; /* スクロールバーの太さ */
+}
+.log-content::-webkit-scrollbar-track {
+    background: var(--scroll-track); /* 背景色 */
+    border-radius: 0 16px 16px 0; /* 右側の角丸に合わせる */
+}
+.log-content::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb); /* つまみの色 */
+    border-radius: 10px; /* つまみを丸くする */
+    border: 2px solid var(--scroll-track); /* つまみの周りに少し隙間を作る */
+}
+        
         #pull-indicator {
             text-align: center;
             height: 0;
@@ -192,13 +219,26 @@
             --accent-light: #e4eef9; --accent-mid: #7aaad8; --text-main: #1e2c3a; --text-sub: #607080;
             --tag-bg: #ddeef8; --tag-text: #2a5a8a; --tag-border: #b0d4ee;
             --shadow: 0 4px 20px rgba(60,100,180,0.08);
-        }
+/* 👇ここから追加👇 */
+    --log-bg: #e8f0fb;
+    --log-text: #2a5a8a;
+    --log-border: #b0d4ee;
+    --scroll-thumb: #7aaad8;
+    --scroll-track: #ddeef8;
+}
+        
         :root[data-theme="mono"] {
             --bg: #2a2a2a; --card: #333333; --border: #444444; --accent: #aaaaaa;
             --accent-light: #3d3d3d; --accent-mid: #888888; --text-main: #e8e8e8; --text-sub: #888888;
             --tag-bg: #3d3d3d; --tag-text: #cccccc; --tag-border: #555555;
             --shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
+/* 👇ここから追加👇 */
+    --log-bg: #222222;
+    --log-text: #cccccc;
+    --log-border: #444444;
+    --scroll-thumb: #666666;
+    --scroll-track: #333333;
+}
     </style>
 </head>
 <body>
