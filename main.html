@@ -169,10 +169,17 @@
     font-size: 0.85rem;
     line-height: 1.6; 
     max-height: 300px; 
-    overflow-y: auto;
-    white-space: pre-wrap;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* テーマ変更時にフワッと色が変わるように */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* 👇 今回の改善ポイント 👇 */
+    overflow: auto; /* 縦と横、必要な方だけスクロールバーを出す */
+    overscroll-behavior: contain; /* スマホでスクロールした際、画面全体が引っ張られるのを防ぐ */
+    white-space: pre; /* 自動で改行せず、はみ出た分を横スクロールさせる */
+    -webkit-overflow-scrolling: touch; /* iOS（iPhone）で滑らかにスクロールさせる */
 }
+        
+
+        
 /* 👇スクロールバーのデザインを追加👇 */
 .log-content::-webkit-scrollbar {
     width: 10px; /* スクロールバーの太さ */
