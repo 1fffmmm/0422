@@ -468,11 +468,11 @@
     }
   }
 
-  // 2. ログアウト処理
+// 2. ログアウト処理
   window.signOut = async () => {
     try {
       await firebaseSignOut(auth);
-      location.reload(); // 状態をリセットするためにリロード
+      window.location.href = 'index.html'; // index.htmlへ飛ばす
     } catch (error) {
       alert("ログアウトエラー: " + error.message);
     }
