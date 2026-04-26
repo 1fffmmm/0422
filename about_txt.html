@@ -277,7 +277,7 @@
             loadLatestAnalysis();
         });
 
-        function loadLatestAnalysis() {
+function loadLatestAnalysis() {
             const q = query(
                 collection(db, 'analysis_logs'),
                 orderBy('updated_at', 'desc'),
@@ -286,16 +286,46 @@
             onSnapshot(q, (snapshot) => {
                 const latestEl = document.getElementById('latest-analysis');
                 const timeEl   = document.getElementById('update-time');
+                const gridEl   = document.getElementById('story-image-grid'); // 追加
+
                 if (!snapshot.empty) {
                     const data = snapshot.docs[0].data();
+                    
+                    // テキストの更新
                     latestEl.innerText = data.content;
                     const date = data.updated_at ? data.updated_at.toDate() : new Date();
                     timeEl.innerText = "最終更新: " + date.toLocaleString('ja-JP');
+
+                    // --- 画像の動的生成（追加部分） ---
+                    gridEl.innerHTML = ''; // 一旦クリア
+                    
+                    // Firestore側に image_ids という配列でファイルIDが保存されている想定
+                    if (data.image_ids && Array.isArray(data.image_ids) && data.image_ids.length > 0) {
+                        const timestamp = new Date().getTime(); // キャッシュバスター（常に最新を表示）
+                        
+                        data.image_ids.forEach((fileId) => {
+                            const item = document.createElement('div');
+                            item.className = 'image-item';
+                            
+                            const img = document.createElement('img');
+                            // Google Driveの画像を表示用URLに変換
+                            img.src = `https://drive.google.com/uc?export=view&id=${fileId}&t=${timestamp}`;
+                            img.alt = "Story image";
+                            
+                            item.appendChild(img);
+                            gridEl.appendChild(item);
+                        });
+                    } else {
+                        // 画像がない場合のプレースホルダーなどを入れたい場合はここに記述
+                    }
+
                 } else {
                     latestEl.innerText = "データがありません";
+                    gridEl.innerHTML = '';
                 }
             });
         }
+        
 
         // テーマ切替
         window.setTheme = (theme) => {
