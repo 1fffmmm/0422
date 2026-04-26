@@ -72,65 +72,46 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
-  
-  provider.setCustomParameters({
-    prompt: 'select_account'
-  });
+  provider.setCustomParameters({ prompt: 'select_account' });
 
-  // UI要素の取得
   const loginBtn = document.getElementById('btn-login');
   const statusDiv = document.getElementById('login-status');
 
-  // 初期ロード時：Firebaseの認証状態が確定するまでボタンを無効化
-  loginBtn.disabled = true;
-  loginBtn.style.opacity = '0.5';
-  loginBtn.style.cursor = 'not-allowed';
-  statusDiv.innerText = "ログイン状態を確認しています...";
+  // 1. 最初はボタンを隠しておく（チラつき防止）
+  loginBtn.style.display = 'none';
+  statusDiv.innerText = "読み込み中...";
 
-  // Googleのログイン画面から index.html に戻ってきた後の処理
-  getRedirectResult(auth).then((result) => {
-    if (result) {
-      statusDiv.innerText = "ログイン処理が完了しました。移動します...";
-    }
-  }).catch((error) => {
-    console.error("ログインエラー:", error);
-    statusDiv.innerText = "ログインに失敗しました。もう一度お試しください。";
-    loginBtn.disabled = false;
-    loginBtn.style.opacity = '1';
-    loginBtn.style.cursor = 'pointer';
-  });
-
-  // 認証状態の監視
+  // 2. 認証状態の監視（ここが遷移のメインエンジン）
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // ログイン済み（またはリダイレクトログイン成功）の場合
-      statusDiv.innerText = "ログイン済みです。メイン画面へ移動します...";
-      window.location.href = 'main.html';
+      // ログイン済みなら即座に移動
+      statusDiv.innerText = "認証を確認しました。移動します...";
+      window.location.replace('main.html'); // replaceを使うと「戻る」ボタンで戻れなくなるので推奨
     } else {
-      // 未ログイン状態であることが確定した場合のみ、ボタンを押せるようにする
+      // 未ログインの場合のみボタンを表示
       statusDiv.innerText = "";
+      loginBtn.style.display = 'block';
       loginBtn.disabled = false;
       loginBtn.style.opacity = '1';
-      loginBtn.style.cursor = 'pointer';
     }
   });
 
-  // ログインボタンを押したときの処理
+  // 3. リダイレクト結果の処理（エラーチェック用）
+  getRedirectResult(auth).catch((error) => {
+    console.error("Redirect Error:", error);
+    statusDiv.innerText = "ログインに失敗しました。";
+    loginBtn.style.display = 'block';
+  });
+
+  // 4. ボタンクリック時の動作
   window.signInWithGoogle = () => {
-    statusDiv.innerText = "Googleのログイン画面へ移動しています...";
     loginBtn.disabled = true;
     loginBtn.style.opacity = '0.5';
-    loginBtn.style.cursor = 'not-allowed';
-    
-    signInWithRedirect(auth, provider).catch((error) => {
-      console.error("画面遷移エラー:", error);
-      statusDiv.innerText = "ログイン画面への移動に失敗しました。";
-      loginBtn.disabled = false;
-      loginBtn.style.opacity = '1';
-      loginBtn.style.cursor = 'pointer';
-    });
+    statusDiv.innerText = "Googleへ移動中...";
+    signInWithRedirect(auth, provider);
   };
 </script>
+  
   
 </body>
 </html>
