@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ストーリー詳細</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gap-main: 5px;
+
+            --bg: #fdf6ee;
+            --card: #fffaf5;
+            --border: #f0e4d0;
+            --accent: #d97a4a;
+            --accent-light: #faeee4;
+            --accent-mid: #e8a07a;
+            --text-main: #3a2c1e;
+            --text-sub: #a08060;
+            --tag-bg: #fdecd8;
+            --tag-text: #a05a2a;
+            --tag-border: #f5d4b0;
+            --shadow: 0 4px 20px rgba(180,110,60,0.08);
+            --shadow-hover: 0 8px 30px rgba(180,110,60,0.14);
+            --insta: linear-gradient(135deg, #f9c784 0%, #f07167 42%, #d63384 78%, #9b59b6 100%);
+
+            --log-bg: #fdf0e4;
+            --log-text: #7a4020;
+            --log-border: #f0d8b8;
+            --scroll-thumb: #d97a4a;
+            --scroll-track: #fdecd8;
+        }
+
+        :root[data-theme="cool"] {
+            --bg: #f0f5fc; --card: #f8fbff; --border: #d0e0f0; --accent: #4a7abf;
+            --accent-light: #e4eef9; --accent-mid: #7aaad8; --text-main: #1e2c3a; --text-sub: #607080;
+            --tag-bg: #ddeef8; --tag-text: #2a5a8a; --tag-border: #b0d4ee;
+            --shadow: 0 4px 20px rgba(60,100,180,0.08);
+            --log-bg: #e8f0fb;
+            --log-text: #2a5a8a;
+            --log-border: #b0d4ee;
+            --scroll-thumb: #7aaad8;
+            --scroll-track: #ddeef8;
+        }
+
+        :root[data-theme="mono"] {
+            --bg: #2a2a2a; --card: #333333; --border: #444444; --accent: #aaaaaa;
+            --accent-light: #3d3d3d; --accent-mid: #888888; --text-main: #e8e8e8; --text-sub: #888888;
+            --tag-bg: #3d3d3d; --tag-text: #cccccc; --tag-border: #555555;
+            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+            --log-bg: #222222;
+            --log-text: #cccccc;
+            --log-border: #444444;
+            --scroll-thumb: #666666;
+            --scroll-track: #333333;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { overflow-x: hidden; touch-action: pan-y; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 15% 0%, rgba(240,160,100,0.18) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 100%, rgba(249,200,140,0.15) 0%, transparent 55%);
+            min-height: 100vh;
+            padding: 5px 16px 80px;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-main);
+        }
+
+        /* ── カード ── */
+        .card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card:hover { transform: translateY(-2px); }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .icon-wrap {
+            width: 36px; height: 36px;
+            border-radius: 12px;
+            background: var(--accent-light);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .icon-wrap svg {
+            width: 18px; height: 18px;
+            stroke: var(--accent); fill: none;
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+        }
+
+        /* ── ボタン類 ── */
+        .btn-sub {
+            background: none; border: 1.5px solid var(--border); color: var(--text-sub);
+            padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;
+            cursor: pointer; transition: all 0.2s;
+            font-family: inherit;
+        }
+        .btn-sub:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
+
+        /* ── 画像グリッド ── */
+        .image-grid {
+            display: flex; gap: 12px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .image-item {
+            flex: 1; min-width: 100px;
+            aspect-ratio: 1;
+            border-radius: 14px; overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .image-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* ── ログ / テキスト表示エリア ── */
+        .log-content {
+            background: var(--log-bg);
+            color: var(--log-text);
+            border: 1px solid var(--log-border);
+            padding: 16px;
+            border-radius: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            max-height: 300px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: auto;
+            overscroll-behavior: contain;
+            white-space: pre;
+        }
+        .log-content::-webkit-scrollbar { width: 10px; }
+        .log-content::-webkit-scrollbar-track {
+            background: var(--scroll-track);
+            border-radius: 0 16px 16px 0;
+        }
+        .log-content::-webkit-scrollbar-thumb {
+            background: var(--scroll-thumb);
+            border-radius: 10px;
+            border: 2px solid var(--scroll-track);
+        }
+
+        .status { font-size: 0.8rem; color: var(--text-sub); margin-top: 12px; }
+
+        /* ── テーマ切替 ── */
+        .theme-btn-group { display: flex; gap: 10px; }
+        .theme-btn {
+            width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent;
+            background: none; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .theme-btn.active { border-color: var(--accent); transform: scale(1.1); }
+        .theme-swatch { width: 24px; height: 24px; border-radius: 50%; }
+        .swatch-warm { background: linear-gradient(135deg, #faeee4, #d97a4a); }
+        .swatch-cool { background: linear-gradient(135deg, #e8f0fb, #6fa3d8); }
+        .swatch-mono { background: linear-gradient(135deg, #e8e8e8, #444444); }
+
+        /* ── 戻るリンク ── */
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            color: var(--text-sub); font-size: 0.9rem; text-decoration: none;
+            padding: 10px 4px;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--accent); }
+        .back-link svg {
+            width: 16px; height: 16px;
+            stroke: currentColor; fill: none;
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- 戻るリンク -->
+        <a href="main.html" class="back-link">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            メインに戻る
+        </a>
+
+        <!-- カラー変更 -->
+        <div class="card" style="padding: 16px 24px;">
+            <div class="card-header" style="margin-bottom: 0;">
+                <div class="card-title">
+                    <div class="icon-wrap">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 0 20"></path><path d="M12 2c2.5 2.5 4 5.5 4 10s-1.5 7.5-4 10"></path></svg>
+                    </div>
+                    カラー変更
+                </div>
+                <div class="theme-btn-group">
+                    <button class="theme-btn active" id="btn-warm" onclick="setTheme('warm')">
+                        <span class="theme-swatch swatch-warm"></span>
+                    </button>
+                    <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')">
+                        <span class="theme-swatch swatch-cool"></span>
+                    </button>
+                    <button class="theme-btn" id="btn-mono" onclick="setTheme('mono')">
+                        <span class="theme-swatch swatch-mono"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ストーリー画像 ＋ 取得テキスト（main.html から移動） -->
+        <div class="card" id="story-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <div class="icon-wrap">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    </div>
+                    ストーリー画像
+                </div>
+            </div>
+
+            <div class="image-grid">
+                <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1JlP_9aDbSkJSPI6JTtRXW5w4EHNGVkJH" alt="Latest image 1"></div>
+                <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1v-lvwJloxr61ddIkYlr4JJWOOU9W8EZ-" alt="Latest image 2"></div>
+                <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1N18SGdHE8kmZeflUyhGrtcvtPNSY5UGT" alt="Latest image 3"></div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+                    <div class="icon-wrap">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    <span style="font-size:0.95rem; font-weight:600; color:var(--text-main);">取得テキスト</span>
+                </div>
+                <div id="latest-analysis" class="log-content">読み込み中…</div>
+                <div id="update-time" class="status"></div>
+            </div>
+        </div>
+
+    </div><!-- /.container -->
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
+            authDomain: "user-cd2c1.firebaseapp.com",
+            projectId: "user-cd2c1",
+            storageBucket: "user-cd2c1.firebasestorage.app",
+            messagingSenderId: "990277200920",
+            appId: "1:990277200920:web:952d974484fa76ed89e76d",
+            measurementId: "G-30QNZ04PDZ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db  = getFirestore(app);
+
+        // 未ログインならトップへ
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            loadLatestAnalysis();
+        });
+
+        function loadLatestAnalysis() {
+            const q = query(
+                collection(db, 'analysis_logs'),
+                orderBy('updated_at', 'desc'),
+                limit(1)
+            );
+            onSnapshot(q, (snapshot) => {
+                const latestEl = document.getElementById('latest-analysis');
+                const timeEl   = document.getElementById('update-time');
+                if (!snapshot.empty) {
+                    const data = snapshot.docs[0].data();
+                    latestEl.innerText = data.content;
+                    const date = data.updated_at ? data.updated_at.toDate() : new Date();
+                    timeEl.innerText = "最終更新: " + date.toLocaleString('ja-JP');
+                } else {
+                    latestEl.innerText = "データがありません";
+                }
+            });
+        }
+
+        // テーマ切替
+        window.setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${theme}`).classList.add('active');
+        };
+    </script>
+</body>
+</html>
