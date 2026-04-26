@@ -5,26 +5,28 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload
 
-# ファイル1から関数をインポート
+# ※ ファイル1から関数をインポート（Firebase処理側）
+# from firebase_handler import check_keywords_and_notify 
 
-def get_drive_text():
-    """
-    Google Driveからテキストファイルをダウンロードする
-    """
-    print("--- 1. Google Drive 処理開始 ---")
-    file_id = os.environ.get("DRIVE_FILE_ID")
+def get_drive_service():
+    """Google Drive APIのサービスオブジェクトを作成する"""
     gcp_key_str = os.environ.get("GCP_SERVICE_ACCOUNT_KEY")
-    
-    if not gcp_key_str or not file_id:
-        print(f"エラー: 環境変数が不足しています (FILE_ID: {file_id})")
+    if not gcp_key_str:
+        print("エラー: 環境変数 GCP_SERVICE_ACCOUNT_KEY が設定されていません。")
         return None
-
+        
     try:
         service_account_info = json.loads(gcp_key_str)
         creds = service_account.Credentials.from_service_account_info(service_account_info)
-        service = build('drive', 'v3', credentials=creds)
+        return build('drive', 'v3', credentials=creds)
+    except Exception as e:
+        print(f"Drive API 認証エラー: {e}")
+        return None
 
-        print(f"Google Drive(ID: {file_id}) からダウンロード中...")
+def get_drive_text(service, file_id):
+    """Google Driveからテキストファイルをダウンロードする"""
+    print(f"--- 1. テキストファイル(ID: {file_id}) 取得開始 ---")
+    try:
         request = service.files().get_media(fileId=file_id)
         fh = io.BytesIO()
         downloader = MediaIoBaseDownload(fh, request)
@@ -37,20 +39,72 @@ def get_drive_text():
         print(f"読み込み成功: {len(drive_text)}文字取得しました。")
         return drive_text
     except Exception as e:
-        print(f"Driveダウンロードエラー: {e}")
+        print(f"Driveテキストダウンロードエラー: {e}")
         return None
+
+def get_image_ids_from_folder(service, folder_id):
+    """指定フォルダ内の .jpg 画像のファイルIDリストを取得する"""
+    print(f"--- 2. 画像リスト(フォルダID: {folder_id}) 取得開始 ---")
+    image_ids = []
+    try:
+        # mimeType='image/jpeg' で jpg 画像のみを指定、trashed=false でゴミ箱の中身を除外
+        query = f"'{folder_id}' in parents and mimeType='image/jpeg' and trashed=false"
+        
+        # APIを呼び出してファイル一覧を取得
+        results = service.files().list(
+            q=query,
+            spaces='drive',
+            fields='nextPageToken, files(id, name)',
+            pageSize=100
+        ).execute()
+        
+        items = results.get('files', [])
+        
+        if not items:
+            print("フォルダ内に画像が見つかりませんでした。")
+        else:
+            for item in items:
+                image_ids.append(item['id'])
+                print(f"画像発見: {item['name']} (ID: {item['id']})")
+                
+        print(f"合計 {len(image_ids)} 枚の画像IDを取得しました。")
+        return image_ids
+        
+    except Exception as e:
+        print(f"Drive画像リスト取得エラー: {e}")
+        return []
 
 if __name__ == "__main__":
     print("=== プログラム実行開始 ===")
     
-    # 1. Driveからテキスト取得
-    text = get_drive_text()
+    # 環境変数からファイルIDを取得
+    FILE_ID = os.environ.get("DRIVE_FILE_ID")
     
-    if text is not None:
-        # 2. Firebase側の処理を呼び出し
-        check_keywords_and_notify(text)
+    # URLから抽出したフォルダID（環境変数で上書き可能にしています）
+    FOLDER_ID = os.environ.get("DRIVE_FOLDER_ID", "1oFKFlM7P9szbG0u8SZe2UTlrA7ZWYMtZ")
+    
+    if not FILE_ID:
+        print("エラー: 環境変数 DRIVE_FILE_ID が不足しています。")
+        exit(1)
+
+    # 共通のDrive API サービスを初期化
+    service = get_drive_service()
+    
+    if service:
+        # 1. Driveからテキスト取得
+        text = get_drive_text(service, FILE_ID)
+        
+        # 2. Driveの特定フォルダから画像IDリストを取得
+        image_ids = get_image_ids_from_folder(service, FOLDER_ID)
+        
+        if text is not None:
+            print("--- 3. Firebase更新処理開始 ---")
+            # 3. Firebase側の処理を呼び出し（テキストと画像IDリストを渡す）
+            # ※ Firebase側の関数も引数を2つ受け取れるように修正してください
+            check_keywords_and_notify(text, image_ids)
+        else:
+            print("エラー: テキストが取得できなかったため、Firebase処理を中断しました。")
     else:
-        print("エラー: テキストが取得できなかったため、処理を中断しました。")
+        print("エラー: Driveサービスが初期化できませんでした。")
         
     print("=== 全処理終了 ===")
-    
