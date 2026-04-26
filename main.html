@@ -361,14 +361,12 @@
         </div>
     </div>
 
-<script type="module">
+ <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  // signInWithPopup を signInWithRedirect に変更
-  import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
-    
   const firebaseConfig = {
     apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
     authDomain: "user-cd2c1.firebaseapp.com",
@@ -400,21 +398,19 @@
 
   let currentUser = null;
 
-// Googleログイン（アカウント選択を強制・リダイレクト方式）
-  window.signInWithGoogle = () => {
+  // Googleログイン（アカウント選択を強制）
+  window.signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    signInWithRedirect(auth, provider).catch((error) => {
-      console.error("画面遷移エラー:", error);
-      alert("ログイン画面への移動に失敗しました: " + error.message);
-    });
+    provider.setCustomParameters({ prompt: 'select_account' }); // 【課題2解決】
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("ログインエラー:", error);
+      if (error.code !== 'auth/cancelled-popup-request') {
+        alert("ログインに失敗しました: " + error.message);
+      }
+    }
   };
-
-  // リダイレクトエラーのキャッチ
-  getRedirectResult(auth).catch((error) => {
-    console.error("ログインエラー:", error);
-  });
-    
 
   // 認証状態の監視
   onAuthStateChanged(auth, async (user) => {
