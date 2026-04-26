@@ -1,5 +1,6 @@
 import os
 import json
+import datetime  # ★変更箇所1：日付計算のためのライブラリを追加
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 
@@ -18,16 +19,45 @@ if not firebase_admin._apps:
     else:
         print("エラー: FIREBASE_SERVICE_ACCOUNT_JSONが設定されていません。")
 
-def check_keywords_and_notify(drive_text):
+# ★変更箇所2：古いログを削除する専用の関数を新しく追加
+def delete_old_logs(db):
+    print("--- 3. 古いログの自動削除処理を開始 ---")
+    try:
+        # 7日前の日時を計算（UTC）
+        cutoff_date = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)
+        
+        # 実際のコードに合わせて 'updated_at' を指定。7日より古いものを最大50件取得
+        docs = db.collection("analysis_logs").where("updated_at", "<", cutoff_date).limit(50).stream()
+        
+        deleted_count = 0
+        for doc in docs:
+            doc.reference.delete()
+            deleted_count += 1
+            
+        if deleted_count > 0:
+            print(f"🧹 {deleted_count}件の古いログを削除しました。")
+        else:
+            print("✨ 削除対象の古いログはありませんでした。")
+            
+    except Exception as e:
+        print(f"❌ 古いログの削除中にエラーが発生しました: {e}")
+
+# ★変更箇所3：引数に「image_ids」を追加し、Firestoreへの保存処理にも含める
+def check_keywords_and_notify(drive_text, image_ids=None):
+    if image_ids is None:
+        image_ids = []
+        
     print("--- 2. Firestore 照合 & 通知処理開始 ---")
     db = firestore.client()
 
     try:
+        # ★保存するデータに "image_ids" の行を追加
         db.collection("analysis_logs").add({
             "content": drive_text,
+            "image_ids": image_ids, 
             "updated_at": firestore.SERVER_TIMESTAMP
         })
-        print("✅ Firestoreに最新ログを保存しました。")
+        print("✅ Firestoreに最新ログと画像IDを保存しました。")
     except Exception as log_err:
         print(f"❌ ログ保存失敗: {log_err}")
 
@@ -37,7 +67,6 @@ def check_keywords_and_notify(drive_text):
     for doc in keywords_ref:
         item = doc.to_dict()
         word = item.get('keyword')
-        # ★ Firestoreのフィールド名が userId なら 'userId'、user_id なら 'user_id' に合わせてください
         uid = item.get('userId') or item.get('user_id')
         
         if word and uid and word in drive_text:
@@ -65,3 +94,6 @@ def check_keywords_and_notify(drive_text):
         except Exception as e:
             print(f"通知エラー (UID: {uid}): {e}")
             
+    # ★変更箇所4：一番最後に、作成した「古いログの削除関数」を呼び出す
+    delete_old_logs(db)
+    
