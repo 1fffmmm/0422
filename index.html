@@ -57,7 +57,6 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  // signInWithPopup を signInWithRedirect と getRedirectResult に変更
   import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
   const firebaseConfig = {
@@ -78,23 +77,57 @@
     prompt: 'select_account'
   });
 
-  // リダイレクトから戻ってきた際のエラー処理
-  getRedirectResult(auth).catch((error) => {
+  // UI要素の取得
+  const loginBtn = document.getElementById('btn-login');
+  const statusDiv = document.getElementById('login-status');
+
+  // 初期ロード時：Firebaseの認証状態が確定するまでボタンを無効化
+  loginBtn.disabled = true;
+  loginBtn.style.opacity = '0.5';
+  loginBtn.style.cursor = 'not-allowed';
+  statusDiv.innerText = "ログイン状態を確認しています...";
+
+  // Googleのログイン画面から index.html に戻ってきた後の処理
+  getRedirectResult(auth).then((result) => {
+    if (result) {
+      statusDiv.innerText = "ログイン処理が完了しました。移動します...";
+    }
+  }).catch((error) => {
     console.error("ログインエラー:", error);
-    alert("ログインに失敗しました。もう一度お試しください。");
+    statusDiv.innerText = "ログインに失敗しました。もう一度お試しください。";
+    loginBtn.disabled = false;
+    loginBtn.style.opacity = '1';
+    loginBtn.style.cursor = 'pointer';
   });
 
+  // 認証状態の監視
   onAuthStateChanged(auth, (user) => {
     if (user) {
+      // ログイン済み（またはリダイレクトログイン成功）の場合
+      statusDiv.innerText = "ログイン済みです。メイン画面へ移動します...";
       window.location.href = 'main.html';
+    } else {
+      // 未ログイン状態であることが確定した場合のみ、ボタンを押せるようにする
+      statusDiv.innerText = "";
+      loginBtn.disabled = false;
+      loginBtn.style.opacity = '1';
+      loginBtn.style.cursor = 'pointer';
     }
   });
 
-  // ポップアップではなくリダイレクトを実行
+  // ログインボタンを押したときの処理
   window.signInWithGoogle = () => {
+    statusDiv.innerText = "Googleのログイン画面へ移動しています...";
+    loginBtn.disabled = true;
+    loginBtn.style.opacity = '0.5';
+    loginBtn.style.cursor = 'not-allowed';
+    
     signInWithRedirect(auth, provider).catch((error) => {
       console.error("画面遷移エラー:", error);
-      alert("ログイン画面への移動に失敗しました。");
+      statusDiv.innerText = "ログイン画面への移動に失敗しました。";
+      loginBtn.disabled = false;
+      loginBtn.style.opacity = '1';
+      loginBtn.style.cursor = 'pointer';
     });
   };
 </script>
