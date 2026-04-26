@@ -287,6 +287,11 @@
                 </label>
             </div>
             <div id="status-text" class="status">状態を確認中…</div>
+            
+                        <div style="margin-top: 10px; font-size: 0.82rem; color: var(--text-sub);">
+                <a href="about_txt.html" style="color: var(--accent); text-decoration: underline;">通知が来ない場合は</a>
+            </div>
+            
         </div>
 
         <div id="main-content" style="display: none; flex-direction: column; gap: var(--gap-main);">
@@ -333,33 +338,6 @@
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <div class="icon-wrap">
-                            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                        </div>
-                        ストーリー画像
-                    </div>
-                </div>
-                <div class="image-grid">
-                    <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1JlP_9aDbSkJSPI6JTtRXW5w4EHNGVkJH" alt="Latest image 1"></div>
-                    <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1v-lvwJloxr61ddIkYlr4JJWOOU9W8EZ-" alt="Latest image 2"></div>
-                    <div class="image-item"><img src="https://lh3.googleusercontent.com/d/1N18SGdHE8kmZeflUyhGrtcvtPNSY5UGT" alt="Latest image 3"></div>
-                </div>
-                <div style="border-top: 1px solid var(--border); padding-top: 20px;">
-                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-                        <div class="icon-wrap">
-                            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        </div>
-                        <span style="font-size:0.95rem; font-weight:600; color:var(--text-main);">取得テキスト</span>
-                    </div>
-                    <div id="latest-analysis" class="log-content">読み込み中…</div>
-                    <div id="update-time" class="status"></div>
-                </div>
-            </div>
-        </div>
-    </div>
 
  <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
