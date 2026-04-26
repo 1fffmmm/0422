@@ -57,9 +57,9 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  // signInWithPopup を signInWithRedirect と getRedirectResult に変更
+  import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-  // 提供いただいたFirebase設定
   const firebaseConfig = {
     apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
     authDomain: "user-cd2c1.firebaseapp.com",
@@ -74,28 +74,30 @@
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   
-  // 毎回Googleアカウントの選択画面を強制的に表示させる設定
   provider.setCustomParameters({
     prompt: 'select_account'
   });
 
-  // ★ここが抜けていました！ログイン状態を監視し、ログイン済みなら main.html に飛ばす処理
+  // リダイレクトから戻ってきた際のエラー処理
+  getRedirectResult(auth).catch((error) => {
+    console.error("ログインエラー:", error);
+    alert("ログインに失敗しました。もう一度お試しください。");
+  });
+
   onAuthStateChanged(auth, (user) => {
     if (user) {
       window.location.href = 'main.html';
     }
   });
 
-  // グローバル関数としてGoogleログインを定義
-  window.signInWithGoogle = async () => {
-    try {
-      await signInWithPopup(auth, provider);
-      // ※ログイン成功後の画面遷移は、すぐ上にある onAuthStateChanged が自動で行います
-    } catch (error) {
-      console.error("ログインエラー:", error);
-      alert("ログインに失敗しました。もう一度お試しください。");
-    }
+  // ポップアップではなくリダイレクトを実行
+  window.signInWithGoogle = () => {
+    signInWithRedirect(auth, provider).catch((error) => {
+      console.error("画面遷移エラー:", error);
+      alert("ログイン画面への移動に失敗しました。");
+    });
   };
 </script>
+  
 </body>
 </html>
