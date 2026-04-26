@@ -577,6 +577,8 @@
     // 1. HTML全体（:root）のテーマ属性を書き換える
     document.documentElement.setAttribute('data-theme', theme);
 
+      localStorage.setItem('theme', theme); // ← これを追加
+
     // 2. ボタンの選択状態（丸い枠線）を更新する
     document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById(`btn-${theme}`).classList.add('active');
