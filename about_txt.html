@@ -304,7 +304,8 @@ function loadLatestAnalysis() {
                             
                             const img = document.createElement('img');
                             // Google Driveの画像を表示用URLに変換
-                            img.src = `https://drive.google.com/uc?export=view&id=${fileId}&t=${timestamp}`;
+                            // Web埋め込みに強い、Googleのサムネイル生成エンドポイントを使用
+img.src = `https://drive.google.com/thumbnail?id=${fileId}&sz=w800&t=${timestamp}`;
                             img.alt = "Story image";
                             
                             item.appendChild(img);
