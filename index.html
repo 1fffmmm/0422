@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="InstaMonitor">
     <title>InstaMonitor - 監視コントロールパネル</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +48,7 @@
             color: var(--text-main);
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* 変更: 全体を上揃えに */
+            align-items: flex-start;
         }
 
         .container {
@@ -71,28 +74,53 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* -------------------------------------------
+           インストール誘導画面用のスタイル
+        ------------------------------------------- */
+        #screen-install {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 9000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+        .install-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: var(--card);
+            padding: 40px 24px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 24px rgba(180,110,60,0.12);
+            text-align: center;
+        }
+        .install-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 16px; }
+        .install-desc { font-size: 0.95rem; color: var(--text-sub); margin-bottom: 24px; line-height: 1.6; text-align: left; }
+        .install-steps { background: var(--bg); padding: 16px; border-radius: 12px; text-align: left; font-size: 0.9rem; color: var(--text-main); line-height: 1.8; }
+
+        /* Android用注意書き */
+        #android-notice-box {
+            display: none;
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            border: 1px solid #ffeeba;
+            line-height: 1.5;
+        }
+
         /* ログイン画面専用のスタイル */
         .login-box {
             text-align: center;
             padding: 40px 20px;
             margin-top: 20px;
         }
-        .login-logo {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-        .login-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-        .login-desc {
-            font-size: 0.9rem;
-            color: var(--text-sub);
-            margin-bottom: 30px;
-            line-height: 1.5;
-        }
+        .login-logo { font-size: 3rem; margin-bottom: 10px; }
+        .login-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
+        .login-desc { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 30px; line-height: 1.5; }
 
         /* 共通カードコンポーネント */
         .card {
@@ -103,25 +131,11 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-        }
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-        }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+        .card-title { display: flex; align-items: center; gap: 12px; font-size: 1rem; font-weight: 600; }
         .icon-wrap {
-            width: 36px; height: 36px;
-            border-radius: 12px;
-            background: var(--accent-light);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
+            width: 36px; height: 36px; border-radius: 12px; background: var(--accent-light);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
         .icon-wrap svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -130,8 +144,7 @@
             display: flex; align-items: center; justify-content: center; gap: 10px;
             background: var(--insta); color: white; text-decoration: none;
             padding: 18px; border-radius: 20px; font-weight: 600; font-size: 0.95rem;
-            box-shadow: 0 6px 20px rgba(214,51,132,0.25);
-            transition: all 0.2s;
+            box-shadow: 0 6px 20px rgba(214,51,132,0.25); transition: all 0.2s;
         }
         .btn-insta:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(214,51,132,0.35); }
 
@@ -140,37 +153,27 @@
             background: linear-gradient(135deg, var(--accent-mid) 0%, var(--accent) 100%);
             color: white; border: none; padding: 16px; border-radius: 18px;
             font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%;
-            box-shadow: 0 4px 15px rgba(217, 122, 74, 0.25);
-            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(217, 122, 74, 0.25); transition: all 0.2s;
         }
         .btn-primary:hover { opacity: 0.9; transform: scale(1.01); }
 
         .btn-outline {
             display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-            background: var(--card); color: var(--accent);
-            border: 1.5px solid var(--border); padding: 16px; border-radius: 18px;
-            font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%;
-            transition: all 0.2s;
+            background: var(--card); color: var(--accent); border: 1.5px solid var(--border);
+            padding: 16px; border-radius: 18px; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.2s;
         }
 
         .btn-sub {
             background: none; border: 1.5px solid var(--border); color: var(--text-sub);
-            padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;
-            cursor: pointer; transition: all 0.2s;
+            padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s;
         }
         .btn-sub:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
 
         /* トグルスイッチ */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; inset: 0;
-            background: #e8d8c8; transition: .3s; border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px;
-            background: white; transition: .3s; border-radius: 50%;
-        }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #e8d8c8; transition: .3s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background: white; transition: .3s; border-radius: 50%; }
         input:checked + .slider { background: var(--accent); }
         input:checked + .slider:before { transform: translateX(22px); }
         .status { font-size: 0.8rem; color: var(--text-sub); margin-top: 12px; }
@@ -179,34 +182,21 @@
         .input-group { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
         input[type="text"] {
             flex: 1; min-width: 0; padding: 12px 16px; border: 1.5px solid var(--border);
-            border-radius: 14px; font-family: inherit; font-size: 0.95rem;
-            background: #fffdf9; outline: none; transition: border-color 0.2s;
+            border-radius: 14px; font-family: inherit; font-size: 0.95rem; background: #fffdf9; outline: none; transition: border-color 0.2s;
         }
         input[type="text"]:focus { border-color: var(--accent-mid); }
-        .btn-add {
-            background: var(--accent); color: white; border: none;
-            width: 44px; height: 44px;
-            border-radius: 14px; font-size: 1.4rem; cursor: pointer;
-            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-        }
+        .btn-add { background: var(--accent); color: white; border: none; width: 44px; height: 44px; border-radius: 14px; font-size: 1.4rem; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 
         #keywords-list { display: flex; flex-wrap: wrap; gap: 8px; }
         .keyword-tag {
-            background: var(--tag-bg); color: var(--tag-text);
-            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
-            border: 1px solid var(--tag-border); display: flex; align-items: center;
-            animation: pop 0.2s cubic-bezier(0.34,1.56,0.64,1);
+            background: var(--tag-bg); color: var(--tag-text); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--tag-border); display: flex; align-items: center; animation: pop 0.2s cubic-bezier(0.34,1.56,0.64,1);
         }
         @keyframes pop { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
         .btn-del { margin-left: 8px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; }
 
         /* テーマ切替 */
         .theme-btn-group { display: flex; gap: 10px; }
-        .theme-btn {
-            width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent;
-            background: none; cursor: pointer; transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .theme-btn { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent; background: none; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
         .theme-btn.active { border-color: var(--accent); transform: scale(1.1); }
         .theme-swatch { width: 24px; height: 24px; border-radius: 50%; }
         .swatch-warm { background: linear-gradient(135deg, #faeee4, #d97a4a); }
@@ -227,8 +217,28 @@
     </style>
 </head>
 <body>
+
+    <section id="screen-install">
+        <div class="install-container">
+            <h1 class="install-title">アプリをインストール</h1>
+            <p class="install-desc">
+                Safariのブラウザでは通知機能が制限されるため、ホーム画面に追加してご利用ください。
+            </p>
+            <div class="install-steps">
+                1. 画面下部の「共有アイコン（四角から矢印が飛び出したマーク）」をタップ<br>
+                2. 「ホーム画面に追加」を選択<br>
+                3. ホーム画面に追加されたアイコンから起動
+            </div>
+        </div>
+    </section>
+
     <div class="container">
         
+        <div id="android-notice-box">
+            💡 <b>Androidの方へ</b><br>
+            ブラウザのメニューから「アプリをインストール」または「ホーム画面に追加」を行ってから起動すると、より快適に通知を受け取れます。
+        </div>
+
         <section id="auth-screen">
             <div class="card login-box">
                 <div class="login-logo">🔍</div>
@@ -417,27 +427,53 @@
         }
     }
 
-    // 認証状態の監視 (★画面の切り替え処理の心臓部★)
+    // 認証状態の監視 (★画面の切り替えとデバイス判定★)
     onAuthStateChanged(auth, async (user) => {
         const authScreen = document.getElementById('auth-screen');
         const mainScreen = document.getElementById('main-screen');
+        const screenInstall = document.getElementById('screen-install');
+        const androidNoticeBox = document.getElementById('android-notice-box');
 
-        if (user) {
-            currentUser = user;
-            // 未ログイン画面を隠して、メイン画面を表示
+        // デバイスと起動状態（PWAかどうか）の判定
+        const ua = navigator.userAgent.toLowerCase();
+        const isIOS = /iphone|ipad|ipod/.test(ua);
+        const isAndroid = /android/.test(ua);
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+        if (isIOS && !isStandalone) {
+            // ❌ iOSかつSafari（ブラウザ）で開かれている場合
+            // ログイン画面やメイン画面を隠し、インストール誘導画面を出す
             authScreen.style.display = 'none';
-            mainScreen.style.display = 'flex';
-            
-            document.getElementById('user-email').innerText = user.email;
-
-            checkPushSubscription(user.uid);
-            loadKeywords();
-            fetchLatestAnnouncement(user.uid);
-        } else {
-            currentUser = null;
-            // メイン画面を隠して、未ログイン(LP)画面を表示
             mainScreen.style.display = 'none';
-            authScreen.style.display = 'flex';
+            screenInstall.style.display = 'block';
+            return; // これ以降の処理は行わない
+        } else {
+            // ⭕️ PWAとして起動済み、またはPC/Androidの場合
+            screenInstall.style.display = 'none';
+
+            // Androidで、かつブラウザのまま開いている場合のみ注意書きを出す
+            if (isAndroid && !isStandalone) {
+                if (androidNoticeBox) androidNoticeBox.style.display = 'block';
+            } else {
+                if (androidNoticeBox) androidNoticeBox.style.display = 'none';
+            }
+
+            // ログイン判定による画面切り替え
+            if (user) {
+                currentUser = user;
+                authScreen.style.display = 'none';
+                mainScreen.style.display = 'flex';
+                
+                document.getElementById('user-email').innerText = user.email;
+
+                checkPushSubscription(user.uid);
+                loadKeywords();
+                fetchLatestAnnouncement(user.uid);
+            } else {
+                currentUser = null;
+                mainScreen.style.display = 'none';
+                authScreen.style.display = 'flex';
+            }
         }
     });
 
@@ -464,12 +500,9 @@
     window.signOut = async () => {
         try {
             if (currentUser) {
-                // ログアウト時にトークンも消去
                 await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
             }
-            // ★ページ遷移せず、Firebaseの認証状態だけ破棄する
             await firebaseSignOut(auth);
-            // サインアウトするとonAuthStateChangedが自動で走り、画面が切り替わります。
         } catch (error) {
             console.error("ログアウトエラー:", error);
             alert("ログアウト中にエラーが発生しました。");
@@ -567,7 +600,6 @@
         document.getElementById(`btn-${theme}`).classList.add('active');
     };
 
-    // 読み込み時に前回保存したテーマを復元
     const savedTheme = localStorage.getItem('theme') || 'warm';
     setTheme(savedTheme);
 
