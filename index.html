@@ -1,368 +1,576 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="InstaMonitor">
-  
-  <title>InstaMonitor - ストーリー監視パネル</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --bg: #fdf6ee; 
-      --card: #fffaf5; 
-      --border: #f0e4d0; 
-      --accent: #d97a4a;
-      --accent-light: #faeee4; 
-      --accent-mid: #e8a07a; 
-      --text-main: #3a2c1e;
-      --text-sub: #a08060; 
-      --shadow: 0 8px 24px rgba(180,110,60,0.12);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>InstaMonitor - 監視コントロールパネル</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gap-main: 12px;
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      background: var(--bg);
-      color: var(--text-main);
-      font-family: 'Outfit', 'Noto Sans JP', sans-serif;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
+            --bg: #fdf6ee;
+            --card: #fffaf5;
+            --border: #f0e4d0;
+            --accent: #d97a4a;
+            --accent-light: #faeee4;
+            --accent-mid: #e8a07a;
+            --text-main: #3a2c1e;
+            --text-sub: #a08060;
+            --tag-bg: #fdecd8;
+            --tag-text: #a05a2a;
+            --tag-border: #f5d4b0;
+            --insta: linear-gradient(135deg, #f9c784 0%, #f07167 42%, #d63384 78%, #9b59b6 100%);
+            
+            --log-bg: #fdf0e4;
+            --log-text: #7a4020;
+            --log-border: #f0d8b8;
+            --scroll-thumb: #d97a4a;
+            --scroll-track: #fdecd8;
+        }
 
-    /* 共通コンテナ */
-    .container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
-    .text-container { max-width: 680px; margin: 0 auto; padding: 0 32px; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { overflow-x: hidden; touch-action: pan-y; }
 
-    /* セクション共通 */
-    .lp-section { padding: 72px 0; }
-    .lp-section.alt { background: var(--card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .section-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 24px; line-height: 1.5; text-align: left; }
-    .lp-text { font-size: 0.95rem; color: var(--text-sub); margin-bottom: 24px; line-height: 1.8; text-align: left; }
-    .lp-text:last-child { margin-bottom: 0; }
+        body {
+            font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 15% 0%, rgba(240,160,100,0.18) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 100%, rgba(249,200,140,0.15) 0%, transparent 55%);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* 変更: 全体を上揃えに */
+        }
 
-    /* ヒーローセクション */
-    .hero { text-align: center; padding: 80px 24px 60px; }
-    .hero-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 20px; line-height: 1.35; }
-    .hero-sub { font-size: 1rem; color: var(--text-sub); margin-bottom: 40px; line-height: 1.7; }
+        .container {
+            width: 100%;
+            max-width: 440px;
+            padding: 16px 16px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-main);
+        }
 
-    /* Googleログインボタン (1行に収める修正込み) */
-    .btn-google-login {
-      display: inline-flex; align-items: center; justify-content: center;
-      gap: 10px; background: #ffffff; color: var(--text-main);
-      border: 1px solid var(--border); padding: 14px 24px;
-      border-radius: 99px; font-size: 0.95rem; font-weight: 700;
-      cursor: pointer; box-shadow: var(--shadow); transition: all 0.2s ease;
-      text-decoration: none; margin: 0 auto;
-      white-space: nowrap; width: fit-content; min-width: 280px; max-width: 100%;
-    }
-    .btn-google-login:hover { background: #f8f9fa; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(180,110,60,0.15); }
-    .btn-google-login svg { width: 20px; height: 20px; flex-shrink: 0; }
+        /* 画面切り替え用のセクション */
+        #auth-screen, #main-screen {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            gap: var(--gap-main);
+            animation: fadeIn 0.4s ease forwards;
+        }
 
-    /* 機能紹介グリッド・ステップ・FAQ */
-    .feature-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-    @media (min-width: 600px) { .feature-grid { grid-template-columns: 1fr 1fr; } }
-    .feature-card { background: white; padding: 28px 24px; border-radius: 16px; border: 1px solid var(--border); text-align: left; }
-    .feature-icon { color: var(--accent); margin-bottom: 16px; }
-    .feature-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; }
-    .feature-desc { font-size: 0.9rem; color: var(--text-sub); line-height: 1.6; }
-    
-    .step-card { display: flex; gap: 16px; margin-bottom: 24px; background: var(--bg); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
-    .step-number { background: var(--accent); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
-    .step-content h3 { font-size: 1.1rem; margin-bottom: 8px; }
-    .step-content p { font-size: 0.9rem; color: var(--text-sub); line-height: 1.6; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    .faq-item { margin-bottom: 16px; background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border); }
-    .faq-q { font-weight: 700; margin-bottom: 12px; color: var(--accent); }
-    .faq-a { font-size: 0.95rem; color: var(--text-sub); line-height: 1.6; }
-    .footer { text-align: center; padding: 60px 20px 40px; color: var(--text-sub); font-size: 0.85rem; }
+        /* ログイン画面専用のスタイル */
+        .login-box {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 20px;
+        }
+        .login-logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+        .login-desc {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
 
-    /* -------------------------------------------
-       新設：ホーム画面追加 誘導スクリーン
-    ------------------------------------------- */
-    #screen-install {
-      display: none; /* 初期状態は非表示、JSで判定後に表示 */
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: var(--bg);
-      z-index: 9000;
-      overflow-y: auto;
-      padding: 40px 20px;
-    }
-    .install-container {
-      max-width: 400px;
-      margin: 0 auto;
-      background: white;
-      padding: 40px 24px;
-      border-radius: 24px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      text-align: center;
-    }
-    .install-title {
-      font-size: 1.8rem;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-    .install-desc {
-      font-size: 0.95rem;
-      color: var(--text-sub);
-      margin-bottom: 32px;
-      line-height: 1.6;
-    }
-    .install-steps {
-      text-align: left;
-      background: var(--bg);
-      padding: 24px 20px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      margin-bottom: 24px;
-    }
-    .install-step {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-    .install-step:last-child { margin-bottom: 0; }
-    .install-step-icon {
-      background: var(--accent);
-      color: white;
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.9rem;
-      flex-shrink: 0;
-    }
-    .install-step p {
-      font-size: 0.95rem;
-      line-height: 1.5;
-      margin: 0;
-      color: var(--text-main);
-    }
-    .share-icon-inline {
-      display: inline-block;
-      vertical-align: text-bottom;
-      margin: 0 4px;
-      color: var(--accent);
-    }
+        /* 共通カードコンポーネント */
+        .card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    /* ローディング */
-    #loading-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: var(--bg); display: flex; flex-direction: column;
-      align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.3s;
-    }
-    .spinner {
-      width: 40px; height: 40px; border: 4px solid var(--border);
-      border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .icon-wrap {
+            width: 36px; height: 36px;
+            border-radius: 12px;
+            background: var(--accent-light);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .icon-wrap svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  
-  /* Android向けのお知らせ用スタイル */
-.android-notice {
-  margin-top: 15px;
-  padding: 12px;
-  background-color: var(--accent-light); /* 薄いオレンジ系の背景 */
-  border-radius: 8px;
-  border: 1px dashed var(--accent-mid);
-  color: var(--text-sub);
-  font-size: 0.85rem;
-  line-height: 1.4;
-  text-align: left;
-}
-.android-notice p {
-  margin: 0;
-}
-  
-  
-  </style>
+        /* ボタン類 */
+        .btn-insta {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: var(--insta); color: white; text-decoration: none;
+            padding: 18px; border-radius: 20px; font-weight: 600; font-size: 0.95rem;
+            box-shadow: 0 6px 20px rgba(214,51,132,0.25);
+            transition: all 0.2s;
+        }
+        .btn-insta:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(214,51,132,0.35); }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            background: linear-gradient(135deg, var(--accent-mid) 0%, var(--accent) 100%);
+            color: white; border: none; padding: 16px; border-radius: 18px;
+            font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%;
+            box-shadow: 0 4px 15px rgba(217, 122, 74, 0.25);
+            transition: all 0.2s;
+        }
+        .btn-primary:hover { opacity: 0.9; transform: scale(1.01); }
+
+        .btn-outline {
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            background: var(--card); color: var(--accent);
+            border: 1.5px solid var(--border); padding: 16px; border-radius: 18px;
+            font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn-sub {
+            background: none; border: 1.5px solid var(--border); color: var(--text-sub);
+            padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-sub:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
+
+        /* トグルスイッチ */
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: #e8d8c8; transition: .3s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px;
+            background: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background: var(--accent); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .status { font-size: 0.8rem; color: var(--text-sub); margin-top: 12px; }
+
+        /* キーワード入力 */
+        .input-group { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+        input[type="text"] {
+            flex: 1; min-width: 0; padding: 12px 16px; border: 1.5px solid var(--border);
+            border-radius: 14px; font-family: inherit; font-size: 0.95rem;
+            background: #fffdf9; outline: none; transition: border-color 0.2s;
+        }
+        input[type="text"]:focus { border-color: var(--accent-mid); }
+        .btn-add {
+            background: var(--accent); color: white; border: none;
+            width: 44px; height: 44px;
+            border-radius: 14px; font-size: 1.4rem; cursor: pointer;
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+        }
+
+        #keywords-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .keyword-tag {
+            background: var(--tag-bg); color: var(--tag-text);
+            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
+            border: 1px solid var(--tag-border); display: flex; align-items: center;
+            animation: pop 0.2s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes pop { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
+        .btn-del { margin-left: 8px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; }
+
+        /* テーマ切替 */
+        .theme-btn-group { display: flex; gap: 10px; }
+        .theme-btn {
+            width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent;
+            background: none; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .theme-btn.active { border-color: var(--accent); transform: scale(1.1); }
+        .theme-swatch { width: 24px; height: 24px; border-radius: 50%; }
+        .swatch-warm { background: linear-gradient(135deg, #faeee4, #d97a4a); }
+        .swatch-cool { background: linear-gradient(135deg, #e8f0fb, #6fa3d8); }
+        .swatch-mono { background: linear-gradient(135deg, #e8e8e8, #444444); }
+
+        /* テーマ別カラー変数 */
+        :root[data-theme="cool"] {
+            --bg: #f0f5fc; --card: #f8fbff; --border: #d0e0f0; --accent: #4a7abf;
+            --accent-light: #e4eef9; --accent-mid: #7aaad8; --text-main: #1e2c3a; --text-sub: #607080;
+            --tag-bg: #ddeef8; --tag-text: #2a5a8a; --tag-border: #b0d4ee;
+        }
+        :root[data-theme="mono"] {
+            --bg: #2a2a2a; --card: #333333; --border: #444444; --accent: #aaaaaa;
+            --accent-light: #3d3d3d; --accent-mid: #888888; --text-main: #e8e8e8; --text-sub: #888888;
+            --tag-bg: #3d3d3d; --tag-text: #cccccc; --tag-border: #555555;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        
+        <section id="auth-screen">
+            <div class="card login-box">
+                <div class="login-logo">🔍</div>
+                <h1 class="login-title">InstaMonitor</h1>
+                <p class="login-desc">指定したキーワードが<br>ストーリーに出現したら自動で通知します。</p>
+                
+                <button onclick="signInWithGoogle()" class="btn-primary">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
+                    Googleでログインして始める
+                </button>
+            </div>
+        </section>
 
-  <div id="loading-overlay">
-    <div class="spinner"></div>
-    <p style="margin-top: 16px; color: var(--text-sub); font-weight: 500;">読み込み中...</p>
-  </div>
+        <section id="main-screen">
+            <div class="card" style="padding: 16px 24px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="icon-wrap">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div style="flex: 1;">
+                        <div id="user-email" style="font-size: 0.9rem; font-weight: 500; color: var(--text-sub);"></div>
+                        <button onclick="signOut()" class="btn-sub" style="margin-top: 8px;">ログアウト</button>
+                    </div>
+                </div>
+            </div>
 
-  <div id="screen-install">
-    <div class="install-container">
-      <h1 class="install-title">InstaMonitor</h1>
-      <p class="install-desc">推しのストーリー更新を<br>プッシュ通知でお届けします</p>
-      
-      <p style="font-size: 0.85rem; color: #e74c3c; font-weight: bold; margin-bottom: 16px;">
-        ※通知を受け取るにはホーム画面への追加が必須です
-      </p>
+            <div>
+                <button class="btn-outline" onclick="window.location.reload();">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.85L21 8"></path></svg>
+                    最新の情報に更新
+                </button>
+            </div>
 
-      <div class="install-steps">
-        <div class="install-step">
-          <div class="install-step-icon">1</div>
-          <p>Safari下部の共有ボタン 
-            <svg class="share-icon-inline" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-              <polyline points="16 6 12 2 8 6"></polyline>
-              <line x1="12" y1="2" x2="12" y2="15"></line>
-            </svg>
-          をタップします。</p>
-        </div>
-        <div class="install-step">
-          <div class="install-step-icon">2</div>
-          <p>メニューを少し下にスクロールし、<br><strong>「ホーム画面に追加」</strong>を選択します。</p>
-        </div>
-        <div class="install-step">
-          <div class="install-step-icon">3</div>
-          <p>追加されたホーム画面のアイコンから起動してログインしてください。</p>
-        </div>
-      </div>
-      
-      <p style="font-size: 0.8rem; color: var(--text-sub); line-height: 1.5;">
-        ※追加後にこの画面が出る場合は、必ずホーム画面のアイコンから開いているか確認してください。
-      </p>
+            <div class="card">
+                <div class="card-header" style="margin-bottom:0;">
+                    <div class="card-title">
+                        <div class="icon-wrap">
+                            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        </div>
+                        プッシュ通知
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="push-switch">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="status-text" class="status">状態を確認中…</div>            
+            </div>
+
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <span style="font-size: 1.2rem;">📢</span>
+                    <h2 style="margin: 0; font-size: 1.1rem;">お知らせ</h2>
+                </div>
+                <div id="announcement-content" style="padding: 12px; background: var(--accent-light); border-radius: 12px; font-weight: 500; font-size: 0.95rem; line-height: 1.5; color: var(--text-main);">
+                    読み込み中...
+                </div>
+                <div id="announcement-time" style="font-size: 0.75rem; color: var(--text-sub); margin-top: 8px; text-align: right;"></div>
+            </div>
+
+            <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="btn-insta">
+                Instagramストーリーを開く
+            </a>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="icon-wrap">
+                            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        監視キーワード
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="keyword-input" placeholder="新しいキーワードを入力…">
+                    <button class="btn-add" onclick="addKeyword()">＋</button>
+                </div>
+                <div id="keywords-list"></div>
+                
+                <div style="margin-top: 16px; font-size: 0.85rem; color: var(--text-sub);">
+                    <a href="about_txt.html" style="color: var(--accent); text-decoration: underline;">通知が来ない場合は</a>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 16px 24px;">
+                <div class="card-header" style="margin-bottom: 0;">
+                    <div class="card-title">
+                        <div class="icon-wrap">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 0 20"></path><path d="M12 2c2.5 2.5 4 5.5 4 10s-1.5 7.5-4 10"></path></svg>
+                        </div>
+                        カラー変更
+                    </div>
+                    <div class="theme-btn-group">
+                        <button class="theme-btn active" id="btn-warm" onclick="setTheme('warm')">
+                            <span class="theme-swatch swatch-warm"></span>
+                        </button>
+                        <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')">
+                            <span class="theme-swatch swatch-cool"></span>
+                        </button>
+                        <button class="theme-btn" id="btn-mono" onclick="setTheme('mono')">
+                            <span class="theme-swatch swatch-mono"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </div>
-  </div>
 
-  <div id="main-content" style="display: none;">
-    <header class="hero container">
-      <h1 class="hero-title">見逃したくない<br>ストーリーを、確実に。</h1>
-      <p class="hero-sub">指定したキーワードが含まれたストーリーだけを抽出。<br>更新された瞬間にiPhoneへプッシュ通知をお届けします。</p>
-      
-      <button class="btn-google-login">
-        <svg viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Googleでログインして始める
-      </button>
-      <p style="font-size: 11px; color: var(--text-sub); margin-top: 16px;">※登録後も一切料金はかかりません</p>
-    </header>
-
-    <div class="android-notice" id="android-notice-box" style="display: none;">
-  <p>💡<b>Androidをお使いの方へ</b><br>
-  そのままでも通知は届きますが、メニュー（︙）から「ホーム画面に追加」でアプリのように使えます</p>
-</div>
-
-    
-    <section class="lp-section alt">
-      <div class="text-container">
-        <h2 class="section-title">情報に追われるのは、<br>もう終わりにしませんか？</h2>
-        <p class="lp-text">SNSは日々情報で溢れていて、見たい情報だけを探すのも少し疲れてしまう日がありますよね。</p>
-        <p class="lp-text">「推しのストーリーが更新されたのに気付かなかった…」<br>「見たい情報だけを知りたいのに、ノイズが多すぎる…」<br>そんな小さな後悔やストレスをなくすために。</p>
-        <p class="lp-text">InstaMonitorは、あなたが事前に登録したキーワードをAI（OCR）で解析し、一致した情報だけを抽出。更新された瞬間にあなたのスマホへ通知を送ります。</p>
-      </div>
-    </section>
-
-    <section class="lp-section">
-      <div class="text-container">
-        <h2 class="section-title">主な機能</h2>
-        <div class="feature-grid">
-          <div class="feature-card">
-            <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <h3 class="feature-title">リアルタイム通知</h3>
-            <p class="feature-desc">システムが自動で巡回・テキスト解析を行い、キーワードに一致するストーリーが投稿されたら即座にプッシュ通知でお知らせします。</p>
-          </div>
-          <div class="feature-card">
-            <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            <h3 class="feature-title">自由なキーワード設定</h3>
-            <p class="feature-desc">最大10個まで好きなキーワードを登録可能。必要な情報だけをピンポイントで抽出できます。</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <footer class="footer">
-      <p>&copy; 2026 InstaMonitor</p>
-    </footer>
-  </div>
-
-  <script type="module">
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
-      authDomain: "user-cd2c1.firebaseapp.com",
-      projectId: "user-cd2c1",
-      storageBucket: "user-cd2c1.firebasestorage.app",
-      messagingSenderId: "990277200920",
-      appId: "1:990277200920:web:952d974484fa76ed89e76d",
-      measurementId: "G-30QNZ04PDZ"
+        apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
+        authDomain: "user-cd2c1.firebaseapp.com",
+        projectId: "user-cd2c1",
+        storageBucket: "user-cd2c1.firebasestorage.app",
+        messagingSenderId: "990277200920",
+        appId: "1:990277200920:web:952d974484fa76ed89e76d",
+        measurementId: "G-30QNZ04PDZ"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-
-    // ==========================================
-    // デバイス・PWA判定ロジック
-    // ==========================================
-    // 1. ホーム画面から起動されているか判定
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    // 2. iOS端末（iPhone, iPad）か判定
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    // 3. Android端末か判定 ▼▼
-    const isAndroid = /android/i.test(navigator.userAgent);
-    // ▲▲ ここまで ▲▲
-
-    const screenInstall = document.getElementById('screen-install');
-    const mainContent = document.getElementById('main-content');
-    const overlay = document.getElementById('loading-overlay');
-
-    if (isIOS && !isStandalone) {
-      // ❌ iOSかつSafari（ブラウザ）で開かれている場合
-      // ログインボタンのあるLPを隠し、インストール誘導画面を出す
-      screenInstall.style.display = 'block';
-      overlay.style.display = 'none'; // ローディングを消す
-    } else {
-      // ⭕️ PWAとして起動済み、またはPC/Androidの場合
-      // LPを表示して、Firebaseのログイン判定を行う
-      mainContent.style.display = 'block';
-
-      // ▼▼ Androidで、かつブラウザのまま開いている場合のみ注意書きを出す ▼▼
-      if (isAndroid && !isStandalone) {
-        const androidNoticeBox = document.getElementById('android-notice-box');
-        if (androidNoticeBox) {
-          androidNoticeBox.style.display = 'block';
-        }
-      }
-      // ▲▲ ここまで ▲▲
-
-      
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          // ログイン済ならメインアプリ画面へ飛ぶ
-          window.location.href = 'main.html';
-        } else {
-          // 未ログインならローディングを消してLP(ログインボタン)を見せる
-          overlay.style.opacity = '0';
-          setTimeout(() => overlay.style.display = 'none', 300);
-        }
-      });
-
-      // ログインボタンのイベントリスナー登録
-      const loginButtons = document.querySelectorAll('.btn-google-login');
-      loginButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          signInWithPopup(auth, provider).catch((error) => {
-            console.error("ログインエラー:", error);
-            alert("ログインに失敗しました。もう一度お試しください。");
-          });
+    const db = getFirestore(app);
+    let messaging;
+  
+    try {
+        messaging = getMessaging(app);
+        onMessage(messaging, (payload) => {
+            if (Notification.permission === 'granted') {
+                new Notification(payload.notification.title, {
+                    body: payload.notification.body,
+                    icon: '/icon-192.png'
+                });
+            }
         });
-      });
+    } catch(e) {
+        console.log("通知機能が現在無効です", e);
     }
-  </script>
+
+    let currentUser = null;
+
+    // Googleログイン
+    window.signInWithGoogle = async () => {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' }); 
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (error) {
+            console.error("ログインエラー:", error);
+            if (error.code !== 'auth/cancelled-popup-request') {
+                alert("ログインに失敗しました: " + error.message);
+            }
+        }
+    };
+
+    // 最新のお知らせを取得
+    async function fetchLatestAnnouncement(uid) {
+        const contentEl = document.getElementById('announcement-content');
+        const timeEl = document.getElementById('announcement-time');
+        try {
+            const q = query(
+                collection(db, "analysis_logs"),
+                where("user_id", "==", uid),
+                orderBy("updated_at", "desc"),
+                limit(1)
+            );
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                const data = querySnapshot.docs[0].data();
+                contentEl.innerText = data.message || "直近の検知情報はありません";
+                if (data.updated_at) {
+                    const date = data.updated_at.toDate();
+                    timeEl.innerText = "更新: " + date.toLocaleString('ja-JP');
+                }
+            } else {
+                contentEl.innerText = "お知らせはありません";
+            }
+        } catch (err) {
+            console.error("お知らせ取得エラー:", err);
+            contentEl.innerText = "お知らせの取得に失敗しました (F12コンソールを確認)";
+        }
+    }
+
+    // 認証状態の監視 (★画面の切り替え処理の心臓部★)
+    onAuthStateChanged(auth, async (user) => {
+        const authScreen = document.getElementById('auth-screen');
+        const mainScreen = document.getElementById('main-screen');
+
+        if (user) {
+            currentUser = user;
+            // 未ログイン画面を隠して、メイン画面を表示
+            authScreen.style.display = 'none';
+            mainScreen.style.display = 'flex';
+            
+            document.getElementById('user-email').innerText = user.email;
+
+            checkPushSubscription(user.uid);
+            loadKeywords();
+            fetchLatestAnnouncement(user.uid);
+        } else {
+            currentUser = null;
+            // メイン画面を隠して、未ログイン(LP)画面を表示
+            mainScreen.style.display = 'none';
+            authScreen.style.display = 'flex';
+        }
+    });
+
+    // 通知購読状態の確認
+    async function checkPushSubscription(uid) {
+        const pushSwitch = document.getElementById('push-switch');
+        const statusText = document.getElementById('status-text');
+        try {
+            const docRef = doc(db, 'subscriptions', uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                pushSwitch.checked = true;
+                statusText.innerText = "通知設定：ON (準備完了)";
+            } else {
+                pushSwitch.checked = false;
+                statusText.innerText = "通知設定：OFF";
+            }
+        } catch (error) {
+            console.error("通知状態の確認失敗:", error);
+        }
+    }
+
+    // ログアウト処理
+    window.signOut = async () => {
+        try {
+            if (currentUser) {
+                // ログアウト時にトークンも消去
+                await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
+            }
+            // ★ページ遷移せず、Firebaseの認証状態だけ破棄する
+            await firebaseSignOut(auth);
+            // サインアウトするとonAuthStateChangedが自動で走り、画面が切り替わります。
+        } catch (error) {
+            console.error("ログアウトエラー:", error);
+            alert("ログアウト中にエラーが発生しました。");
+        }
+    };
+
+    // キーワード読み込み
+    function loadKeywords() {
+        if (!currentUser) return;
+        const q = query(collection(db, 'keywords'), where('user_id', '==', currentUser.uid), orderBy('createdAt', 'desc'));
+        onSnapshot(q, (snapshot) => {
+            const list = document.getElementById('keywords-list');
+            list.innerHTML = '';
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const el = document.createElement('div');
+                el.className = 'keyword-tag';
+                el.innerHTML = `${data.keyword} <button class="btn-del" onclick="deleteKeyword('${docSnap.id}')">×</button>`;
+                list.appendChild(el);
+            });
+        });
+    }
+
+    // キーワード追加
+    window.addKeyword = async () => {
+        const input = document.getElementById('keyword-input');
+        const kw = input.value.trim();
+        if (!kw || !currentUser) return;
+        try {
+            await addDoc(collection(db, 'keywords'), {
+                keyword: kw,
+                user_id: currentUser.uid,
+                createdAt: serverTimestamp()
+            });
+            input.value = '';
+        } catch (error) {
+            alert("追加に失敗しました");
+        }
+    };
+
+    // キーワード削除
+    window.deleteKeyword = async (id) => {
+        try {
+            await deleteDoc(doc(db, 'keywords', id));
+        } catch (error) {
+            alert("削除に失敗しました");
+        }
+    };
+
+    // 通知スイッチの切り替え
+    const pushSwitch = document.getElementById('push-switch');
+    const statusText = document.getElementById('status-text');
+
+    pushSwitch.addEventListener('change', async (e) => {
+        if (!currentUser) return;
+        if (e.target.checked) {
+            statusText.innerText = "設定中...";
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    const currentToken = await getToken(messaging, { 
+                        vapidKey: 'BFfTYmGpeE2ts6TGdboKiHvX7qlGkum04E1RkMrfSVmOryVGXFEDM8SC3OuAdvhoJRpzFpZu1S36XEin9weDzkQ' 
+                    });
+                    if (currentToken) {
+                        await setDoc(doc(db, 'subscriptions', currentUser.uid), {
+                            user_id: currentUser.uid,
+                            fcm_token: currentToken,
+                            updated_at: serverTimestamp()
+                        }, { merge: true });
+                        statusText.innerText = "通知設定：ON (準備完了)";
+                    }
+                } else {
+                    statusText.innerText = "通知がブロックされています";
+                    e.target.checked = false;
+                }
+            } catch (err) {
+                statusText.innerText = "エラーが発生しました";
+                e.target.checked = false;
+            }
+        } else {
+            try {
+                await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
+                statusText.innerText = "通知設定：OFF";
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    });
+
+    // テーマ（カラー）変更機能
+    window.setTheme = (theme) => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme); 
+        document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`btn-${theme}`).classList.add('active');
+    };
+
+    // 読み込み時に前回保存したテーマを復元
+    const savedTheme = localStorage.getItem('theme') || 'warm';
+    setTheme(savedTheme);
+
+</script>
 </body>
 </html>
