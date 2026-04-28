@@ -1,11 +1,9 @@
 name: Google Drive Monitor
 
 on:
-  schedule:
-    # 30分ごとに実行 (再読み込み用のコメント)
-    - cron: '*/30 * * * *'
-  workflow_dispatch: # 手動実行ボタン
+  workflow_dispatch: # 手動実行および外部（cron-job.org等）からの実行トリガー
 
+  
 jobs:
   monitor:
     runs-on: ubuntu-latest
