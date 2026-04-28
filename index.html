@@ -95,26 +95,30 @@
       line-height: 1.7;
     }
 
-    /* Googleログインボタン */
+   /* Googleログインボタン */
     .btn-google-login {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 10px; /* 余白を少し調整 */
       background: #ffffff;
       color: var(--text-main);
       border: 1px solid var(--border);
       padding: 14px 24px;
       border-radius: 99px;
-      font-size: 1rem;
+      font-size: 0.95rem; /* スマホで収まりやすいサイズに微調整 */
       font-weight: 700;
       cursor: pointer;
       box-shadow: var(--shadow);
       transition: all 0.2s ease;
       text-decoration: none;
-      width: 100%;
-      max-width: 320px;
       margin: 0 auto;
+      
+      /* ★ 1行できれいに収めるための魔法のコード ★ */
+      white-space: nowrap; /* テキストを絶対に改行させない */
+      width: fit-content;  /* 中身の文字数に合わせてボタン幅を自動調整 */
+      min-width: 280px;    /* 最低限の幅を持たせて、ボタンを立派に見せる */
+      max-width: 100%;     /* 画面幅をはみ出さないようにする */
     }
     .btn-google-login:hover {
       background: #f8f9fa;
@@ -124,7 +128,9 @@
     .btn-google-login svg {
       width: 20px;
       height: 20px;
+      flex-shrink: 0; /* アイコンが潰れるのを防ぐ */
     }
+    
 
     /* 機能紹介グリッド */
     .feature-grid {
