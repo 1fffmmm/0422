@@ -2,100 +2,401 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>サービス紹介 — Instagram ストーリー監視パネル</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>InstaMonitor - ストーリー監視パネル</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  
   <style>
     :root {
-      --bg: #fdf6ee; --card: #fffaf5; --border: #f0e4d0; --accent: #d97a4a;
-      --accent-light: #faeee4; --accent-mid: #e8a07a; --text-main: #3a2c1e;
-      --text-sub: #a08060; --shadow: 0 2px 18px rgba(180,110,60,0.08);
+      /* あなたのオリジナルカラーテーマ */
+      --bg: #fdf6ee; 
+      --card: #fffaf5; 
+      --border: #f0e4d0; 
+      --accent: #d97a4a;
+      --accent-light: #faeee4; 
+      --accent-mid: #e8a07a; 
+      --text-main: #3a2c1e;
+      --text-sub: #a08060; 
+      --shadow: 0 8px 24px rgba(180,110,60,0.12);
     }
-    body { background: var(--bg); color: var(--text-main); font-family: 'Outfit', 'Noto Sans JP', sans-serif; margin: 0; padding: 20px; }
-    .container { max-width: 600px; margin: 0 auto; }
-    .hero { text-align: center; padding: 40px 0; }
-    .hero h1 { font-family: 'DM Serif Display', serif; font-size: 2.5rem; margin-bottom: 10px; }
-    .btn-login { background: var(--accent); color: white; border: none; padding: 15px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; width: 100%; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(217,122,74,0.3); transition: 0.3s; }
-    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(217,122,74,0.4); }
-    .status { text-align: center; margin-top: 15px; font-size: 0.9rem; color: var(--text-sub); }
-    .steps { margin-top: 50px; background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid var(--border); }
-    .step { display: flex; gap: 20px; margin-bottom: 25px; }
-    .step-num { background: var(--accent-light); color: var(--accent); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
-    .step-title { font-weight: 600; margin-bottom: 4px; }
-    .step-desc { font-size: 0.9rem; color: var(--text-sub); line-height: 1.5; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* 共通コンテナ */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* セクション共通 */
+    .lp-section {
+      padding: 60px 0;
+    }
+    .lp-section.alt {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title {
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 30px;
+      line-height: 1.4;
+    }
+
+    /* ヒーローセクション */
+    .hero {
+      text-align: center;
+      padding: 60px 0 40px;
+    }
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      line-height: 1.3;
+    }
+    .hero-sub {
+      font-size: 1rem;
+      color: var(--text-sub);
+      margin-bottom: 32px;
+    }
+
+    /* Googleログインボタン */
+    .btn-google-login {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 14px 24px;
+      border-radius: 99px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      width: 100%;
+      max-width: 320px;
+    }
+    .btn-google-login:hover {
+      background: #f8f9fa;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(180,110,60,0.15);
+    }
+    .btn-google-login svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* 機能紹介グリッド */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    @media (min-width: 600px) {
+      .feature-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .feature-card {
+      background: var(--card) !important;
+      background-color: white;
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    .feature-icon {
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .feature-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .feature-desc {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+    }
+
+    /* 使い方ステップ */
+    .step-card {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      background: var(--bg);
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    .step-number {
+      background: var(--accent);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-content h3 {
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+    .step-content p {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+    }
+
+    /* FAQ */
+    .faq-item {
+      margin-bottom: 16px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .faq-q {
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+    .faq-a {
+      font-size: 0.95rem;
+      color: var(--text-sub);
+    }
+
+    /* フッター */
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-sub);
+      font-size: 0.85rem;
+    }
+
+    /* ローディングオーバーレイ */
+    #loading-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.3s;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="hero">
-      <h1>Instagram<br>Monitoring</h1>
-      <p style="color: var(--text-sub);">ストーリーを自動監視し、推しの更新を逃さない。</p>
-    </div>
 
-    <button id="btn-login" class="btn-login" onclick="signInWithGoogle()">Googleでログインして始める</button>
-    <div id="login-status" class="status"></div>
-
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-body">
-          <div class="step-title">Googleログイン</div>
-          <div class="step-desc">お持ちのGoogleアカウントで簡単に登録できます。</div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-body">
-          <div class="step-title">通知の許可</div>
-          <div class="step-desc">ログイン後、通知設定をオンにしてブラウザの許可を出してください。</div>
-        </div>
-      </div>
-      </div>
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <p style="margin-top: 16px; color: var(--text-sub); font-weight: 500;">認証を確認中...</p>
   </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  <header class="hero container">
+    <h1 class="hero-title">見逃したくない<br>ストーリーを、確実に。</h1>
+    <p class="hero-sub">指定したキーワードが含まれたストーリーだけを抽出。<br>更新された瞬間にiPhoneへプッシュ通知をお届けします。</p>
+    
+    <button class="btn-google-login">
+      <svg viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Googleでログインして始める
+    </button>
+    <p style="font-size: 11px; color: var(--text-sub); margin-top: 12px;">※無料でご利用いただけます</p>
+  </header>
 
-  // 提供いただいたFirebase設定
-  const firebaseConfig = {
-    apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
-    authDomain: "user-cd2c1.firebaseapp.com",
-    projectId: "user-cd2c1",
-    storageBucket: "user-cd2c1.firebasestorage.app",
-    messagingSenderId: "990277200920",
-    appId: "1:990277200920:web:952d974484fa76ed89e76d",
-    measurementId: "G-30QNZ04PDZ"
-  };
+  <section class="lp-section alt">
+    <div class="container">
+      <h2 class="section-title">情報に追われるのは、<br>もう終わりにしませんか？</h2>
+      <p style="text-align: center; color: var(--text-sub); max-width: 500px; margin: 0 auto;">
+        「推しのストーリーが更新されたのに気付かなかった…」<br>
+        「見たい情報だけを知りたいのに、ノイズが多すぎる…」<br><br>
+        InstaMonitorは、あなたが事前に登録したキーワードをAI（OCR）で解析し、一致した情報だけをあなたにお知らせする専用ツールです。
+      </p>
+    </div>
+  </section>
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-  
-  // 毎回Googleアカウントの選択画面を強制的に表示させる設定
-  provider.setCustomParameters({
-    prompt: 'select_account'
-  });
+  <section class="lp-section">
+    <div class="container">
+      <h2 class="section-title">主な機能</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <h3 class="feature-title">リアルタイム通知</h3>
+          <p class="feature-desc">システムが自動で巡回・テキスト解析を行い、キーワードに一致するストーリーが投稿されたら即座にプッシュ通知でお知らせします。</p>
+        </div>
+        <div class="feature-card">
+          <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          <h3 class="feature-title">自由なキーワード設定</h3>
+          <p class="feature-desc">最大10個まで好きなキーワードを登録可能。必要な情報だけをピンポイントで抽出できます。</p>
+        </div>
+        <div class="feature-card">
+          <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <h3 class="feature-title">ログのタイムライン表示</h3>
+          <p class="feature-desc">通知された内容はアプリ内のログ一覧に保存されます。後からまとめて確認したい時にも便利です。</p>
+        </div>
+        <div class="feature-card">
+          <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+          <h3 class="feature-title">ブラウザだけで完結</h3>
+          <p class="feature-desc">アプリストアからのダウンロードは不要。Safariから「ホーム画面に追加」するだけで全機能をご利用いただけます。</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  // ★ここが抜けていました！ログイン状態を監視し、ログイン済みなら main.html に飛ばす処理
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      window.location.href = 'main.html';
-    }
-  });
+  <section class="lp-section alt">
+    <div class="container">
+      <h2 class="section-title">使い方</h2>
+      
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>ログインしてキーワードを登録</h3>
+          <p>このページからGoogleアカウントでログインし、通知を受け取りたいキーワードを登録します。</p>
+        </div>
+      </div>
+      
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>ホーム画面に追加 (iOS)</h3>
+          <p>Safariの共有ボタンから「ホーム画面に追加」をして、アプリとして起動します。</p>
+        </div>
+      </div>
 
-  // グローバル関数としてGoogleログインを定義
-  window.signInWithGoogle = async () => {
-    try {
-      await signInWithPopup(auth, provider);
-      // ※ログイン成功後の画面遷移は、すぐ上にある onAuthStateChanged が自動で行います
-    } catch (error) {
-      console.error("ログインエラー:", error);
-      alert("ログインに失敗しました。もう一度お試しください。");
-    }
-  };
-</script>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>プッシュ通知をオンにする</h3>
+          <p>設定画面から通知を許可するだけで準備完了。あとはシステムが自動で監視を行います。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-section">
+    <div class="container">
+      <h2 class="section-title">よくある質問</h2>
+      
+      <div class="faq-item">
+        <div class="faq-q">Q. 複数端末で使えますか？</div>
+        <div class="faq-a">A. はい、同じGoogleアカウントでログインすれば、キーワード設定などは自動で同期されます。</div>
+      </div>
+      
+      <div class="faq-item">
+        <div class="faq-q">Q. iPhone以外でも使えますか？</div>
+        <div class="faq-a">A. MacやPCのChromeブラウザ等でもプッシュ通知を受け取ることが可能です。</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-section alt" style="text-align: center;">
+    <div class="container">
+      <h2 class="section-title" style="margin-bottom: 20px;">さっそく始めましょう</h2>
+      <button class="btn-google-login">
+        <svg viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Googleでログイン
+      </button>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>&copy; 2026 InstaMonitor</p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+    // あなたのFirebase設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
+      authDomain: "user-cd2c1.firebaseapp.com",
+      projectId: "user-cd2c1",
+      storageBucket: "user-cd2c1.firebasestorage.app",
+      messagingSenderId: "990277200920",
+      appId: "1:990277200920:web:952d974484fa76ed89e76d",
+      measurementId: "G-30QNZ04PDZ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    // ログイン状態の監視
+    onAuthStateChanged(auth, (user) => {
+      const overlay = document.getElementById('loading-overlay');
+      if (user) {
+        // ログイン済みなら main.html へリダイレクト
+        window.location.href = 'main.html';
+      } else {
+        // 未ログインならローディング画面を消してLPを表示
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.style.display = 'none', 300);
+      }
+    });
+
+    // 「Googleでログイン」ボタン（複数）にイベントを紐付け
+    const loginButtons = document.querySelectorAll('.btn-google-login');
+    loginButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        signInWithPopup(auth, provider).catch((error) => {
+          console.error("ログインエラー:", error);
+          alert("ログインに失敗しました。もう一度お試しください。");
+        });
+      });
+    });
+  </script>
 </body>
 </html>
