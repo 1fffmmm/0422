@@ -6,7 +6,6 @@ from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload
 
 # ※ ファイル1から関数をインポート（Firebase処理側）
-# from firebase_handler import check_keywords_and_notify 
 
 def get_drive_service():
     """Google Drive APIのサービスオブジェクトを作成する"""
@@ -74,37 +73,3 @@ def get_image_ids_from_folder(service, folder_id):
         print(f"Drive画像リスト取得エラー: {e}")
         return []
 
-if __name__ == "__main__":
-    print("=== プログラム実行開始 ===")
-    
-    # 環境変数からファイルIDを取得
-    FILE_ID = os.environ.get("DRIVE_FILE_ID")
-    
-    # URLから抽出したフォルダID（環境変数で上書き可能にしています）
-    FOLDER_ID = os.environ.get("DRIVE_FOLDER_ID", "1oFKFlM7P9szbG0u8SZe2UTlrA7ZWYMtZ")
-    
-    if not FILE_ID:
-        print("エラー: 環境変数 DRIVE_FILE_ID が不足しています。")
-        exit(1)
-
-    # 共通のDrive API サービスを初期化
-    service = get_drive_service()
-    
-    if service:
-        # 1. Driveからテキスト取得
-        text = get_drive_text(service, FILE_ID)
-        
-        # 2. Driveの特定フォルダから画像IDリストを取得
-        image_ids = get_image_ids_from_folder(service, FOLDER_ID)
-        
-        if text is not None:
-            print("--- 3. Firebase更新処理開始 ---")
-            # 3. Firebase側の処理を呼び出し（テキストと画像IDリストを渡す）
-            # ※ Firebase側の関数も引数を2つ受け取れるように修正してください
-            check_keywords_and_notify(text, image_ids)
-        else:
-            print("エラー: テキストが取得できなかったため、Firebase処理を中断しました。")
-    else:
-        print("エラー: Driveサービスが初期化できませんでした。")
-        
-    print("=== 全処理終了 ===")
