@@ -134,6 +134,7 @@
             font-size: 0.85rem;
             border: 1px solid #ffeeba;
             line-height: 1.5;
+            margin-top: 8px; /* 上の要素との余白を少し追加 */
         }
 
         /* ログイン画面専用のスタイル */
@@ -260,7 +261,8 @@
         </div>
     </section>
 
-
+    <div class="container">
+        
         <section id="auth-screen">
             <div class="card login-box">
                 <div class="login-logo">🔍</div>
@@ -365,16 +367,13 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                    <div class="container">
-        
         <div id="android-notice-box">
             💡 <b>Androidの方へ</b><br>
             ブラウザのメニューから「アプリをインストール」または「ホーム画面に追加」を行ってから起動すると、より快適に通知を受け取れます。
         </div>
-                        
-            </div>
-        </section>
 
     </div>
 
@@ -461,7 +460,7 @@
         const mainScreen = document.getElementById('main-screen');
         const screenInstall = document.getElementById('screen-install');
         const androidNoticeBox = document.getElementById('android-notice-box');
-        const overlay = document.getElementById('loading-overlay'); // ローディング要素
+        const overlay = document.getElementById('loading-overlay'); 
 
         const ua = navigator.userAgent.toLowerCase();
         const isIOS = /iphone|ipad|ipod/.test(ua);
@@ -473,7 +472,6 @@
             mainScreen.style.display = 'none';
             screenInstall.style.display = 'block';
             
-            // ローディングを消す
             overlay.style.opacity = '0';
             setTimeout(() => overlay.style.display = 'none', 300);
             return;
@@ -502,7 +500,6 @@
                 authScreen.style.display = 'flex';
             }
 
-            // 画面の準備ができたらローディングをフェードアウト
             overlay.style.opacity = '0';
             setTimeout(() => overlay.style.display = 'none', 300);
         }
@@ -527,10 +524,8 @@
     }
 
     window.signOut = async () => {
-        // ログアウト時にもう一度ローディングを出すと親切です
         const overlay = document.getElementById('loading-overlay');
         overlay.style.display = 'flex';
-        // 少しだけ待ってフェードイン（opacity）を戻す
         setTimeout(() => overlay.style.opacity = '1', 10);
 
         try {
