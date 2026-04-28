@@ -76,8 +76,23 @@ def check_keywords_and_notify(drive_text, image_ids=None):
 
     print(f"ヒットしたユーザー数: {len(user_matches)}人")
 
+    
+    # --- notifier.py の通知送信ループ部分 ---
     for uid, matched_words in user_matches.items():
         try:
+            # 通知本文の作成
+            keyword_str = ", ".join(matched_words)
+            message_body = f"キーワード「{keyword_str}」を検知しました"
+
+            # 1. Firestoreに「お知らせ」として保存（Web表示用）
+            db.collection("analysis_logs").add({
+                "user_id": uid,
+                "message": message_body,  # ★このフィールドをWeb側で読み取る
+                "matched_keywords": list(matched_words),
+                "updated_at": firestore.SERVER_TIMESTAMP
+            })
+
+            # 2. 実際のプッシュ通知送信
             subs_ref = db.collection("subscriptions").where("user_id", "==", uid).stream()
             for sub_doc in subs_ref:
                 token = sub_doc.to_dict().get("fcm_token")
@@ -85,14 +100,17 @@ def check_keywords_and_notify(drive_text, image_ids=None):
                     message = messaging.Message(
                         notification=messaging.Notification(
                             title="監視アラート",
-                            body=f"キーワード「{', '.join(matched_words)}」を検知しました"
+                            body=message_body
                         ),
                         token=token,
                     )
                     messaging.send(message)
-                    print(f"🚀 通知送信完了: ユーザー {uid}")
+            
+            print(f"✅ ユーザー {uid} にお知らせを保存し、通知を送信しました。")
+
         except Exception as e:
-            print(f"通知エラー (UID: {uid}): {e}")
+            print(f"通知処理エラー (UID: {uid}): {e}")
+            
             
     # ★変更箇所4：一番最後に、作成した「古いログの削除関数」を呼び出す
     delete_old_logs(db)
