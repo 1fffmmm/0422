@@ -27,13 +27,13 @@
             --shadow-hover: 0 8px 30px rgba(180,110,60,0.14);
             --insta: linear-gradient(135deg, #f9c784 0%, #f07167 42%, #d63384 78%, #9b59b6 100%);
     
-    /* 👇ここから追加👇（デフォルト/warmテーマ用のログ色） */
-    --log-bg: #fdf0e4;
-    --log-text: #7a4020;
-    --log-border: #f0d8b8;
-    --scroll-thumb: #d97a4a; /* スクロールバーのつまみ部分 */
-    --scroll-track: #fdecd8; /* スクロールバーの背景部分 */
-}
+            /* デフォルト/warmテーマ用のログ色 */
+            --log-bg: #fdf0e4;
+            --log-text: #7a4020;
+            --log-border: #f0d8b8;
+            --scroll-thumb: #d97a4a;
+            --scroll-track: #fdecd8;
+        }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -159,39 +159,34 @@
         @keyframes pop { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
         .btn-del { margin-left: 8px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; }
 
-.log-content {
-    background: var(--log-bg);
-    color: var(--log-text);
-    border: 1px solid var(--log-border);
-    padding: 16px; 
-    border-radius: 16px;
-    font-family: 'Courier New', monospace; 
-    font-size: 0.85rem;
-    line-height: 1.6; 
-    max-height: 300px; 
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-    /* 👇 今回の改善ポイント 👇 */
-    overflow: auto; /* 縦と横、必要な方だけスクロールバーを出す */
-    overscroll-behavior: contain; /* スマホでスクロールした際、画面全体が引っ張られるのを防ぐ */
-    white-space: pre; /* 自動で改行せず、はみ出た分を横スクロールさせる */
-}
+        .log-content {
+            background: var(--log-bg);
+            color: var(--log-text);
+            border: 1px solid var(--log-border);
+            padding: 16px; 
+            border-radius: 16px;
+            font-family: 'Courier New', monospace; 
+            font-size: 0.85rem;
+            line-height: 1.6; 
+            max-height: 300px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: auto;
+            overscroll-behavior: contain;
+            white-space: pre;
+        }
         
-
-        
-/* 👇スクロールバーのデザインを追加👇 */
-.log-content::-webkit-scrollbar {
-    width: 10px; /* スクロールバーの太さ */
-}
-.log-content::-webkit-scrollbar-track {
-    background: var(--scroll-track); /* 背景色 */
-    border-radius: 0 16px 16px 0; /* 右側の角丸に合わせる */
-}
-.log-content::-webkit-scrollbar-thumb {
-    background: var(--scroll-thumb); /* つまみの色 */
-    border-radius: 10px; /* つまみを丸くする */
-    border: 2px solid var(--scroll-track); /* つまみの周りに少し隙間を作る */
-}
+        .log-content::-webkit-scrollbar {
+            width: 10px;
+        }
+        .log-content::-webkit-scrollbar-track {
+            background: var(--scroll-track);
+            border-radius: 0 16px 16px 0;
+        }
+        .log-content::-webkit-scrollbar-thumb {
+            background: var(--scroll-thumb);
+            border-radius: 10px;
+            border: 2px solid var(--scroll-track);
+        }
         
         #pull-indicator {
             text-align: center;
@@ -225,26 +220,24 @@
             --accent-light: #e4eef9; --accent-mid: #7aaad8; --text-main: #1e2c3a; --text-sub: #607080;
             --tag-bg: #ddeef8; --tag-text: #2a5a8a; --tag-border: #b0d4ee;
             --shadow: 0 4px 20px rgba(60,100,180,0.08);
-/* 👇ここから追加👇 */
-    --log-bg: #e8f0fb;
-    --log-text: #2a5a8a;
-    --log-border: #b0d4ee;
-    --scroll-thumb: #7aaad8;
-    --scroll-track: #ddeef8;
-}
+            --log-bg: #e8f0fb;
+            --log-text: #2a5a8a;
+            --log-border: #b0d4ee;
+            --scroll-thumb: #7aaad8;
+            --scroll-track: #ddeef8;
+        }
         
         :root[data-theme="mono"] {
             --bg: #2a2a2a; --card: #333333; --border: #444444; --accent: #aaaaaa;
             --accent-light: #3d3d3d; --accent-mid: #888888; --text-main: #e8e8e8; --text-sub: #888888;
             --tag-bg: #3d3d3d; --tag-text: #cccccc; --tag-border: #555555;
             --shadow: 0 4px 20px rgba(0,0,0,0.3);
-/* 👇ここから追加👇 */
-    --log-bg: #222222;
-    --log-text: #cccccc;
-    --log-border: #444444;
-    --scroll-thumb: #666666;
-    --scroll-track: #333333;
-}
+            --log-bg: #222222;
+            --log-text: #cccccc;
+            --log-border: #444444;
+            --scroll-thumb: #666666;
+            --scroll-track: #333333;
+        }
     </style>
 </head>
 <body>
@@ -286,26 +279,22 @@
                     <span class="slider"></span>
                 </label>
             </div>
-           
             <div id="status-text" class="status">状態を確認中…</div>            
         </div>
 
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <span style="font-size: 1.2rem;">📢</span>
+                <h2 style="margin: 0; font-size: 1.1rem;">お知らせ</h2>
+            </div>
+            <div id="announcement-content" style="padding: 10px; background: var(--accent-light); border-radius: 8px; font-weight: 500; color: var(--text-main);">
+                読み込み中...
+            </div>
+            <div id="announcement-time" style="font-size: 0.75rem; color: var(--text-sub); margin-top: 8px; text-align: right;">
+                ---
+            </div>
+        </div>
 
-       <div class="card">
-    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-        <span style="font-size: 1.2rem;">📢</span>
-        <h2 style="margin: 0; font-size: 1.1rem;">お知らせ</h2>
-    </div>
-    <div id="announcement-content" style="padding: 10px; background: var(--accent-light); border-radius: 8px; font-weight: 500; color: var(--text-main);">
-        読み込み中...
-    </div>
-    <div id="announcement-time" style="font-size: 0.75rem; color: var(--text-sub); margin-top: 8px; text-align: right;">
-        ---
-    </div>
-</div>
-
-
-        
         <div id="main-content" style="display: none; flex-direction: column; gap: var(--gap-main);">
             
             <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="btn-insta">
@@ -327,10 +316,9 @@
                 </div>
                 <div id="keywords-list"></div>
                 
-               <div style="margin-top: 10px; font-size: 0.82rem; color: var(--text-sub);">
-                <a href="about_txt.html" style="color: var(--accent); text-decoration: underline;">通知が来ない場合は</a>
-            </div>
-                
+                <div style="margin-top: 10px; font-size: 0.82rem; color: var(--text-sub);">
+                    <a href="about_txt.html" style="color: var(--accent); text-decoration: underline;">通知が来ない場合は</a>
+                </div>
             </div>
 
             <div class="card" style="padding: 16px 24px;">
@@ -354,278 +342,246 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    // ★修正ポイント: getDocs をインポートに追加しました
+    import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
- <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
+        authDomain: "user-cd2c1.firebaseapp.com",
+        projectId: "user-cd2c1",
+        storageBucket: "user-cd2c1.firebasestorage.app",
+        messagingSenderId: "990277200920",
+        appId: "1:990277200920:web:952d974484fa76ed89e76d",
+        measurementId: "G-30QNZ04PDZ"
+    };
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBCwEb0nAynWlcIYloAwwdDQocXgD1W8DQ",
-    authDomain: "user-cd2c1.firebaseapp.com",
-    projectId: "user-cd2c1",
-    storageBucket: "user-cd2c1.firebasestorage.app",
-    messagingSenderId: "990277200920",
-    appId: "1:990277200920:web:952d974484fa76ed89e76d",
-    measurementId: "G-30QNZ04PDZ"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  let messaging;
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    let messaging;
   
-  try {
-      messaging = getMessaging(app);
-      onMessage(messaging, (payload) => {
-        if (Notification.permission === 'granted') {
-          new Notification(payload.notification.title, {
-            body: payload.notification.body,
-            icon: '/icon-192.png'
-          });
-        }
-      });
-  } catch(e) {
-      console.log("通知機能が現在無効です", e);
-  }
-
-  let currentUser = null;
-
-  // Googleログイン（アカウント選択を強制）
-  window.signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' }); // 【課題2解決】
     try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("ログインエラー:", error);
-      if (error.code !== 'auth/cancelled-popup-request') {
-        alert("ログインに失敗しました: " + error.message);
-      }
-    }
-  };
-
-  // 認証状態の監視
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      currentUser = user;
-      document.getElementById('logged-out-ui').style.display = 'none';
-      document.getElementById('logged-in-ui').style.display = 'block';
-      document.getElementById('user-email').innerText = user.email;
-      document.getElementById('main-content').style.display = 'flex';
-
-      checkPushSubscription(user.uid);
-      loadKeywords();
-      loadLatestAnalysis();
-    } else {
-      // 【課題1解決】未ログイン状態なら index.html へ戻す
-      window.location.href = 'index.html';
-    }
-  });
-
-  // 通知購読状態の確認
-  async function checkPushSubscription(uid) {
-    const pushSwitch = document.getElementById('push-switch');
-    const statusText = document.getElementById('status-text');
-    try {
-      const docRef = doc(db, 'subscriptions', uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        pushSwitch.checked = true;
-        statusText.innerText = "通知設定：ON (準備完了)";
-      } else {
-        pushSwitch.checked = false;
-        statusText.innerText = "通知設定：OFF";
-      }
-    } catch (error) {
-      console.error("通知状態の確認失敗:", error);
-    }
-  }
-
-  // 【課題1・4解決】ログアウト処理
-  window.signOut = async () => {
-    try {
-      if (currentUser) {
-        // ログアウト前にFirestoreからトークン情報を削除して整理する
-        await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
-        console.log("通知トークンを削除しました");
-      }
-      // Firebaseからサインアウト
-      await firebaseSignOut(auth);
-      // リダイレクトは onAuthStateChanged 側でも行われますが、念のため
-      window.location.href = 'index.html';
-    } catch (error) {
-      console.error("ログアウトエラー:", error);
-      alert("ログアウト中にエラーが発生しました。");
-    }
-  };
-
-  // キーワード読み込み（自分のデータのみ）
-  function loadKeywords() {
-    if (!currentUser) return;
-
-    const q = query(
-        collection(db, 'keywords'),
-        where('user_id', '==', currentUser.uid),
-        orderBy('createdAt', 'desc')
-    );
-
-    onSnapshot(q, (snapshot) => {
-        const list = document.getElementById('keywords-list');
-        list.innerHTML = '';
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const el = document.createElement('div');
-            el.className = 'keyword-tag';
-            el.innerHTML = `${data.keyword} <button class="btn-del" onclick="deleteKeyword('${docSnap.id}')">×</button>`;
-            list.appendChild(el);
+        messaging = getMessaging(app);
+        onMessage(messaging, (payload) => {
+            if (Notification.permission === 'granted') {
+                new Notification(payload.notification.title, {
+                    body: payload.notification.body,
+                    icon: '/icon-192.png'
+                });
+            }
         });
-    });
-  }
-
-  window.addKeyword = async () => {
-    const input = document.getElementById('keyword-input');
-    const kw = input.value.trim();
-    if (!kw || !currentUser) return;
-    try {
-      await addDoc(collection(db, 'keywords'), {
-        keyword: kw,
-        user_id: currentUser.uid,
-        createdAt: serverTimestamp()
-      });
-      input.value = '';
-    } catch (error) {
-      alert("追加に失敗しました");
+    } catch(e) {
+        console.log("通知機能が現在無効です", e);
     }
-  };
 
-  window.deleteKeyword = async (id) => {
-    try {
-      await deleteDoc(doc(db, 'keywords', id));
-    } catch (error) {
-      alert("削除に失敗しました");
-    }
-  };
+    let currentUser = null;
 
-  function loadLatestAnalysis() {
-    const q = query(collection(db, 'analysis_logs'), orderBy('updated_at', 'desc'), limit(1));
-    onSnapshot(q, (snapshot) => {
-      const latestEl = document.getElementById('latest-analysis');
-      const timeEl = document.getElementById('update-time');
-      if (!snapshot.empty) {
-        const data = snapshot.docs[0].data();
-        latestEl.innerText = data.content;
-        const date = data.updated_at ? data.updated_at.toDate() : new Date();
-        timeEl.innerText = "最終更新: " + date.toLocaleString('ja-JP');
-      } else {
-        latestEl.innerText = "データがありません";
-      }
-    });
-  }
-
-  // 通知スイッチの切り替え
-  const pushSwitch = document.getElementById('push-switch');
-  const statusText = document.getElementById('status-text');
-
-  pushSwitch.addEventListener('change', async (e) => {
-    if (!currentUser) return;
-    if (e.target.checked) {
-      statusText.innerText = "設定中...";
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          const currentToken = await getToken(messaging, { 
-            vapidKey: 'BFfTYmGpeE2ts6TGdboKiHvX7qlGkum04E1RkMrfSVmOryVGXFEDM8SC3OuAdvhoJRpzFpZu1S36XEin9weDzkQ' 
-          });
-          if (currentToken) {
-            // ドキュメントIDをUIDにすることで、1ユーザー1トークンに制限
-            await setDoc(doc(db, 'subscriptions', currentUser.uid), {
-              user_id: currentUser.uid,
-              fcm_token: currentToken,
-              updated_at: serverTimestamp()
-            }, { merge: true });
-            statusText.innerText = "通知設定：ON (準備完了)";
-          }
-        } else {
-          statusText.innerText = "通知がブロックされています";
-          e.target.checked = false;
+    // Googleログイン
+    window.signInWithGoogle = async () => {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' }); 
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (error) {
+            console.error("ログインエラー:", error);
+            if (error.code !== 'auth/cancelled-popup-request') {
+                alert("ログインに失敗しました: " + error.message);
+            }
         }
-      } catch (err) {
-        statusText.innerText = "エラーが発生しました";
-        e.target.checked = false;
-      }
-    } else {
-      try {
-        await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
-        statusText.innerText = "通知設定：OFF";
-      } catch (err) {
-        console.error(err);
-      }
+    };
+
+    // ★修正ポイント: 最新のお知らせを取得する関数
+    async function fetchLatestAnnouncement(uid) {
+        const contentEl = document.getElementById('announcement-content');
+        const timeEl = document.getElementById('announcement-time');
+
+        try {
+            const q = query(
+                collection(db, "analysis_logs"),
+                where("user_id", "==", uid),
+                orderBy("updated_at", "desc"),
+                limit(1)
+            );
+
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                const data = querySnapshot.docs[0].data();
+                contentEl.innerText = data.message || "直近の検知情報はありません";
+                
+                if (data.updated_at) {
+                    const date = data.updated_at.toDate();
+                    timeEl.innerText = "更新: " + date.toLocaleString('ja-JP');
+                }
+            } else {
+                contentEl.innerText = "お知らせはありません";
+            }
+        } catch (err) {
+            console.error("お知らせ取得エラー:", err);
+            // ユーザーに分かりやすくインデックス作成が必要な旨をコンソールで促す
+            contentEl.innerText = "お知らせの取得に失敗しました (F12コンソールを確認してください)";
+        }
     }
-  });
 
-     
-     // --- 最新のお知らせを取得する関数 ---
-async function fetchLatestAnnouncement(uid) {
-    const contentEl = document.getElementById('announcement-content');
-    const timeEl = document.getElementById('announcement-time');
+    // ★修正ポイント: 認証状態の監視 (重複していたものを1つに統一)
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('logged-out-ui').style.display = 'none';
+            document.getElementById('logged-in-ui').style.display = 'block';
+            document.getElementById('user-email').innerText = user.email;
+            document.getElementById('main-content').style.display = 'flex';
 
-    try {
+            checkPushSubscription(user.uid);
+            loadKeywords();
+            fetchLatestAnnouncement(user.uid); // お知らせの読み込みをここに集約
+        } else {
+            window.location.href = 'index.html';
+        }
+    });
+
+    // 通知購読状態の確認
+    async function checkPushSubscription(uid) {
+        const pushSwitch = document.getElementById('push-switch');
+        const statusText = document.getElementById('status-text');
+        try {
+            const docRef = doc(db, 'subscriptions', uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                pushSwitch.checked = true;
+                statusText.innerText = "通知設定：ON (準備完了)";
+            } else {
+                pushSwitch.checked = false;
+                statusText.innerText = "通知設定：OFF";
+            }
+        } catch (error) {
+            console.error("通知状態の確認失敗:", error);
+        }
+    }
+
+    // ログアウト処理
+    window.signOut = async () => {
+        try {
+            if (currentUser) {
+                await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
+                console.log("通知トークンを削除しました");
+            }
+            await firebaseSignOut(auth);
+            window.location.href = 'index.html';
+        } catch (error) {
+            console.error("ログアウトエラー:", error);
+            alert("ログアウト中にエラーが発生しました。");
+        }
+    };
+
+    // キーワード読み込み
+    function loadKeywords() {
+        if (!currentUser) return;
+
         const q = query(
-            collection(db, "analysis_logs"),
-            where("user_id", "==", uid), // ユーザーごとのログをフィルタ
-            orderBy("updated_at", "desc"),
-            limit(1)
+            collection(db, 'keywords'),
+            where('user_id', '==', currentUser.uid),
+            orderBy('createdAt', 'desc')
         );
 
-        const querySnapshot = await getDocs(q);
+        onSnapshot(q, (snapshot) => {
+            const list = document.getElementById('keywords-list');
+            list.innerHTML = '';
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const el = document.createElement('div');
+                el.className = 'keyword-tag';
+                el.innerHTML = `${data.keyword} <button class="btn-del" onclick="deleteKeyword('${docSnap.id}')">×</button>`;
+                list.appendChild(el);
+            });
+        });
+    }
 
-        if (!querySnapshot.empty) {
-            const data = querySnapshot.docs[0].data();
-            // notifier.pyで保存した 'message' フィールドを表示
-            contentEl.innerText = data.message || "直近の検知情報はありません";
-            
-            if (data.updated_at) {
-                const date = data.updated_at.toDate();
-                timeEl.innerText = "更新: " + date.toLocaleString();
+    window.addKeyword = async () => {
+        const input = document.getElementById('keyword-input');
+        const kw = input.value.trim();
+        if (!kw || !currentUser) return;
+        try {
+            await addDoc(collection(db, 'keywords'), {
+                keyword: kw,
+                user_id: currentUser.uid,
+                createdAt: serverTimestamp()
+            });
+            input.value = '';
+        } catch (error) {
+            alert("追加に失敗しました");
+        }
+    };
+
+    window.deleteKeyword = async (id) => {
+        try {
+            await deleteDoc(doc(db, 'keywords', id));
+        } catch (error) {
+            alert("削除に失敗しました");
+        }
+    };
+
+    // 通知スイッチの切り替え
+    const pushSwitch = document.getElementById('push-switch');
+    const statusText = document.getElementById('status-text');
+
+    pushSwitch.addEventListener('change', async (e) => {
+        if (!currentUser) return;
+        if (e.target.checked) {
+            statusText.innerText = "設定中...";
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    const currentToken = await getToken(messaging, { 
+                        vapidKey: 'BFfTYmGpeE2ts6TGdboKiHvX7qlGkum04E1RkMrfSVmOryVGXFEDM8SC3OuAdvhoJRpzFpZu1S36XEin9weDzkQ' 
+                    });
+                    if (currentToken) {
+                        await setDoc(doc(db, 'subscriptions', currentUser.uid), {
+                            user_id: currentUser.uid,
+                            fcm_token: currentToken,
+                            updated_at: serverTimestamp()
+                        }, { merge: true });
+                        statusText.innerText = "通知設定：ON (準備完了)";
+                    }
+                } else {
+                    statusText.innerText = "通知がブロックされています";
+                    e.target.checked = false;
+                }
+            } catch (err) {
+                statusText.innerText = "エラーが発生しました";
+                e.target.checked = false;
             }
         } else {
-            contentEl.innerText = "お知らせはありません";
+            try {
+                await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
+                statusText.innerText = "通知設定：OFF";
+            } catch (err) {
+                console.error(err);
+            }
         }
-    } catch (err) {
-        console.error("お知らせ取得エラー:", err);
-        contentEl.innerText = "お知らせの取得に失敗しました";
-    }
-}
+    });
 
-// 既存のログイン監視処理の中で呼び出す
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        currentUser = user;
-        loadKeywords(user.uid);
-        fetchLatestAnnouncement(user.uid); // ★ここを追加
-        // ... 他の初期化処理
-    } else {
-        window.location.href = 'index.html';
-    }
-});
+    // テーマ（カラー）変更機能
+    window.setTheme = (theme) => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme); 
 
-     
-     
-     // テーマ（カラー）変更機能
-  window.setTheme = (theme) => {
-    // 1. HTML全体（:root）のテーマ属性を書き換える
-    document.documentElement.setAttribute('data-theme', theme);
+        document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`btn-${theme}`).classList.add('active');
+    };
 
-      localStorage.setItem('theme', theme); // ← これを追加
+    // 読み込み時に前回保存したテーマを復元
+    const savedTheme = localStorage.getItem('theme') || 'warm';
+    setTheme(savedTheme);
 
-    // 2. ボタンの選択状態（丸い枠線）を更新する
-    document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(`btn-${theme}`).classList.add('active');
-  };
-     
 </script>
 </body>
 </html>
+
