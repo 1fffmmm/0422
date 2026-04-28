@@ -1,0 +1,23 @@
+name: Media Scraper
+
+on:
+  schedule:
+    - cron: '30 13 * * *' # 日本時間 22:30 実行 (UTC 13:30)
+  workflow_dispatch:      # 手動実行ボタン用
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Run script
+        env:
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+        run: python scraping_media.py
