@@ -73,3 +73,6 @@ def get_image_ids_from_folder(service, folder_id):
         print(f"Drive画像リスト取得エラー: {e}")
         return []
 
+# drive_reader.py
+# ...
+check_keywords_and_notify(text, image_ids, source="insta") # sourceを指定
