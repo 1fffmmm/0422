@@ -162,6 +162,25 @@
       border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
+
+  
+  /* Android向けのお知らせ用スタイル */
+.android-notice {
+  margin-top: 15px;
+  padding: 12px;
+  background-color: var(--accent-light); /* 薄いオレンジ系の背景 */
+  border-radius: 8px;
+  border: 1px dashed var(--accent-mid);
+  color: var(--text-sub);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-align: left;
+}
+.android-notice p {
+  margin: 0;
+}
+  
+  
   </style>
 </head>
 <body>
@@ -224,6 +243,12 @@
       <p style="font-size: 11px; color: var(--text-sub); margin-top: 16px;">※登録後も一切料金はかかりません</p>
     </header>
 
+    <div class="android-notice" id="android-notice-box" style="display: none;">
+  <p>💡<b>Androidをお使いの方へ</b><br>
+  そのままでも通知は届きますが、メニュー（︙）から「ホーム画面に追加」でアプリのように使えます</p>
+</div>
+
+    
     <section class="lp-section alt">
       <div class="text-container">
         <h2 class="section-title">情報に追われるのは、<br>もう終わりにしませんか？</h2>
@@ -288,6 +313,9 @@
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     // 2. iOS端末（iPhone, iPad）か判定
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    // 3. Android端末か判定 ▼▼
+    const isAndroid = /android/i.test(navigator.userAgent);
+    // ▲▲ ここまで ▲▲
 
     const screenInstall = document.getElementById('screen-install');
     const mainContent = document.getElementById('main-content');
@@ -302,6 +330,16 @@
       // ⭕️ PWAとして起動済み、またはPC/Androidの場合
       // LPを表示して、Firebaseのログイン判定を行う
       mainContent.style.display = 'block';
+
+      // ▼▼ Androidで、かつブラウザのまま開いている場合のみ注意書きを出す ▼▼
+      if (isAndroid && !isStandalone) {
+        const androidNoticeBox = document.getElementById('android-notice-box');
+        if (androidNoticeBox) {
+          androidNoticeBox.style.display = 'block';
+        }
+      }
+      // ▲▲ ここまで ▲▲
+
       
       onAuthStateChanged(auth, (user) => {
         if (user) {
