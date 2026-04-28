@@ -290,6 +290,22 @@
             <div id="status-text" class="status">状態を確認中…</div>            
         </div>
 
+
+       <div class="card">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+        <span style="font-size: 1.2rem;">📢</span>
+        <h2 style="margin: 0; font-size: 1.1rem;">お知らせ</h2>
+    </div>
+    <div id="announcement-content" style="padding: 10px; background: var(--accent-light); border-radius: 8px; font-weight: 500; color: var(--text-main);">
+        読み込み中...
+    </div>
+    <div id="announcement-time" style="font-size: 0.75rem; color: var(--text-sub); margin-top: 8px; text-align: right;">
+        ---
+    </div>
+</div>
+
+
+        
         <div id="main-content" style="display: none; flex-direction: column; gap: var(--gap-main);">
             
             <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="btn-insta">
@@ -550,6 +566,53 @@
     }
   });
 
+     
+     // --- 最新のお知らせを取得する関数 ---
+async function fetchLatestAnnouncement(uid) {
+    const contentEl = document.getElementById('announcement-content');
+    const timeEl = document.getElementById('announcement-time');
+
+    try {
+        const q = query(
+            collection(db, "analysis_logs"),
+            where("user_id", "==", uid), // ユーザーごとのログをフィルタ
+            orderBy("updated_at", "desc"),
+            limit(1)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const data = querySnapshot.docs[0].data();
+            // notifier.pyで保存した 'message' フィールドを表示
+            contentEl.innerText = data.message || "直近の検知情報はありません";
+            
+            if (data.updated_at) {
+                const date = data.updated_at.toDate();
+                timeEl.innerText = "更新: " + date.toLocaleString();
+            }
+        } else {
+            contentEl.innerText = "お知らせはありません";
+        }
+    } catch (err) {
+        console.error("お知らせ取得エラー:", err);
+        contentEl.innerText = "お知らせの取得に失敗しました";
+    }
+}
+
+// 既存のログイン監視処理の中で呼び出す
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        loadKeywords(user.uid);
+        fetchLatestAnnouncement(user.uid); // ★ここを追加
+        // ... 他の初期化処理
+    } else {
+        window.location.href = 'index.html';
+    }
+});
+
+     
      
      // テーマ（カラー）変更機能
   window.setTheme = (theme) => {
