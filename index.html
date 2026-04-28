@@ -51,6 +51,30 @@
             align-items: flex-start;
         }
 
+        /* -------------------------------------------
+           ローディングオーバーレイ
+        ------------------------------------------- */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid var(--accent-light);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         .container {
             width: 100%;
             max-width: 440px;
@@ -217,6 +241,10 @@
     </style>
 </head>
 <body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
 
     <section id="screen-install">
         <div class="install-container">
@@ -385,7 +413,6 @@
 
     let currentUser = null;
 
-    // Googleログイン
     window.signInWithGoogle = async () => {
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' }); 
@@ -399,7 +426,6 @@
         }
     };
 
-    // 最新のお知らせを取得
     async function fetchLatestAnnouncement(uid) {
         const contentEl = document.getElementById('announcement-content');
         const timeEl = document.getElementById('announcement-time');
@@ -427,38 +453,37 @@
         }
     }
 
-    // 認証状態の監視 (★画面の切り替えとデバイス判定★)
+    // 認証状態の監視
     onAuthStateChanged(auth, async (user) => {
         const authScreen = document.getElementById('auth-screen');
         const mainScreen = document.getElementById('main-screen');
         const screenInstall = document.getElementById('screen-install');
         const androidNoticeBox = document.getElementById('android-notice-box');
+        const overlay = document.getElementById('loading-overlay'); // ローディング要素
 
-        // デバイスと起動状態（PWAかどうか）の判定
         const ua = navigator.userAgent.toLowerCase();
         const isIOS = /iphone|ipad|ipod/.test(ua);
         const isAndroid = /android/.test(ua);
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
         if (isIOS && !isStandalone) {
-            // ❌ iOSかつSafari（ブラウザ）で開かれている場合
-            // ログイン画面やメイン画面を隠し、インストール誘導画面を出す
             authScreen.style.display = 'none';
             mainScreen.style.display = 'none';
             screenInstall.style.display = 'block';
-            return; // これ以降の処理は行わない
+            
+            // ローディングを消す
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 300);
+            return;
         } else {
-            // ⭕️ PWAとして起動済み、またはPC/Androidの場合
             screenInstall.style.display = 'none';
 
-            // Androidで、かつブラウザのまま開いている場合のみ注意書きを出す
             if (isAndroid && !isStandalone) {
                 if (androidNoticeBox) androidNoticeBox.style.display = 'block';
             } else {
                 if (androidNoticeBox) androidNoticeBox.style.display = 'none';
             }
 
-            // ログイン判定による画面切り替え
             if (user) {
                 currentUser = user;
                 authScreen.style.display = 'none';
@@ -474,10 +499,13 @@
                 mainScreen.style.display = 'none';
                 authScreen.style.display = 'flex';
             }
+
+            // 画面の準備ができたらローディングをフェードアウト
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 300);
         }
     });
 
-    // 通知購読状態の確認
     async function checkPushSubscription(uid) {
         const pushSwitch = document.getElementById('push-switch');
         const statusText = document.getElementById('status-text');
@@ -496,8 +524,13 @@
         }
     }
 
-    // ログアウト処理
     window.signOut = async () => {
+        // ログアウト時にもう一度ローディングを出すと親切です
+        const overlay = document.getElementById('loading-overlay');
+        overlay.style.display = 'flex';
+        // 少しだけ待ってフェードイン（opacity）を戻す
+        setTimeout(() => overlay.style.opacity = '1', 10);
+
         try {
             if (currentUser) {
                 await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
@@ -506,10 +539,11 @@
         } catch (error) {
             console.error("ログアウトエラー:", error);
             alert("ログアウト中にエラーが発生しました。");
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 300);
         }
     };
 
-    // キーワード読み込み
     function loadKeywords() {
         if (!currentUser) return;
         const q = query(collection(db, 'keywords'), where('user_id', '==', currentUser.uid), orderBy('createdAt', 'desc'));
@@ -526,7 +560,6 @@
         });
     }
 
-    // キーワード追加
     window.addKeyword = async () => {
         const input = document.getElementById('keyword-input');
         const kw = input.value.trim();
@@ -543,7 +576,6 @@
         }
     };
 
-    // キーワード削除
     window.deleteKeyword = async (id) => {
         try {
             await deleteDoc(doc(db, 'keywords', id));
@@ -552,7 +584,6 @@
         }
     };
 
-    // 通知スイッチの切り替え
     const pushSwitch = document.getElementById('push-switch');
     const statusText = document.getElementById('status-text');
 
@@ -592,7 +623,6 @@
         }
     });
 
-    // テーマ（カラー）変更機能
     window.setTheme = (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme); 
