@@ -40,6 +40,7 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           VAPID_EMAIL: ${{ secrets.VAPID_EMAIL }}
+          TWEET_FILE_ID: ${{ secrets.TWEET_FILE_ID }} # ←これを追加！
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           
         run: python main.py
