@@ -505,7 +505,7 @@ async function fetchLatestAnnouncement(uid) {
 
         const items = [];
         // notification_history のデータには既にラベル的な文言が含まれているので整理
-        if (!instaSnap.empty) items.push({ ...instaSnap.docs[0].data(), label: "ストーリー更新" });
+        if (!instaSnap.empty) items.push({ ...instaSnap.docs[0].data(), label: "ストーリー" });
         if (!mediaSnap.empty) items.push({ ...mediaSnap.docs[0].data(), label: "明日のメディア出演" });
 
         if (items.length === 0) {
