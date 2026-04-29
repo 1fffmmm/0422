@@ -335,8 +335,8 @@
                     推奨環境
                 </h2>
                 <ul class="env-list">
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg> iOS: Safariから「共有アイコン」「ホーム画面に追加」</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg> Android: ブラウザのメニューから「ホーム画面を追加」「アプリをインストール」</li>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg> iOS: Safariからホーム画面に追加してご利用ください</li>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg> Android: ブラウザのメニューから「アプリをインストール」を行ってからご利用ください</li>
                 </ul>
             </section>
 
@@ -380,14 +380,12 @@
                 <span style="color:#888; font-size:0.75rem;">明日のメディア情報を開く</span>
             </a>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <div class="icon-wrap">
-                            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        </div>
-                        登録キーワード
+            <div class="card" style="padding-top: 18px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; margin-top: -4px;">
+                    <div class="icon-wrap">
+                        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     </div>
+                    <span style="font-size: 1.05rem; font-weight: 600;">登録キーワード</span>
                 </div>
                 <div class="input-group">
                     <input type="text" id="keyword-input" placeholder="新しいキーワードを入力…">
@@ -492,7 +490,7 @@
         </svg>
         <div>
             <b>Androidの方へ</b><br>
-            ブラウザのメニューから「ホーム画面を追加」「アプリをインストール」を行ってご利用ください。安定して通知を受け取れます。
+            ブラウザのメニューから「アプリをインストール」を行ってからご利用いただくとより安定して通知を受け取れます。
         </div>
     </div>
 </div>
@@ -745,4 +743,3 @@ async function checkPushSubscription(uid) {
 </script>
 </body>
 </html>
-
