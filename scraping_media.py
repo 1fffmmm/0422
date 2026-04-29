@@ -11,8 +11,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import firebase_admin
 from firebase_admin import credentials, firestore
-# --- 【修正1】インポートは一番上に追加します ---
-from notifier import check_keywords_and_notify
+
 
 
 # ==========================================
@@ -131,17 +130,14 @@ def main():
         })
         
         print(f"成功: Firestoreに保存完了 (ID: {doc_ref.id})")
-        
-# ==========================================
-        # 【修正2】通知処理はこの位置（tryブロックの中）に追加します
-        # ==========================================
-        print("通知チェックを開始します...")
-        check_keywords_and_notify(content_text, source="media")
-        print("通知処理が完了しました。")
-        
+
 
     except Exception as e:
         print(f"致命的なエラーが発生しました: {e}")
+
+　print(f"成功: Firestoreに保存完了 (ID: {doc_ref.id})")
+        return content_text  # これを追加！
+
     
     finally:
         if driver:
