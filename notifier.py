@@ -111,7 +111,7 @@ def check_keywords_and_notify(content_text, image_ids=None, source="insta"):
 
             # 送信メッセージの構築
             keyword_str = ", ".join(sorted(list(matched_words)))
-            message_body = f"{config['label']} キーワード「{keyword_str}」を発見"
+            message_body = f"{config['label']}「{keyword_str}」を発見"
 
             # 重複送信防止：直近1分間に全く同じメッセージを送っていないか
             one_min_ago = now - timedelta(minutes=1)
