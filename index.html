@@ -224,7 +224,7 @@
         .swatch-warm { background: linear-gradient(135deg, #faeee4, #d97a4a); }
         .swatch-cool { background: linear-gradient(135deg, #e8f0fb, #6fa3d8); }
         .swatch-mono { background: linear-gradient(135deg, #e8e8e8, #444444); }
-        .theme-btn.active { border-color: var(--accent); }
+        .theme-btn.active { border-color: transparent; }
     </style>
 </head>
 <body>
@@ -400,9 +400,9 @@
             </div>
              
 
-            <div class="card" style="padding: 16px 24px;">
-                <div class="card-header" style="margin-bottom: 0;">
-                    <div class="card-title">
+            <div class="card" style="padding: 14px 20px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 600;">
                         <div class="icon-wrap">
                             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 0 20"></path><path d="M12 2c2.5 2.5 4 5.5 4 10s-1.5 7.5-4 10"></path></svg>
                         </div>
@@ -428,14 +428,14 @@
                 </div>
 
                 <div style="padding-top: 16px;">
-                    <div class="card-header" style="margin-bottom: 0;">
-                        <div class="card-title">
+                    <div class="card-header" style="margin-bottom: 0; align-items: flex-start;">
+                        <div class="card-title" style="align-items: flex-start;">
                             <div class="icon-wrap">
                                 <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                             </div>
                             通知マスター設定
                         </div>
-                        <label class="switch">
+                        <label class="switch" style="margin-top: 4px;">
                             <input type="checkbox" id="push-switch">
                             <span class="slider"></span>
                         </label>
@@ -745,3 +745,4 @@ async function checkPushSubscription(uid) {
 </script>
 </body>
 </html>
+
