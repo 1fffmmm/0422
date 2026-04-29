@@ -8,27 +8,25 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-
-
 # ==========================================
-# 1. Firestoreの初期化設定
+# 1. Firestoreの初期化
 # ==========================================
 def init_firestore():
     if not firebase_admin._apps:
-        # GitHub Secrets に保存した JSON文字列（またはBase64）を取得
         cred_json = os.environ.get('GCP_SERVICE_ACCOUNT_KEY')
         if not cred_json:
-            raise Exception("エラー: GCP_SERVICE_ACCOUNT_KEY が環境変数に設定されていません。")
+            raise Exception("エラー: GCP_SERVICE_ACCOUNT_KEY が設定されていません。")
 
         try:
-            # JSONとして読み込み
+            # そのままJSONとして試行
             cred_dict = json.loads(cred_json)
         except json.JSONDecodeError:
-            # JSONでない場合はBase64エンコードを疑ってデコード
+            # 失敗した場合はBase64としてデコード
             cred_dict = json.loads(base64.b64decode(cred_json).decode('utf-8'))
             
         cred = credentials.Certificate(cred_dict)
@@ -36,11 +34,7 @@ def init_firestore():
     return firestore.client()
 
 def main():
-    # Firestore クライアントの準備
-
-    # ==========================================
-    # 2. 自動日付計算
-    # ==========================================
+    # --- 日付計算 ---
     now = datetime.now()
     tomorrow = now + timedelta(days=1)
     url_ym = tomorrow.strftime("%Y%m")
@@ -49,48 +43,37 @@ def main():
     url = f"https://jr-official.starto.jp/s/jr/media/list?dy={url_ym}"
 
     print(f"--- メディア監視システム起動 ---")
-    print(f"対象日: {tomorrow.strftime('%Y年%m月%d日')}")
-    print(f"URL: {url}")
+    print(f"対象日: {tomorrow.strftime('%Y年%m月%d日')} / URL: {url}")
 
-    # ==========================================
-    # 3. ブラウザ設定 (GitHub Actions / Linux対応)
-    # ==========================================
+    # --- ブラウザ設定 ---
     options = Options()
-    options.add_argument('--headless')          # 画面を表示しない
-    options.add_argument('--no-sandbox')         # Linux環境での実行に必須
-    options.add_argument('--disable-dev-shm-usage') # メモリ不足防止
-    options.add_argument('--disable-gpu')
-    # --- 【追加】日本語を優先的に取得するための設定 ---
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--lang=ja-JP')
     options.add_experimental_option('prefs', {'intl.accept_languages': 'ja'})
-    # ----------------------------------------------
     options.add_argument('--window-size=1920,1080')
 
     driver = None
     try:    
         db = init_firestore()
-        # WebDriverの自動セットアップ
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=options)
+        # 最新のSeleniumでは Service() のみでドライバーは自動管理されます
+        driver = webdriver.Chrome(options=options)
         driver.get(url)
 
-        print("サイト読み込み中 (15秒待機)...")
-        time.sleep(15) # サイトの読み込みが遅いため長めに待機
+        # 明示的待機: <main>タグが現れるまで最大20秒待つ
+        wait = WebDriverWait(driver, 20)
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, 'main')))
+        
+        # 動的コンテンツの読み込みを少しだけ待つ
+        time.sleep(5)
 
         main_element = driver.find_element(By.TAG_NAME, 'main')
         text_lines = main_element.text.splitlines()
 
-        # 再読み込み判定
-        if "Loading" in main_element.text or len(text_lines) < 5:
-             print("コンテンツが未ロードのため再待機します...")
-             time.sleep(10)
-             main_element = driver.find_element(By.TAG_NAME, 'main')
-             text_lines = main_element.text.splitlines()
-
-        # ==========================================
-        # 4. 明日のスケジュール抽出ロジック
-        # ==========================================
-        date_pattern = re.compile(r"^(\d{2})(?:\s*\(.\))?$")
+        # --- 抽出ロジック ---
+        # 日付パターン: "30" や "30 (月)" にマッチ
+        date_pattern = re.compile(r"^(\d{1,2})(?:\s*\(.\))?$")
         recording = False
         tomorrow_schedule = []
 
@@ -100,48 +83,37 @@ def main():
             
             match = date_pattern.match(line)
             if match:
-                current_day_str = match.group(1)
+                current_day_str = match.group(1).zfill(2) # "1" を "01" に変換して比較
                 if current_day_str == target_day:
                     recording = True
-                else:
-                    if recording: break # 次の日付に来たら終了
+                    continue # 日付行自体はリストに入れない
+                elif recording:
+                    break # 次の日付が来たら終了
             
             if recording:
                 tomorrow_schedule.append(line)
 
-        # ==========================================
-        # 5. Firestoreへの保存処理
-        # ==========================================
-        if tomorrow_schedule:
-            # 抽出したリストを1つのテキストにまとめる
-            content_text = "\n".join(tomorrow_schedule)
-        else:
-            content_text = "明日の出演予定は見つかりませんでした。"
+        # --- 保存処理 ---
+        content_text = "\n".join(tomorrow_schedule) if tomorrow_schedule else "明日の出演予定は見つかりませんでした。"
 
-        print("Firestoreへデータを保存しています...")
-        
-        # analysis_logs コレクションへドキュメントを追加
+        print("Firestoreへ保存中...")
         doc_ref = db.collection('analysis_logs').document()
         doc_ref.set({
             "text": content_text,
-            "source": "media",          # インスタ監視と区別するための識別子
+            "source": "media",
             "updated_at": firestore.SERVER_TIMESTAMP,
             "target_date": tomorrow.strftime('%Y-%m-%d')
         })
         
-        print(f"成功: Firestoreに保存完了 (ID: {doc_ref.id})")
+        print(f"成功: ID {doc_ref.id}")
         return content_text 
 
-
     except Exception as e:
-        print(f"致命的なエラーが発生しました: {e}")
-        # エラー時は何も返さない（Noneになる）ので、main.py側で「if media_text:」で判定できます
-
+        print(f"エラー発生: {e}")
     finally:
         if driver:
             driver.quit()
-            print("ブラウザを閉じました。")
-            
+            print("ブラウザを終了しました。")
 
 if __name__ == "__main__":
     main()
