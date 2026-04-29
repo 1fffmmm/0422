@@ -1,99 +1,149 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>使い方ガイド - InstaMonitor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #fdf6ee; --card: #fffaf5; --border: #f0e4d0;
-            --accent: #d97a4a; --accent-light: #faeee4;
-            --text-main: #3a2c1e; --text-sub: #a08060;
-            --insta: linear-gradient(135deg, #f9c784 0%, #f07167 42%, #d63384 78%, #9b59b6 100%);
-        }
-        /* ダークテーマやクールテーマにも対応できるよう変数を設定 */
-        :root[data-theme="cool"] { --bg: #f0f5fc; --card: #f8fbff; --border: #d0e0f0; --accent: #4a7abf; --text-main: #1e2c3a; --text-sub: #607080; }
-        
-        body {
-            font-family: 'Outfit', 'Noto Sans JP', sans-serif;
-            background: var(--bg); color: var(--text-main);
-            margin: 0; display: flex; justify-content: center;
-        }
-        .container { width: 100%; max-width: 440px; padding: 24px 16px; display: flex; flex-direction: column; gap: 16px; }
-        .card { background: var(--card); border-radius: 24px; padding: 24px; border: 1px solid var(--border); }
-        
-        h1 { font-size: 1.4rem; font-weight: 800; text-align: center; margin-bottom: 8px; }
-        h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
-        .icon-box { width: 32px; height: 32px; background: var(--accent-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        
-        .feature-item { margin-bottom: 20px; }
-        .feature-label { font-weight: 700; font-size: 0.95rem; display: block; margin-bottom: 4px; }
-        .feature-desc { font-size: 0.85rem; color: var(--text-sub); line-height: 1.5; }
-        
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; color: white; margin-bottom: 8px; }
-        .bg-insta { background: var(--insta); }
-        .bg-x { background: #000; }
-        .bg-media { background: #1a6bff; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstaMonitorについて</title>
 
-        .btn-back { display: block; text-align: center; text-decoration: none; color: var(--accent); font-weight: 600; font-size: 0.95rem; margin-top: 20px; padding: 16px; border: 1.5px solid var(--border); border-radius: 18px; }
-    </style>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --bg: #fdf6ee;
+    --card: #fffaf5;
+    --border: #f0e4d0;
+    --accent: #d97a4a;
+    --text-main: #3a2c1e;
+    --text-sub: #a08060;
+}
+
+body {
+    margin: 0;
+    font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+}
+
+.container {
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.card {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+}
+
+h1 {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-sub);
+}
+
+.step {
+    margin-bottom: 14px;
+}
+
+.step span {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.btn {
+    display: block;
+    text-align: center;
+    padding: 16px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #e8a07a, #d97a4a);
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 20px;
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <header style="margin-bottom: 10px;">
-            <h1>InstaMonitor Guide</h1>
-            <p style="text-align: center; font-size: 0.85rem; color: var(--text-sub);">「推し」の情報を逃さないための集中管理パネル</p>
-        </header>
 
-        <section class="card">
-            <h2><div class="icon-box">🔍</div>監視の仕組み</h2>
-            <div class="feature-item">
-                <span class="badge bg-insta">Instagram</span>
-                <span class="feature-label">ストーリー更新のチェック</span>
-                <p class="feature-desc">公式Instagramのストーリーを定期的に巡回。24時間で消えてしまう情報をリアルタイムでキャッチします。</p>
-            </div>
-            <div class="feature-item">
-                <span class="badge bg-x">𝕏 (Twitter)</span>
-                <span class="feature-label">公式ポストの追跡</span>
-                <p class="feature-desc">ジュニア公式Xなどのポスト内容を監視。重要な告知を見逃しません。</p>
-            </div>
-            <div class="feature-item">
-                <span class="badge bg-media">Media</span>
-                <span class="feature-label">明日の出演情報</span>
-                <p class="feature-desc">公式サイトから「明日」のメディア出演情報を自動抽出して、前もってお知らせします。</p>
-            </div>
-        </section>
+<div class="container">
 
-        <section class="card">
-            <h2><div class="icon-box">🔔</div>通知をカスタマイズ</h2>
-            <p class="feature-desc" style="margin-bottom: 16px;">
-                キーワードを登録することで、自分の担当情報だけをプッシュ通知で受け取ることができます。
-            </p>
-            <div style="background: var(--bg); padding: 12px; border-radius: 14px; border: 1px dashed var(--accent);">
-                <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent);">💡 おすすめのキーワード設定</span>
-                <p style="font-size: 0.8rem; margin-top: 4px; line-height: 1.4;">
-                    ・タレントの名字（例：猪狩）<br>
-                    ・フルネーム（例：猪狩蒼弥）<br>
-                    ・グループ名（例：HiHi Jets）
-                </p>
-            </div>
-        </section>
-
-        <section class="card">
-            <h2><div class="icon-box">📱</div>推奨環境</h2>
-            <p class="feature-desc">
-                本アプリは<b>PWA（ホーム画面追加）</b>での利用を前提としています。ブラウザのタブではなく、アイコンから起動することで、バックグラウンドでの通知受信が安定します。
-            </p>
-        </section>
-
-        <a href="index.html" class="btn-back">コントロールパネルへ戻る</a>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:2.5rem;">🔍</div>
+        <h1>InstaMonitorとは？</h1>
+        <p>
+            SNSや公式サイトの更新を、<br>
+            <b>自動でチェックして通知してくれるツール</b>です。
+        </p>
     </div>
 
-    <script>
-        // 親画面のテーマ設定を引き継ぐ
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
-    </script>
+    <div class="card">
+        <h2>できること</h2>
+        <p>
+            ・Instagramストーリー更新の通知<br>
+            ・𝕏（旧Twitter）の投稿通知<br>
+            ・公式サイトのメディア出演情報の更新通知<br><br>
+            → いちいち見に行かなくてもOK
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>使い方</h2>
+
+        <div class="step">
+            <p><span>① ログイン</span><br>
+            Googleアカウントでサクッと開始</p>
+        </div>
+
+        <div class="step">
+            <p><span>② キーワード登録</span><br>
+            気になる名前やワードを追加</p>
+        </div>
+
+        <div class="step">
+            <p><span>③ 通知ON</span><br>
+            スイッチをONにするだけ</p>
+        </div>
+
+        <div class="step">
+            <p><span>④ あとは待つだけ</span><br>
+            更新があれば自動で通知</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>通知について</h2>
+        <p>
+            通知はブラウザの機能を使っています。<br>
+            初回ON時に表示される「通知を許可」を選択してください。
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>安心して使えます</h2>
+        <p>
+            ・Googleログインのみ使用<br>
+            ・パスワードは保存しません<br>
+            ・取得するのはメールアドレスのみ
+        </p>
+    </div>
+
+    <a href="index.html" class="btn">戻る</a>
+
+</div>
+
 </body>
 </html>
