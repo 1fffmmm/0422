@@ -478,73 +478,63 @@
         }
     };
 
-// ★ お知らせ取得ロジック（表示の重複を排除）
-    async function fetchLatestAnnouncement(uid) {
-        const contentEl = document.getElementById('announcement-content');
-        try {
-            // インスタ監視の最新1件を取得
-            const qInsta = query(
-                collection(db, "analysis_logs"),
-                where("user_id", "==", uid),
-                where("source", "==", "insta"),
-                orderBy("updated_at", "desc"),
-                limit(1)
-            );
-            
-            // メディア出演の最新1件を取得
-            const qMedia = query(
-                collection(db, "analysis_logs"),
-                where("user_id", "==", uid),
-                where("source", "==", "media"),
-                orderBy("updated_at", "desc"),
-                limit(1)
-            );
+// ★ お知らせ取得ロジックの修正版
+async function fetchLatestAnnouncement(uid) {
+    const contentEl = document.getElementById('announcement-content');
+    try {
+        // 【修正点】collection を "notification_history" に変更
+        const qInsta = query(
+            collection(db, "notification_history"), 
+            where("user_id", "==", uid),
+            where("source", "==", "insta"),
+            orderBy("updated_at", "desc"),
+            limit(1)
+        );
+        
+        const qMedia = query(
+            collection(db, "notification_history"), 
+            where("user_id", "==", uid),
+            where("source", "==", "media"),
+            orderBy("updated_at", "desc"),
+            limit(1)
+        );
 
-            const [instaSnap, mediaSnap] = await Promise.all([getDocs(qInsta), getDocs(qMedia)]);
-            // --- ここから追加 ---
-console.log("インスタ取得件数:", instaSnap.size);
-console.log("メディア取得件数:", mediaSnap.size);
+        const [instaSnap, mediaSnap] = await Promise.all([getDocs(qInsta), getDocs(qMedia)]);
+        
+        contentEl.innerHTML = ''; 
 
-if (!mediaSnap.empty) {
-    console.log("メディア出演のデータ内容:", mediaSnap.docs[0].data());
-} else {
-    console.warn("メディア出演のデータが空です（条件に一致するものがありません）");
-}
-// --- ここまで追加 ---
-            
-            contentEl.innerHTML = ''; // クリア
+        const items = [];
+        // notification_history のデータには既にラベル的な文言が含まれているので整理
+        if (!instaSnap.empty) items.push({ ...instaSnap.docs[0].data(), label: "インスタ更新" });
+        if (!mediaSnap.empty) items.push({ ...mediaSnap.docs[0].data(), label: "メディア出演" });
 
-            const items = [];
-            if (!instaSnap.empty) items.push({ ...instaSnap.docs[0].data(), label: "インスタ更新" });
-            if (!mediaSnap.empty) items.push({ ...mediaSnap.docs[0].data(), label: "メディア出演" });
-
-            if (items.length === 0) {
-                contentEl.innerHTML = '<div style="font-size: 0.95rem; color: var(--text-sub);">直近のお知らせはありません</div>';
-                return;
-            }
-
-            items.forEach(item => {
-                const dateText = item.updated_at ? item.updated_at.toDate().toLocaleString('ja-JP') : "不明";
-                
-                // ★【修正ポイント】メッセージ冒頭の「【...】」を削除する
-                // 例：「【インスタ更新】本文」 → 「本文」に変換されます
-                const cleanMessage = (item.message || "詳細なし").replace(/^【.*?】\s*/, "");
-                
-                const html = `
-                    <div class="announcement-item">
-                        <span class="announcement-label">${item.label}</span>
-                        <div class="announcement-text">${cleanMessage}</div>
-                        <div class="announcement-meta">${dateText}</div>
-                    </div>
-                `;
-                contentEl.innerHTML += html;
-            });
-
-        } catch (err) {
-            console.error("お知らせ取得エラー:", err);
-            contentEl.innerText = "お知らせの取得に失敗しました。";
+        if (items.length === 0) {
+            contentEl.innerHTML = '<div style="font-size: 0.95rem; color: var(--text-sub);">直近のお知らせはありません</div>';
+            return;
         }
+
+        items.forEach(item => {
+            const dateText = item.updated_at ? item.updated_at.toDate().toLocaleString('ja-JP') : "不明";
+            
+            // Python側で message_body として保存された内容（キーワード名など）を表示
+            // 例：「【インスタ更新】キーワード「〇〇」を検知しました」
+            const cleanMessage = (item.message || "詳細なし").replace(/^【.*?】\s*/, "");
+            
+            const html = `
+                <div class="announcement-item">
+                    <span class="announcement-label">${item.label}</span>
+                    <div class="announcement-text">${cleanMessage}</div>
+                    <div class="announcement-meta">${dateText}</div>
+                </div>
+            `;
+            contentEl.innerHTML += html;
+        });
+
+    } catch (err) {
+        console.error("お知らせ取得エラー:", err);
+        contentEl.innerText = "お知らせの取得に失敗しました。";
     }
+}
     
 
     // 認証状態の監視
