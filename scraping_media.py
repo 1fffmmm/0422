@@ -37,7 +37,6 @@ def init_firestore():
 
 def main():
     # Firestore クライアントの準備
-    db = init_firestore()
 
     # ==========================================
     # 2. 自動日付計算
@@ -68,7 +67,8 @@ def main():
     options.add_argument('--window-size=1920,1080')
 
     driver = None
-    try:
+    try:    
+        db = init_firestore()
         # WebDriverの自動セットアップ
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
@@ -129,8 +129,7 @@ def main():
             "target_date": tomorrow.strftime('%Y-%m-%d')
         })
         
-print(f"成功: Firestoreに保存完了 (ID: {doc_ref.id})")
-
+        print(f"成功: Firestoreに保存完了 (ID: {doc_ref.id})")
         return content_text 
 
 
