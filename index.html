@@ -628,8 +628,11 @@
             authScreen.style.display = 'none';
             mainScreen.style.display = 'flex';
             document.getElementById('user-email').innerText = user.email;
-            // fetchLatestAnnouncement(user.uid); // 実装に合わせて有効化
-            // loadKeywords(); // 実装に合わせて有効化
+            
+            fetchLatestAnnouncement(user.uid); // 実装に合わせて有効化
+            loadKeywords(); // 実装に合わせて有効化
+
+            
         } else {
             currentUser = null;
             mainScreen.style.display = 'none';
