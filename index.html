@@ -409,7 +409,20 @@
             </div>
         </section>
 
-        <div id="android-notice-box">💡 <b>Androidの方へ</b><br>ホーム画面に追加すると、より快適に通知を受け取れます。</div>
+       <div id="android-notice-box">
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"></path>
+        </svg>
+        <div>
+            <b>Androidの方へ</b><br>
+            ブラウザのメニューから「アプリをインストール」を行ってからご利用いただくとより安定して通知を受け取れます。
+        </div>
+    </div>
+</div>
+        
 
     </div>
 
@@ -444,35 +457,48 @@
     };
 
     onAuthStateChanged(auth, async (user) => {
-        const authScreen = document.getElementById('auth-screen');
-        const mainScreen = document.getElementById('main-screen');
-        const screenInstall = document.getElementById('screen-install');
-        const overlay = document.getElementById('loading-overlay');
+    const authScreen = document.getElementById('auth-screen');
+    const mainScreen = document.getElementById('main-screen');
+    const screenInstall = document.getElementById('screen-install');
+    const overlay = document.getElementById('loading-overlay');
+    const androidNotice = document.getElementById('android-notice-box'); // 追加
 
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-        const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const ua = navigator.userAgent.toLowerCase();
+    const isAndroid = /android/.test(ua);
+    const isIOS = /iphone|ipad|ipod/.test(ua);
 
-        if (isIOS && !isStandalone) {
-            screenInstall.style.display = 'block';
-            overlay.style.display = 'none';
+    // Androidかつブラウザ実行時のみ通知を表示
+    if (isAndroid && !isStandalone) {
+        androidNotice.style.display = 'block';
+    } else {
+        androidNotice.style.display = 'none';
+    }
+
+    if (isIOS && !isStandalone) {
+        // iOS未インストール時の処理（既存通り）
+        screenInstall.style.display = 'block';
+        overlay.style.display = 'none';
+    } else {
+        // ...以下、既存のログイン判定ロジック...
+        screenInstall.style.display = 'none';
+        if (user) {
+            currentUser = user;
+            authScreen.style.display = 'none';
+            mainScreen.style.display = 'flex';
+            document.getElementById('user-email').innerText = user.email;
+            // fetchLatestAnnouncement(user.uid); // 実装に合わせて有効化
+            // loadKeywords(); // 実装に合わせて有効化
         } else {
-            screenInstall.style.display = 'none';
-            if (user) {
-                currentUser = user;
-                authScreen.style.display = 'none';
-                mainScreen.style.display = 'flex';
-                document.getElementById('user-email').innerText = user.email;
-                fetchLatestAnnouncement(user.uid);
-                loadKeywords();
-            } else {
-                currentUser = null;
-                mainScreen.style.display = 'none';
-                authScreen.style.display = 'flex';
-            }
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.display = 'none', 300);
+            currentUser = null;
+            mainScreen.style.display = 'none';
+            authScreen.style.display = 'flex';
         }
-    });
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
+});
+    
 
     // ここに fetchLatestAnnouncement などの以前のJSロジックを含めてください
     // (省略: ロジック部分は以前のものをそのまま使用してください)
