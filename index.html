@@ -134,7 +134,7 @@
             font-size: 0.85rem;
             border: 1px solid #ffeeba;
             line-height: 1.5;
-            margin-top: 8px; /* 上の要素との余白を少し追加 */
+            margin-top: 8px; 
         }
 
         /* ログイン画面専用のスタイル */
@@ -255,6 +255,13 @@
             --accent-light: #3d3d3d; --accent-mid: #888888; --text-main: #e8e8e8; --text-sub: #888888;
             --tag-bg: #3d3d3d; --tag-text: #cccccc; --tag-border: #555555;
         }
+
+        /* お知らせ内のセクション分け */
+        .announcement-item { padding: 8px 0; border-bottom: 1px dashed var(--border); }
+        .announcement-item:last-child { border-bottom: none; }
+        .announcement-label { font-size: 0.7rem; font-weight: 700; color: white; background: var(--accent-mid); padding: 2px 8px; border-radius: 6px; margin-bottom: 4px; display: inline-block; }
+        .announcement-text { font-size: 0.95rem; line-height: 1.5; color: var(--text-main); white-space: pre-wrap; word-break: break-all; }
+        .announcement-meta { font-size: 0.7rem; color: var(--text-sub); margin-top: 4px; text-align: right; }
     </style>
 </head>
 <body>
@@ -301,14 +308,13 @@
                     </div>
                     <h2 style="margin: 0; font-size: 1.1rem;">お知らせ</h2>
                 </div>
-                <div id="announcement-content" style="padding-top: 12px; font-weight: 500; font-size: 0.95rem; line-height: 1.6; color: var(--text-main); word-break: break-word; overflow-wrap: break-word; white-space: pre-wrap;">
-                    読み込み中...
+                <div id="announcement-content" style="padding-top: 12px;">
+                    <div style="font-size: 0.95rem; color: var(--text-sub);">読み込み中...</div>
                 </div>
-                <div id="announcement-time" style="font-size: 0.75rem; color: var(--text-sub); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); text-align: right;"></div>
             </div>
 
             <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="btn-insta">
-                Instagramストーリーを開く
+                Instagramストーリーを開く 
             </a>
 
             <a href="https://jr-official.starto.jp/" target="_blank" class="btn-jr">
@@ -358,9 +364,7 @@
                 </div>
             </div>
 
-            <!-- まとめカード：ユーザー情報 / 更新 / 通知設定 -->
             <div class="card">
-                <!-- ユーザー情報 -->
                 <div style="display: flex; align-items: center; gap: 15px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
                     <div class="icon-wrap">
                         <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -371,7 +375,6 @@
                     </div>
                 </div>
 
-                <!-- 通知マスター設定 -->
                 <div style="padding-top: 16px;">
                     <div class="card-header" style="margin-bottom: 0;">
                         <div class="card-title">
@@ -410,7 +413,6 @@
                     </div>
                 </div>
 
-                <!-- 更新ボタン -->
                 <div style="padding-top: 16px; border-top: 1px solid var(--border); margin-top: 16px;">
                     <button class="btn-outline" onclick="window.location.reload();">
                         最新の情報に更新
@@ -476,30 +478,56 @@
         }
     };
 
+    // ★ 修正箇所：お知らせ取得ロジック（インスタとメディアの両方を表示）
     async function fetchLatestAnnouncement(uid) {
         const contentEl = document.getElementById('announcement-content');
-        const timeEl = document.getElementById('announcement-time');
         try {
-            const q = query(
+            // インスタ監視の最新1件を取得
+            const qInsta = query(
                 collection(db, "analysis_logs"),
                 where("user_id", "==", uid),
+                where("source", "==", "insta"),
                 orderBy("updated_at", "desc"),
                 limit(1)
             );
-            const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) {
-                const data = querySnapshot.docs[0].data();
-                contentEl.innerText = data.message || "直近の検知情報はありません";
-                if (data.updated_at) {
-                    const date = data.updated_at.toDate();
-                    timeEl.innerText = "更新: " + date.toLocaleString('ja-JP');
-                }
-            } else {
-                contentEl.innerText = "お知らせはありません";
+            
+            // メディア出演の最新1件を取得
+            const qMedia = query(
+                collection(db, "analysis_logs"),
+                where("user_id", "==", uid),
+                where("source", "==", "media"),
+                orderBy("updated_at", "desc"),
+                limit(1)
+            );
+
+            const [instaSnap, mediaSnap] = await Promise.all([getDocs(qInsta), getDocs(qMedia)]);
+            
+            contentEl.innerHTML = ''; // クリア
+
+            const items = [];
+            if (!instaSnap.empty) items.push({ ...instaSnap.docs[0].data(), label: "インスタ更新" });
+            if (!mediaSnap.empty) items.push({ ...mediaSnap.docs[0].data(), label: "メディア出演" });
+
+            if (items.length === 0) {
+                contentEl.innerHTML = '<div style="font-size: 0.95rem; color: var(--text-sub);">直近のお知らせはありません</div>';
+                return;
             }
+
+            items.forEach(item => {
+                const dateText = item.updated_at ? item.updated_at.toDate().toLocaleString('ja-JP') : "不明";
+                const html = `
+                    <div class="announcement-item">
+                        <span class="announcement-label">${item.label}</span>
+                        <div class="announcement-text">${item.message || "詳細なし"}</div>
+                        <div class="announcement-meta">${dateText}</div>
+                    </div>
+                `;
+                contentEl.innerHTML += html;
+            });
+
         } catch (err) {
             console.error("お知らせ取得エラー:", err);
-            contentEl.innerText = "お知らせの取得に失敗しました (F12コンソールを確認)";
+            contentEl.innerText = "お知らせの取得に失敗しました。";
         }
     }
 
@@ -570,15 +598,14 @@
                 const data = docSnap.data();
                 pushSwitch.checked = true;
                 statusText.innerText = "通知設定：ON (準備完了)";
-                subSettings.style.display = 'flex'; // 個別設定を表示
+                subSettings.style.display = 'flex'; 
                 
-                // Firestoreに保存されている値を反映（なければデフォルトtrue）
                 instaSwitch.checked = data.insta_enabled !== false;
                 mediaSwitch.checked = data.media_enabled !== false;
             } else {
                 pushSwitch.checked = false;
                 statusText.innerText = "通知設定：OFF";
-                subSettings.style.display = 'none'; // 個別設定を隠す
+                subSettings.style.display = 'none'; 
             }
         } catch (error) {
             console.error("通知状態の確認失敗:", error);
@@ -620,7 +647,6 @@
         });
     }
     
-// --- キーワード削除の関数を追加 ---
     window.deleteKeyword = async (id) => {
         try {
             await deleteDoc(doc(db, 'keywords', id));
@@ -647,14 +673,12 @@
         }
     };
 
-    // --- 2. 通知設定の保存処理（関数の外に書く） ---
     const pushSwitch = document.getElementById('push-switch');
     const statusText = document.getElementById('status-text');
     const subSettings = document.getElementById('notification-sub-settings');
     const instaSwitch = document.getElementById('insta-switch');
     const mediaSwitch = document.getElementById('media-switch');
 
-    // マスター通知設定スイッチの動き
     pushSwitch.addEventListener('change', async (e) => {
         if (!currentUser) return;
         if (e.target.checked) {
@@ -695,7 +719,6 @@
         }
     });
 
-    // インスタ通知スイッチの動き
     instaSwitch.addEventListener('change', async (e) => {
         if (!currentUser) return;
         try {
@@ -707,7 +730,6 @@
         }
     });
 
-    // メディア出演通知スイッチの動き
     mediaSwitch.addEventListener('change', async (e) => {
         if (!currentUser) return;
         try {
@@ -718,8 +740,6 @@
             console.error("メディア設定保存エラー:", err);
         }
     });
-
-    // --- 3. テーマ切り替え処理（この後に続く） ---
 
     window.setTheme = (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
