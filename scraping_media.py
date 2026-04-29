@@ -129,20 +129,20 @@ def main():
             "target_date": tomorrow.strftime('%Y-%m-%d')
         })
         
-        print(f"成功: Firestoreに保存完了 (ID: {doc_ref.id})")
+print(f"成功: Firestoreに保存完了 (ID: {doc_ref.id})")
+
+        return content_text 
 
 
     except Exception as e:
         print(f"致命的なエラーが発生しました: {e}")
+        # エラー時は何も返さない（Noneになる）ので、main.py側で「if media_text:」で判定できます
 
-　print(f"成功: Firestoreに保存完了 (ID: {doc_ref.id})")
-        return content_text  # これを追加！
-
-    
     finally:
         if driver:
             driver.quit()
             print("ブラウザを閉じました。")
+            
 
 if __name__ == "__main__":
     main()
