@@ -10,7 +10,7 @@ firebase.initializeApp({
     storageBucket: "user-cd2c1.firebasestorage.app",
     messagingSenderId: "990277200920",
     appId: "1:990277200920:web:952d974484fa76ed89e76d"
-}); // ← ★ここの「)」が抜けていました！
+});
 
 const messaging = firebase.messaging();
 
@@ -18,13 +18,7 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload) {
   console.log('バックグラウンド通知を受信:', payload);
   
-  // payload.notification が無い場合（dataのみの場合）への対策
-  const notificationTitle = payload.notification?.title || "監視アラート";
-  const notificationOptions = {
-    body: payload.notification?.body || "新着メッセージがあります",
-    icon: '/icon-192.png', // manifest.jsonで設定したアイコンなど
-    badge: '/icon-192.png'
-  };
-
-  return self.registration.showNotification(notificationTitle, notificationOptions);
+  // サーバー（notifier.py）側で「notification」ペイロードをセットして送信しているため、
+  // バックグラウンド時はブラウザ・OS側が自動的に通知を表示してくれます。
+  // そのため、ここでは self.registration.showNotification() による手動表示は行いません（2重通知防止）。
 });
