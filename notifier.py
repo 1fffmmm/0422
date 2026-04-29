@@ -92,5 +92,45 @@ def check_keywords_and_notify(content_text, image_ids=None, source="insta"):
             subs_query = db.collection("subscriptions").where("user_id", "==", uid).limit(1).stream()
             subs_docs = list(subs_query)
             
-            if not
+            if not subs_docs:
+                continue
+                
+            sub_data = subs_docs[0].to_dict()
             
+            # 通知のオンオフ判定 (insta_enabled / media_enabled)
+            is_enabled = sub_data.get(f"{source}_enabled", True)
+            if not is_enabled:
+                print(f"ユーザー {uid} は {source} 通知をオフにしているためスキップ。")
+                continue
+
+            # 通知内容の構成
+            display_source = "【インスタ更新】" if source == "insta" else "【メディア出演】"
+            keyword_str = ", ".join(matched_words)
+            message_body = f"{display_source} キーワード「{keyword_str}」を検知しました"
+
+            # 1. 個別通知履歴への保存 (2日で自動削除対象)
+            db.collection("notification_history").add({
+                "user_id": uid,
+                "message": message_body,
+                "source": source,
+                "updated_at": firestore.SERVER_TIMESTAMP
+            })
+
+            # 2. プッシュ通知の送信 (FCM)
+            token = sub_data.get("fcm_token")
+            if token:
+                message = messaging.Message(
+                    notification=messaging.Notification(
+                        title=f"{display_source} 監視アラート",
+                        body=message_body
+                    ),
+                    token=token,
+                )
+                messaging.send(message)
+                print(f"✅ ユーザー {uid} へ通知を送信しました。")
+
+        except Exception as e:
+            print(f"通知送信エラー (UID: {uid}): {e}")
+
+    # --- ステップD: 古いデータのクリーンアップ実行 ---
+    delete_old_notifications(db)
