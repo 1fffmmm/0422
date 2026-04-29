@@ -505,8 +505,8 @@ async function fetchLatestAnnouncement(uid) {
 
         const items = [];
         // notification_history のデータには既にラベル的な文言が含まれているので整理
-        if (!instaSnap.empty) items.push({ ...instaSnap.docs[0].data(), label: "インスタ更新" });
-        if (!mediaSnap.empty) items.push({ ...mediaSnap.docs[0].data(), label: "メディア出演" });
+        if (!instaSnap.empty) items.push({ ...instaSnap.docs[0].data(), label: "ストーリー更新" });
+        if (!mediaSnap.empty) items.push({ ...mediaSnap.docs[0].data(), label: "明日のメディア出演" });
 
         if (items.length === 0) {
             contentEl.innerHTML = '<div style="font-size: 0.95rem; color: var(--text-sub);">直近のお知らせはありません</div>';
