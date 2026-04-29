@@ -9,33 +9,14 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-import firebase_admin
-from firebase_admin import credentials, firestore
 
-# ==========================================
-# 1. Firestoreの初期化設定
-# ==========================================
-def init_firestore():
-    if not firebase_admin._apps:
-        # GitHub Secrets に保存した JSON文字列（またはBase64）を取得
-        cred_json = os.environ.get('GCP_SERVICE_ACCOUNT_KEY')
-        if not cred_json:
-            raise Exception("エラー: GCP_SERVICE_ACCOUNT_KEY が環境変数に設定されていません。")
-
-        try:
-            # JSONとして読み込み
-            cred_dict = json.loads(cred_json)
-        except json.JSONDecodeError:
-            # JSONでない場合はBase64エンコードを疑ってデコード
-            cred_dict = json.loads(base64.b64decode(cred_json).decode('utf-8'))
-            
-        cred = credentials.Certificate(cred_dict)
-        firebase_admin.initialize_app(cred)
-    return firestore.client()
+# ※ Firestoreの初期化は notifier.py 側で行うため、ここでは不要になりますが、
+# もし単体で動かすテストをしたい場合は残しておいてもOKです。
+# 今回は notifier.py に任せる前提で書き換えを最小限にします。
 
 def main():
     # ==========================================
-    # 2. 自動日付計算
+    # 1. 自動日付計算
     # ==========================================
     now = datetime.now()
     tomorrow = now + timedelta(days=1)
@@ -49,7 +30,7 @@ def main():
     print(f"URL: {url}")
 
     # ==========================================
-    # 3. ブラウザ設定 (GitHub Actions / Linux対応)
+    # 2. ブラウザ設定
     # ==========================================
     options = Options()
     options.add_argument('--headless')
@@ -62,8 +43,7 @@ def main():
 
     driver = None
     try:    
-        db = init_firestore()
-        # WebDriverのセットアップ (Serviceを使用する元の方式)
+        # WebDriverのセットアップ
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
@@ -82,9 +62,8 @@ def main():
              text_lines = main_element.text.splitlines()
 
         # ==========================================
-        # 4. 明日のスケジュール抽出ロジック (改善版)
+        # 3. 明日のスケジュール抽出ロジック
         # ==========================================
-        # 日付パターン: "01" や "1"、"(月)" などの曜日付きに対応
         date_pattern = re.compile(r"^(\d{1,2})(?:\s*\(.\))?$")
         recording = False
         tomorrow_schedule = []
@@ -95,40 +74,33 @@ def main():
             
             match = date_pattern.match(line)
             if match:
-                # サイト側の「1」を「01」に揃えて比較
                 current_day_str = match.group(1).zfill(2)
                 if current_day_str == target_day:
                     recording = True
-                    continue # 【採用】日付行自体はリストに入れない
+                    continue 
                 else:
-                    if recording: break # 次の日付に来たら終了
+                    if recording: break 
             
             if recording:
                 tomorrow_schedule.append(line)
 
         # ==========================================
-        # 5. Firestoreへの保存処理
+        # 4. 取得結果の確定
         # ==========================================
         if tomorrow_schedule:
             content_text = "\n".join(tomorrow_schedule)
         else:
             content_text = "明日の出演予定は見つかりませんでした。"
 
-        print("Firestoreへデータを保存しています...")
+        # 【削除】Firestoreへの保存処理(db.collection...set)をここから消しました。
+        # 保存は main.py から呼ばれる notifier.py 側で自動的に行われます。
         
-        doc_ref = db.collection('analysis_logs').document()
-        doc_ref.set({
-            "text": content_text,
-            "source": "media",
-            "updated_at": firestore.SERVER_TIMESTAMP,
-            "target_date": tomorrow.strftime('%Y-%m-%d')
-        })
-        
-        print(f"成功: Firestoreに保存完了 (ID: {doc_ref.id})")
+        print(f"データ取得成功。")
         return content_text 
 
     except Exception as e:
         print(f"致命的なエラーが発生しました: {e}")
+        return None
 
     finally:
         if driver:
