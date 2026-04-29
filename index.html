@@ -277,60 +277,6 @@
         </section>
 
         <section id="main-screen">
-            <div class="card" style="padding: 16px 24px;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div class="icon-wrap">
-                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    </div>
-                    <div style="flex: 1;">
-                        <div id="user-email" style="font-size: 0.9rem; font-weight: 500; color: var(--text-sub);"></div>
-                        <button onclick="signOut()" class="btn-sub" style="margin-top: 8px;">ログアウト</button>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <button class="btn-outline" onclick="window.location.reload();">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.85L21 8"></path></svg>
-                    最新の情報に更新
-                </button>
-            </div>
-
-            
-<div class="card">
-    <div class="card-header">
-        <div class="card-title">
-            <div class="icon-wrap">
-                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            </div>
-            通知マスター設定
-        </div>
-        <label class="switch">
-            <input type="checkbox" id="push-switch">
-            <span class="slider"></span>
-        </label>
-    </div>
-    <div id="status-text" class="status" style="margin-bottom: 15px;">状態を確認中…</div>
-
-    <div id="notification-sub-settings" style="border-top: 1px solid var(--border); padding-top: 15px; display: none; flex-direction: column; gap: 12px;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-            <span style="font-size: 0.9rem; font-weight: 500;">📸 インスタ監視通知</span>
-            <label class="switch" style="transform: scale(0.85);">
-                <input type="checkbox" id="insta-switch" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-            <span style="font-size: 0.9rem; font-weight: 500;">📺 メディア出演通知</span>
-            <label class="switch" style="transform: scale(0.85);">
-                <input type="checkbox" id="media-switch" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-    </div>
-</div>
-
-            
 
             <div class="card">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
@@ -385,6 +331,61 @@
                         <button class="theme-btn" id="btn-mono" onclick="setTheme('mono')">
                             <span class="theme-swatch swatch-mono"></span>
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- まとめカード：ユーザー情報 / 更新 / 通知設定 -->
+            <div class="card">
+                <!-- ユーザー情報 -->
+                <div style="display: flex; align-items: center; gap: 15px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
+                    <div class="icon-wrap">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div style="flex: 1;">
+                        <div id="user-email" style="font-size: 0.9rem; font-weight: 500; color: var(--text-sub);"></div>
+                        <button onclick="signOut()" class="btn-sub" style="margin-top: 8px;">ログアウト</button>
+                    </div>
+                </div>
+
+                <!-- 更新ボタン -->
+                <div style="padding: 16px 0; border-bottom: 1px solid var(--border);">
+                    <button class="btn-outline" onclick="window.location.reload();">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.85L21 8"></path></svg>
+                        最新の情報に更新
+                    </button>
+                </div>
+
+                <!-- 通知マスター設定 -->
+                <div style="padding-top: 16px;">
+                    <div class="card-header" style="margin-bottom: 0;">
+                        <div class="card-title">
+                            <div class="icon-wrap">
+                                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                            </div>
+                            通知マスター設定
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="push-switch">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div id="status-text" class="status" style="margin-bottom: 0; margin-top: 10px;">状態を確認中…</div>
+                    <div id="notification-sub-settings" style="border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; display: none; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-size: 0.9rem; font-weight: 500;">📸 インスタ監視通知</span>
+                            <label class="switch" style="transform: scale(0.85);">
+                                <input type="checkbox" id="insta-switch" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-size: 0.9rem; font-weight: 500;">📺 メディア出演通知</span>
+                            <label class="switch" style="transform: scale(0.85);">
+                                <input type="checkbox" id="media-switch" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
