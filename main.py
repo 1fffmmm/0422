@@ -1,46 +1,38 @@
-import os
-import traceback
-
-# 修正したファイルから、必要な関数をすべて読み込む
-from drive_reader import get_drive_service, get_drive_text, get_image_ids_from_folder
+import scraping_media
+import drive_reader
 from notifier import check_keywords_and_notify
+import os
 
 def main():
-    print("=== 監視ジョブ開始 ===")
+    print("===== 統合監視システム 起動 =====")
+
+    # --- 1. メディア情報の取得と通知 ---
+    print("\n--- [Step 1] メディア情報チェック開始 ---")
     try:
-        # 1. 環境変数からIDを取得
-        FILE_ID = os.environ.get("DRIVE_FILE_ID")
-        # 以前教えていただいたフォルダIDをデフォルトに設定
-        FOLDER_ID = os.environ.get("DRIVE_FOLDER_ID", "1oFKFlM7P9szbG0u8SZe2UTlrA7ZWYMtZ")
-        
-        if not FILE_ID:
-            print("エラー: 環境変数 DRIVE_FILE_ID が設定されていません。")
-            return
-
-        # 2. Drive APIの窓口（サービス）を1回だけ作成
-        print("Drive APIの認証を行っています...")
-        service = get_drive_service()
-        
-        if service:
-            # 3. テキストを取得
-            text = get_drive_text(service, FILE_ID)
-            
-            # 4. 画像IDリストを取得
-            image_ids = get_image_ids_from_folder(service, FOLDER_ID)
-            
-            # 5. Firebaseへ保存・通知処理（ここで古いログの削除も実行されます）
-            if text is not None:
-                check_keywords_and_notify(text, image_ids)
-            else:
-                print("警告: Google Driveからのテキスト取得に失敗したため、通知処理をスキップします。")
-        else:
-            print("エラー: Driveの認証に失敗したため、処理を中断します。")
-
+        # scraping_media.py の main 関数を呼び出す
+        # ※内部でFirestore保存と通知(check_keywords_and_notify)まで行われます
+        scraping_media.main()
     except Exception as e:
-        print(f"実行中に予期せぬエラーが発生しました: {e}")
-        traceback.print_exc()  # 詳しいエラー場所を表示
+        print(f"メディア監視でエラーが発生しました: {e}")
 
-    print("=== 監視ジョブ終了 ===")
+    # --- 2. Google Drive (インスタ) 情報の取得と通知 ---
+    print("\n--- [Step 2] Google Drive チェック開始 ---")
+    try:
+        drive_service = drive_reader.get_drive_service()
+        file_id = os.environ.get("DRIVE_FILE_ID")
+        
+        drive_text = drive_reader.get_drive_text(drive_service, file_id)
+        
+        if drive_text:
+            print(f"Driveからテキストを取得しました ({len(drive_text)}文字)")
+            # インスタ側の通知処理を呼び出す
+            check_keywords_and_notify(drive_text, source="insta")
+        else:
+            print("Driveからテキストを取得できませんでした。")
+    except Exception as e:
+        print(f"Drive監視でエラーが発生しました: {e}")
+
+    print("\n===== 全ての監視タスクが完了しました =====")
 
 if __name__ == "__main__":
     main()
