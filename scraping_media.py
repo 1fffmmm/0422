@@ -62,6 +62,10 @@ def main():
     options.add_argument('--no-sandbox')         # Linux環境での実行に必須
     options.add_argument('--disable-dev-shm-usage') # メモリ不足防止
     options.add_argument('--disable-gpu')
+    # --- 【追加】日本語を優先的に取得するための設定 ---
+    options.add_argument('--lang=ja-JP')
+    options.add_experimental_option('prefs', {'intl.accept_languages': 'ja'})
+    # ----------------------------------------------
     options.add_argument('--window-size=1920,1080')
 
     driver = None
