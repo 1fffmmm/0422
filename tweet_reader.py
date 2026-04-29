@@ -34,18 +34,15 @@ def get_drive_text(service, file_id):
         print(f"Driveテキスト取得エラー (ID: {file_id}): {e}")
         return ""
 
-def main():
-    """
-    メイン処理：テキストを取得して返す。
-    通知や保存は notifier.py 側で行うため、ここでは実行しません。
-    """
+def main(drive_service=None): # 引数で受け取れるようにする
     tweet_file_id = os.environ.get("TWEET_FILE_ID")
-    
     if not tweet_file_id:
-        print("エラー: TWEET_FILE_ID が設定されていません。")
         return None
 
-    drive_service = get_drive_service()
+    # もし外からサービスが渡されていなければ、自分の中で取得する
+    if drive_service is None:
+        drive_service = get_drive_service()
+    
     if not drive_service:
         return None
 
