@@ -478,7 +478,7 @@
         }
     };
 
-    // ★ 修正箇所：お知らせ取得ロジック（インスタとメディアの両方を表示）
+// ★ お知らせ取得ロジック（表示の重複を排除）
     async function fetchLatestAnnouncement(uid) {
         const contentEl = document.getElementById('announcement-content');
         try {
@@ -515,10 +515,15 @@
 
             items.forEach(item => {
                 const dateText = item.updated_at ? item.updated_at.toDate().toLocaleString('ja-JP') : "不明";
+                
+                // ★【修正ポイント】メッセージ冒頭の「【...】」を削除する
+                // 例：「【インスタ更新】本文」 → 「本文」に変換されます
+                const cleanMessage = (item.message || "詳細なし").replace(/^【.*?】\s*/, "");
+                
                 const html = `
                     <div class="announcement-item">
                         <span class="announcement-label">${item.label}</span>
-                        <div class="announcement-text">${item.message || "詳細なし"}</div>
+                        <div class="announcement-text">${cleanMessage}</div>
                         <div class="announcement-meta">${dateText}</div>
                     </div>
                 `;
@@ -530,6 +535,7 @@
             contentEl.innerText = "お知らせの取得に失敗しました。";
         }
     }
+    
 
     // 認証状態の監視
     onAuthStateChanged(auth, async (user) => {
