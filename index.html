@@ -296,21 +296,41 @@
                 </button>
             </div>
 
-            <div class="card">
-                <div class="card-header" style="margin-bottom:0;">
-                    <div class="card-title">
-                        <div class="icon-wrap">
-                            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                        </div>
-                        プッシュ通知
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" id="push-switch">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div id="status-text" class="status">状態を確認中…</div>            
+            
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <div class="icon-wrap">
+                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             </div>
+            通知マスター設定
+        </div>
+        <label class="switch">
+            <input type="checkbox" id="push-switch">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <div id="status-text" class="status" style="margin-bottom: 15px;">状態を確認中…</div>
+
+    <div id="notification-sub-settings" style="border-top: 1px solid var(--border); padding-top: 15px; display: none; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.9rem; font-weight: 500;">📸 インスタ監視通知</span>
+            <label class="switch" style="transform: scale(0.85);">
+                <input type="checkbox" id="insta-switch" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.9rem; font-weight: 500;">📺 メディア出演通知</span>
+            <label class="switch" style="transform: scale(0.85);">
+                <input type="checkbox" id="media-switch" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+</div>
+
+            
 
             <div class="card">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
@@ -505,23 +525,37 @@
         }
     });
 
+   
     async function checkPushSubscription(uid) {
         const pushSwitch = document.getElementById('push-switch');
         const statusText = document.getElementById('status-text');
+        const subSettings = document.getElementById('notification-sub-settings');
+        const instaSwitch = document.getElementById('insta-switch');
+        const mediaSwitch = document.getElementById('media-switch');
+
         try {
             const docRef = doc(db, 'subscriptions', uid);
             const docSnap = await getDoc(docRef);
+
             if (docSnap.exists()) {
+                const data = docSnap.data();
                 pushSwitch.checked = true;
                 statusText.innerText = "通知設定：ON (準備完了)";
+                subSettings.style.display = 'flex'; // 個別設定を表示
+                
+                // Firestoreに保存されている値を反映（なければデフォルトtrue）
+                instaSwitch.checked = data.insta_enabled !== false;
+                mediaSwitch.checked = data.media_enabled !== false;
             } else {
                 pushSwitch.checked = false;
                 statusText.innerText = "通知設定：OFF";
+                subSettings.style.display = 'none'; // 個別設定を隠す
             }
         } catch (error) {
             console.error("通知状態の確認失敗:", error);
         }
     }
+    
 
     window.signOut = async () => {
         const overlay = document.getElementById('loading-overlay');
@@ -556,7 +590,18 @@
             });
         });
     }
+    
+// --- キーワード削除の関数を追加 ---
+    window.deleteKeyword = async (id) => {
+        try {
+            await deleteDoc(doc(db, 'keywords', id));
+        } catch (error) {
+            console.error("削除エラー:", error);
+            alert("削除に失敗しました");
+        }
+    };
 
+    
     window.addKeyword = async () => {
         const input = document.getElementById('keyword-input');
         const kw = input.value.trim();
@@ -573,17 +618,14 @@
         }
     };
 
-    window.deleteKeyword = async (id) => {
-        try {
-            await deleteDoc(doc(db, 'keywords', id));
-        } catch (error) {
-            alert("削除に失敗しました");
-        }
-    };
-
+    // --- 2. 通知設定の保存処理（関数の外に書く） ---
     const pushSwitch = document.getElementById('push-switch');
     const statusText = document.getElementById('status-text');
+    const subSettings = document.getElementById('notification-sub-settings');
+    const instaSwitch = document.getElementById('insta-switch');
+    const mediaSwitch = document.getElementById('media-switch');
 
+    // マスター通知設定スイッチの動き
     pushSwitch.addEventListener('change', async (e) => {
         if (!currentUser) return;
         if (e.target.checked) {
@@ -598,9 +640,12 @@
                         await setDoc(doc(db, 'subscriptions', currentUser.uid), {
                             user_id: currentUser.uid,
                             fcm_token: currentToken,
-                            updated_at: serverTimestamp()
+                            updated_at: serverTimestamp(),
+                            insta_enabled: true,
+                            media_enabled: true
                         }, { merge: true });
                         statusText.innerText = "通知設定：ON (準備完了)";
+                        subSettings.style.display = 'flex';
                     }
                 } else {
                     statusText.innerText = "通知がブロックされています";
@@ -614,11 +659,38 @@
             try {
                 await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
                 statusText.innerText = "通知設定：OFF";
+                subSettings.style.display = 'none';
             } catch (err) {
                 console.error(err);
             }
         }
     });
+
+    // インスタ通知スイッチの動き
+    instaSwitch.addEventListener('change', async (e) => {
+        if (!currentUser) return;
+        try {
+            await setDoc(doc(db, 'subscriptions', currentUser.uid), {
+                insta_enabled: e.target.checked
+            }, { merge: true });
+        } catch (err) {
+            console.error("インスタ設定保存エラー:", err);
+        }
+    });
+
+    // メディア出演通知スイッチの動き
+    mediaSwitch.addEventListener('change', async (e) => {
+        if (!currentUser) return;
+        try {
+            await setDoc(doc(db, 'subscriptions', currentUser.uid), {
+                media_enabled: e.target.checked
+            }, { merge: true });
+        } catch (err) {
+            console.error("メディア設定保存エラー:", err);
+        }
+    });
+
+    // --- 3. テーマ切り替え処理（この後に続く） ---
 
     window.setTheme = (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
