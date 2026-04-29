@@ -14,7 +14,6 @@
     <style>
         :root {
             --gap-main: 12px;
-
             --bg: #fdf6ee;
             --card: #fffaf5;
             --border: #f0e4d0;
@@ -27,12 +26,7 @@
             --tag-text: #a05a2a;
             --tag-border: #f5d4b0;
             --insta: linear-gradient(135deg, #f9c784 0%, #f07167 42%, #d63384 78%, #9b59b6 100%);
-            
-            --log-bg: #fdf0e4;
-            --log-text: #7a4020;
-            --log-border: #f0d8b8;
-            --scroll-thumb: #d97a4a;
-            --scroll-track: #fdecd8;
+            --tweet: #1da1f2; /* X/Twitterカラー */
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -51,9 +45,7 @@
             align-items: flex-start;
         }
 
-        /* -------------------------------------------
-           ローディングオーバーレイ
-        ------------------------------------------- */
+        /* ローディング */
         #loading-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -71,9 +63,7 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .container {
             width: 100%;
@@ -84,7 +74,6 @@
             gap: var(--gap-main);
         }
 
-        /* 画面切り替え用のセクション */
         #auth-screen, #main-screen {
             display: none;
             width: 100%;
@@ -98,9 +87,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* -------------------------------------------
-           インストール誘導画面用のスタイル
-        ------------------------------------------- */
+        /* PWA誘導 */
         #screen-install {
             display: none;
             position: fixed;
@@ -124,30 +111,6 @@
         .install-desc { font-size: 0.95rem; color: var(--text-sub); margin-bottom: 24px; line-height: 1.6; text-align: left; }
         .install-steps { background: var(--bg); padding: 16px; border-radius: 12px; text-align: left; font-size: 0.9rem; color: var(--text-main); line-height: 1.8; }
 
-        /* Android用注意書き */
-        #android-notice-box {
-            display: none;
-            background: #fff3cd;
-            color: #856404;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            border: 1px solid #ffeeba;
-            line-height: 1.5;
-            margin-top: 8px; 
-        }
-
-        /* ログイン画面専用のスタイル */
-        .login-box {
-            text-align: center;
-            padding: 40px 20px;
-            margin-top: 20px;
-        }
-        .login-logo { font-size: 3rem; margin-bottom: 10px; }
-        .login-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
-        .login-desc { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 30px; line-height: 1.5; }
-
-        /* 共通カードコンポーネント */
         .card {
             background: var(--card);
             border-radius: 24px;
@@ -164,31 +127,7 @@
         }
         .icon-wrap svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-        /* ボタン類 */
-        .btn-jr {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            background: #ffffff; color: #1a1a1a;
-            text-decoration: none;
-            padding: 18px; border-radius: 20px; font-weight: 700; font-size: 0.95rem;
-            letter-spacing: 0.04em;
-            border: 1.5px solid #e0e0e0;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-            transition: all 0.2s;
-        }
-        .btn-jr:hover { opacity: 0.85; transform: translateY(-2px); }
-        .btn-jr-logo {
-            font-size: 1rem; font-weight: 800; color: #1a6bff; letter-spacing: -0.01em;
-            font-family: "Outfit", sans-serif;
-        }
-
-        .btn-insta {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            background: var(--insta); color: white; text-decoration: none;
-            padding: 18px; border-radius: 20px; font-weight: 600; font-size: 0.95rem;
-            box-shadow: 0 6px 20px rgba(214,51,132,0.25); transition: all 0.2s;
-        }
-        .btn-insta:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(214,51,132,0.35); }
-
+        /* ボタン */
         .btn-primary {
             display: inline-flex; align-items: center; justify-content: center; gap: 10px;
             background: linear-gradient(135deg, var(--accent-mid) 0%, var(--accent) 100%);
@@ -196,55 +135,58 @@
             font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%;
             box-shadow: 0 4px 15px rgba(217, 122, 74, 0.25); transition: all 0.2s;
         }
-        .btn-primary:hover { opacity: 0.9; transform: scale(1.01); }
-
-        .btn-outline {
-            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-            background: var(--card); color: var(--accent); border: 1.5px solid var(--border);
-            padding: 16px; border-radius: 18px; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.2s;
+        .btn-insta {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: var(--insta); color: white; text-decoration: none;
+            padding: 18px; border-radius: 20px; font-weight: 600; font-size: 0.95rem;
+            box-shadow: 0 6px 20px rgba(214,51,132,0.25); transition: all 0.2s;
         }
-
+        .btn-jr {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: #ffffff; color: #1a1a1a; text-decoration: none;
+            padding: 18px; border-radius: 20px; font-weight: 700; font-size: 0.95rem;
+            border: 1.5px solid #e0e0e0; box-shadow: 0 2px 12px rgba(0,0,0,0.07); transition: all 0.2s;
+        }
+        .btn-outline {
+            background: var(--card); color: var(--accent); border: 1.5px solid var(--border);
+            padding: 16px; border-radius: 18px; font-weight: 600; width: 100%; cursor: pointer;
+        }
         .btn-sub {
             background: none; border: 1.5px solid var(--border); color: var(--text-sub);
-            padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s;
+            padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; cursor: pointer;
         }
-        .btn-sub:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
 
-        /* トグルスイッチ */
+        /* スイッチ */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; inset: 0; background: #e8d8c8; transition: .3s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background: white; transition: .3s; border-radius: 50%; }
         input:checked + .slider { background: var(--accent); }
         input:checked + .slider:before { transform: translateX(22px); }
-        .status { font-size: 0.8rem; color: var(--text-sub); margin-top: 12px; }
 
         /* キーワード入力 */
-        .input-group { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+        .input-group { display: flex; gap: 8px; margin-bottom: 16px; }
         input[type="text"] {
-            flex: 1; min-width: 0; padding: 12px 16px; border: 1.5px solid var(--border);
-            border-radius: 14px; font-family: inherit; font-size: 0.95rem; background: #fffdf9; outline: none; transition: border-color 0.2s;
+            flex: 1; padding: 12px 16px; border: 1.5px solid var(--border);
+            border-radius: 14px; font-family: inherit; background: #fffdf9; outline: none;
         }
-        input[type="text"]:focus { border-color: var(--accent-mid); }
-        .btn-add { background: var(--accent); color: white; border: none; width: 44px; height: 44px; border-radius: 14px; font-size: 1.4rem; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-
+        .btn-add { background: var(--accent); color: white; border: none; width: 44px; height: 44px; border-radius: 14px; font-size: 1.4rem; cursor: pointer; }
         #keywords-list { display: flex; flex-wrap: wrap; gap: 8px; }
         .keyword-tag {
-            background: var(--tag-bg); color: var(--tag-text); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--tag-border); display: flex; align-items: center; animation: pop 0.2s cubic-bezier(0.34,1.56,0.64,1);
+            background: var(--tag-bg); color: var(--tag-text); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--tag-border); display: flex; align-items: center;
         }
-        @keyframes pop { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
         .btn-del { margin-left: 8px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; }
 
         /* テーマ切替 */
         .theme-btn-group { display: flex; gap: 10px; }
-        .theme-btn { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent; background: none; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .theme-btn { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent; background: none; cursor: pointer; }
         .theme-btn.active { border-color: var(--accent); transform: scale(1.1); }
-        .theme-swatch { width: 24px; height: 24px; border-radius: 50%; }
+        .theme-swatch { width: 24px; height: 24px; border-radius: 50%; display: block; }
         .swatch-warm { background: linear-gradient(135deg, #faeee4, #d97a4a); }
         .swatch-cool { background: linear-gradient(135deg, #e8f0fb, #6fa3d8); }
         .swatch-mono { background: linear-gradient(135deg, #e8e8e8, #444444); }
 
-        /* テーマ別カラー変数 */
+        /* テーマ定義 */
         :root[data-theme="cool"] {
             --bg: #f0f5fc; --card: #f8fbff; --border: #d0e0f0; --accent: #4a7abf;
             --accent-light: #e4eef9; --accent-mid: #7aaad8; --text-main: #1e2c3a; --text-sub: #607080;
@@ -256,12 +198,16 @@
             --tag-bg: #3d3d3d; --tag-text: #cccccc; --tag-border: #555555;
         }
 
-        /* お知らせ内のセクション分け */
-        .announcement-item { padding: 8px 0; border-bottom: 1px dashed var(--border); }
+        /* お知らせアイテム */
+        .announcement-item { padding: 10px 0; border-bottom: 1px dashed var(--border); }
         .announcement-item:last-child { border-bottom: none; }
         .announcement-label { font-size: 0.7rem; font-weight: 700; color: white; background: var(--accent-mid); padding: 2px 8px; border-radius: 6px; margin-bottom: 4px; display: inline-block; }
-        .announcement-text { font-size: 0.95rem; line-height: 1.5; color: var(--text-main); white-space: pre-wrap; word-break: break-all; }
-        .announcement-meta { font-size: 0.7rem; color: var(--text-sub); margin-top: 4px; text-align: right; }
+        .announcement-text { font-size: 0.9rem; line-height: 1.5; color: var(--text-main); white-space: pre-wrap; word-break: break-all; }
+        .announcement-meta { font-size: 0.65rem; color: var(--text-sub); margin-top: 4px; text-align: right; }
+        
+        #android-notice-box {
+            display: none; background: #fff3cd; color: #856404; padding: 12px; border-radius: 12px; font-size: 0.85rem; border: 1px solid #ffeeba; margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -273,11 +219,9 @@
     <section id="screen-install">
         <div class="install-container">
             <h1 class="install-title">アプリをインストール</h1>
-            <p class="install-desc">
-                Safariのブラウザでは通知機能が制限されるため、ホーム画面に追加してご利用ください。
-            </p>
+            <p class="install-desc">Safariでは通知機能が制限されるため、ホーム画面に追加してご利用ください。</p>
             <div class="install-steps">
-                1. 画面下部の「共有アイコン（四角から矢印が飛び出したマーク）」をタップ<br>
+                1. 画面下部の「共有アイコン」をタップ<br>
                 2. 「ホーム画面に追加」を選択<br>
                 3. ホーム画面に追加されたアイコンから起動
             </div>
@@ -287,11 +231,10 @@
     <div class="container">
         
         <section id="auth-screen">
-            <div class="card login-box">
-                <div class="login-logo">🔍</div>
-                <h1 class="login-title">InstaMonitor</h1>
-                <p class="login-desc">指定したキーワードが<br>ストーリーに出現したら自動で通知します。</p>
-                
+            <div class="card" style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🔍</div>
+                <h1 style="font-size: 1.5rem; margin-bottom: 8px;">InstaMonitor</h1>
+                <p style="font-size: 0.9rem; color: var(--text-sub); margin-bottom: 30px;">最新のSNS・メディア情報を<br>キーワードで監視して通知します。</p>
                 <button onclick="signInWithGoogle()" class="btn-primary">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
                     Googleでログインして始める
@@ -304,9 +247,9 @@
             <div class="card">
                 <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
                     <div class="icon-wrap">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
                     </div>
-                    <h2 style="margin: 0; font-size: 1.1rem;">お知らせ</h2>
+                    <h2 style="margin: 0; font-size: 1.1rem;">最新のお知らせ</h2>
                 </div>
                 <div id="announcement-content" style="padding-top: 12px;">
                     <div style="font-size: 0.95rem; color: var(--text-sub);">読み込み中...</div>
@@ -317,15 +260,13 @@
                 Instagramストーリーを開く 
             </a>
 
-            
             <a href="https://jr-official.starto.jp/s/jr/media/list" target="_blank" class="btn-jr" style="flex-direction: column; gap: 2px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="btn-jr-logo">ジュニア</span>
-                    <span style="color:#1a1a1a; font-weight:700; font-size:0.95rem;">Official Website</span>
+                    <span style="color:#1a6bff; font-weight:800;">ジュニア</span>
+                    <span style="font-weight:700;">Official Website</span>
                 </div>
-                <span style="color:#888; font-weight:400; font-size:0.75rem; letter-spacing:0.02em;">明日のメディア情報を開く</span>
+                <span style="color:#888; font-size:0.75rem;">明日のメディア情報を開く</span>
             </a>
-            
 
             <div class="card">
                 <div class="card-header">
@@ -341,8 +282,7 @@
                     <button class="btn-add" onclick="addKeyword()">＋</button>
                 </div>
                 <div id="keywords-list"></div>
-                
-                <div style="margin-top: 16px; font-size: 0.85rem; color: var(--text-sub);">
+                <div style="margin-top: 16px; font-size: 0.8rem; color: var(--text-sub);">
                     <a href="about_txt.html" style="color: var(--accent); text-decoration: underline;">通知が来ない場合は</a>
                 </div>
             </div>
@@ -356,15 +296,9 @@
                         カラー
                     </div>
                     <div class="theme-btn-group">
-                        <button class="theme-btn active" id="btn-warm" onclick="setTheme('warm')">
-                            <span class="theme-swatch swatch-warm"></span>
-                        </button>
-                        <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')">
-                            <span class="theme-swatch swatch-cool"></span>
-                        </button>
-                        <button class="theme-btn" id="btn-mono" onclick="setTheme('mono')">
-                            <span class="theme-swatch swatch-mono"></span>
-                        </button>
+                        <button class="theme-btn active" id="btn-warm" onclick="setTheme('warm')"><span class="theme-swatch swatch-warm"></span></button>
+                        <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')"><span class="theme-swatch swatch-cool"></span></button>
+                        <button class="theme-btn" id="btn-mono" onclick="setTheme('mono')"><span class="theme-swatch swatch-mono"></span></button>
                     </div>
                 </div>
             </div>
@@ -393,12 +327,13 @@
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <div id="status-text" class="status" style="margin-bottom: 0; margin-top: 10px;">状態を確認中…</div>
+                    <div id="status-text" class="status" style="font-size: 0.8rem; color: var(--text-sub); margin-top: 10px;">状態を確認中…</div>
+                    
                     <div id="notification-sub-settings" style="border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; display: none; flex-direction: column; gap: 12px;">
                         <div style="display: flex; align-items: center; justify-content: space-between;">
                             <span style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500;">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                インスタ監視通知
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                                ストーリー通知
                             </span>
                             <label class="switch" style="transform: scale(0.85);">
                                 <input type="checkbox" id="insta-switch" checked>
@@ -415,20 +350,28 @@
                                 <span class="slider"></span>
                             </label>
                         </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tweet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                                ツイート通知
+                            </span>
+                            <label class="switch" style="transform: scale(0.85);">
+                                <input type="checkbox" id="tweet-switch" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
                 <div style="padding-top: 16px; border-top: 1px solid var(--border); margin-top: 16px;">
-                    <button class="btn-outline" onclick="window.location.reload();">
-                        最新の情報に更新
-                    </button>
+                    <button class="btn-outline" onclick="window.location.reload();">最新の情報に更新</button>
                 </div>
             </div>
         </section>
 
         <div id="android-notice-box">
             💡 <b>Androidの方へ</b><br>
-            ブラウザのメニューから「アプリをインストール」または「ホーム画面に追加」を行ってから起動すると、より快適に通知を受け取れます。
+            ホーム画面に追加してから起動すると、より快適に通知を受け取れます。
         </div>
 
     </div>
@@ -464,121 +407,92 @@
                 });
             }
         });
-    } catch(e) {
-        console.log("通知機能が現在無効です", e);
-    }
+    } catch(e) { console.log("通知機能が無効です", e); }
 
     let currentUser = null;
 
     window.signInWithGoogle = async () => {
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' }); 
-        try {
-            await signInWithPopup(auth, provider);
-        } catch (error) {
-            console.error("ログインエラー:", error);
-            if (error.code !== 'auth/cancelled-popup-request') {
-                alert("ログインに失敗しました: " + error.message);
-            }
-        }
+        try { await signInWithPopup(auth, provider); } 
+        catch (error) { if (error.code !== 'auth/cancelled-popup-request') alert("失敗: " + error.message); }
     };
 
-// ★ お知らせ取得ロジックの修正版
-async function fetchLatestAnnouncement(uid) {
-    const contentEl = document.getElementById('announcement-content');
-    try {
-        // 【修正点】collection を "notification_history" に変更
-        const qInsta = query(
-            collection(db, "notification_history"), 
-            where("user_id", "==", uid),
-            where("source", "==", "insta"),
-            orderBy("updated_at", "desc"),
-            limit(1)
-        );
-        
-        const qMedia = query(
-            collection(db, "notification_history"), 
-            where("user_id", "==", uid),
-            where("source", "==", "media"),
-            orderBy("updated_at", "desc"),
-            limit(1)
-        );
+    // ★ お知らせ取得ロジック（ツイート対応版）
+    async function fetchLatestAnnouncement(uid) {
+        const contentEl = document.getElementById('announcement-content');
+        try {
+            const sources = [
+                { id: "insta", label: "ストーリー" },
+                { id: "media", label: "明日のメディア出演" },
+                { id: "tweet", label: "ツイート更新" } // フェーズ4追加
+            ];
 
-        const [instaSnap, mediaSnap] = await Promise.all([getDocs(qInsta), getDocs(qMedia)]);
-        
-        contentEl.innerHTML = ''; 
+            const queries = sources.map(s => query(
+                collection(db, "notification_history"), 
+                where("user_id", "==", uid),
+                where("source", "==", s.id),
+                orderBy("updated_at", "desc"),
+                limit(1)
+            ));
 
-        const items = [];
-        // notification_history のデータには既にラベル的な文言が含まれているので整理
-        if (!instaSnap.empty) items.push({ ...instaSnap.docs[0].data(), label: "ストーリー" });
-        if (!mediaSnap.empty) items.push({ ...mediaSnap.docs[0].data(), label: "明日のメディア出演" });
+            const snapshots = await Promise.all(queries.map(q => getDocs(q)));
+            contentEl.innerHTML = ''; 
 
-        if (items.length === 0) {
-            contentEl.innerHTML = '<div style="font-size: 0.95rem; color: var(--text-sub);">直近のお知らせはありません</div>';
-            return;
+            const items = [];
+            snapshots.forEach((snap, index) => {
+                if (!snap.empty) {
+                    items.push({ 
+                        ...snap.docs[0].data(), 
+                        label: sources[index].label 
+                    });
+                }
+            });
+
+            if (items.length === 0) {
+                contentEl.innerHTML = '<div style="font-size: 0.95rem; color: var(--text-sub);">直近のお知らせはありません</div>';
+                return;
+            }
+
+            // 日付順にソートして表示
+            items.sort((a, b) => (b.updated_at?.seconds || 0) - (a.updated_at?.seconds || 0));
+
+            items.forEach(item => {
+                const dateText = item.updated_at ? item.updated_at.toDate().toLocaleString('ja-JP') : "不明";
+                const cleanMessage = (item.message || "詳細なし").replace(/^【.*?】\s*/, "");
+                contentEl.innerHTML += `
+                    <div class="announcement-item">
+                        <span class="announcement-label">${item.label}</span>
+                        <div class="announcement-text">${cleanMessage}</div>
+                        <div class="announcement-meta">${dateText}</div>
+                    </div>
+                `;
+            });
+        } catch (err) {
+            console.error(err);
+            contentEl.innerText = "お知らせの取得に失敗しました。";
         }
-
-        items.forEach(item => {
-            const dateText = item.updated_at ? item.updated_at.toDate().toLocaleString('ja-JP') : "不明";
-            
-            // Python側で message_body として保存された内容（キーワード名など）を表示
-            // 例：「【インスタ更新】キーワード「〇〇」を検知しました」
-            const cleanMessage = (item.message || "詳細なし").replace(/^【.*?】\s*/, "");
-            
-            const html = `
-                <div class="announcement-item">
-                    <span class="announcement-label">${item.label}</span>
-                    <div class="announcement-text">${cleanMessage}</div>
-                    <div class="announcement-meta">${dateText}</div>
-                </div>
-            `;
-            contentEl.innerHTML += html;
-        });
-
-    } catch (err) {
-        console.error("お知らせ取得エラー:", err);
-        contentEl.innerText = "お知らせの取得に失敗しました。";
     }
-}
-    
 
-    // 認証状態の監視
     onAuthStateChanged(auth, async (user) => {
         const authScreen = document.getElementById('auth-screen');
         const mainScreen = document.getElementById('main-screen');
         const screenInstall = document.getElementById('screen-install');
-        const androidNoticeBox = document.getElementById('android-notice-box');
         const overlay = document.getElementById('loading-overlay'); 
 
-        const ua = navigator.userAgent.toLowerCase();
-        const isIOS = /iphone|ipad|ipod/.test(ua);
-        const isAndroid = /android/.test(ua);
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
 
         if (isIOS && !isStandalone) {
-            authScreen.style.display = 'none';
-            mainScreen.style.display = 'none';
             screenInstall.style.display = 'block';
-            
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.display = 'none', 300);
-            return;
+            overlay.style.display = 'none';
         } else {
             screenInstall.style.display = 'none';
-
-            if (isAndroid && !isStandalone) {
-                if (androidNoticeBox) androidNoticeBox.style.display = 'block';
-            } else {
-                if (androidNoticeBox) androidNoticeBox.style.display = 'none';
-            }
-
             if (user) {
                 currentUser = user;
                 authScreen.style.display = 'none';
                 mainScreen.style.display = 'flex';
-                
                 document.getElementById('user-email').innerText = user.email;
-
                 checkPushSubscription(user.uid);
                 loadKeywords();
                 fetchLatestAnnouncement(user.uid);
@@ -587,63 +501,41 @@ async function fetchLatestAnnouncement(uid) {
                 mainScreen.style.display = 'none';
                 authScreen.style.display = 'flex';
             }
-
             overlay.style.opacity = '0';
             setTimeout(() => overlay.style.display = 'none', 300);
         }
     });
 
-   
     async function checkPushSubscription(uid) {
         const pushSwitch = document.getElementById('push-switch');
-        const statusText = document.getElementById('status-text');
         const subSettings = document.getElementById('notification-sub-settings');
-        const instaSwitch = document.getElementById('insta-switch');
-        const mediaSwitch = document.getElementById('media-switch');
-
         try {
-            const docRef = doc(db, 'subscriptions', uid);
-            const docSnap = await getDoc(docRef);
-
+            const docSnap = await getDoc(doc(db, 'subscriptions', uid));
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 pushSwitch.checked = true;
-                statusText.innerText = "通知設定：ON (準備完了)";
-                subSettings.style.display = 'flex'; 
-                
-                instaSwitch.checked = data.insta_enabled !== false;
-                mediaSwitch.checked = data.media_enabled !== false;
+                subSettings.style.display = 'flex';
+                document.getElementById('insta-switch').checked = data.insta_enabled !== false;
+                document.getElementById('media-switch').checked = data.media_enabled !== false;
+                document.getElementById('tweet-switch').checked = data.tweet_enabled !== false; // 追加
+                document.getElementById('status-text').innerText = "通知設定：ON (準備完了)";
             } else {
                 pushSwitch.checked = false;
-                statusText.innerText = "通知設定：OFF";
-                subSettings.style.display = 'none'; 
+                subSettings.style.display = 'none';
+                document.getElementById('status-text').innerText = "通知設定：OFF";
             }
-        } catch (error) {
-            console.error("通知状態の確認失敗:", error);
-        }
+        } catch (e) { console.error(e); }
     }
-    
 
     window.signOut = async () => {
-        const overlay = document.getElementById('loading-overlay');
-        overlay.style.display = 'flex';
-        setTimeout(() => overlay.style.opacity = '1', 10);
-
         try {
-            if (currentUser) {
-                await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
-            }
+            if (currentUser) await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
             await firebaseSignOut(auth);
-        } catch (error) {
-            console.error("ログアウトエラー:", error);
-            alert("ログアウト中にエラーが発生しました。");
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.display = 'none', 300);
-        }
+            window.location.reload();
+        } catch (e) { console.error(e); }
     };
 
     function loadKeywords() {
-        if (!currentUser) return;
         const q = query(collection(db, 'keywords'), where('user_id', '==', currentUser.uid), orderBy('createdAt', 'desc'));
         onSnapshot(q, (snapshot) => {
             const list = document.getElementById('keywords-list');
@@ -657,56 +549,30 @@ async function fetchLatestAnnouncement(uid) {
             });
         });
     }
-    
-    window.deleteKeyword = async (id) => {
-        try {
-            await deleteDoc(doc(db, 'keywords', id));
-        } catch (error) {
-            console.error("削除エラー:", error);
-            alert("削除に失敗しました");
-        }
-    };
 
-    
+    window.deleteKeyword = async (id) => { await deleteDoc(doc(db, 'keywords', id)); };
     window.addKeyword = async () => {
         const input = document.getElementById('keyword-input');
         const kw = input.value.trim();
         if (!kw || !currentUser) return;
-        try {
-            await addDoc(collection(db, 'keywords'), {
-                keyword: kw,
-                user_id: currentUser.uid,
-                createdAt: serverTimestamp()
-            });
-            input.value = '';
-        } catch (error) {
-            alert("追加に失敗しました");
-        }
+        await addDoc(collection(db, 'keywords'), { keyword: kw, user_id: currentUser.uid, createdAt: serverTimestamp() });
+        input.value = '';
     };
 
-    const pushSwitch = document.getElementById('push-switch');
-    const statusText = document.getElementById('status-text');
-    const subSettings = document.getElementById('notification-sub-settings');
-    const instaSwitch = document.getElementById('insta-switch');
-    const mediaSwitch = document.getElementById('media-switch');
-
-    pushSwitch.addEventListener('change', async (e) => {
-        if (!currentUser) return;
+    // 通知スイッチの連動
+    document.getElementById('push-switch').addEventListener('change', async (e) => {
+        const statusText = document.getElementById('status-text');
+        const subSettings = document.getElementById('notification-sub-settings');
         if (e.target.checked) {
             statusText.innerText = "設定中...";
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    const currentToken = await getToken(messaging, { 
-                        vapidKey: 'BFfTYmGpeE2ts6TGdboKiHvX7qlGkum04E1RkMrfSVmOryVGXFEDM8SC3OuAdvhoJRpzFpZu1S36XEin9weDzkQ' 
-                    });
+                    const currentToken = await getToken(messaging, { vapidKey: 'BFfTYmGpeE2ts6TGdboKiHvX7qlGkum04E1RkMrfSVmOryVGXFEDM8SC3OuAdvhoJRpzFpZu1S36XEin9weDzkQ' });
                     if (currentToken) {
                         await setDoc(doc(db, 'subscriptions', currentUser.uid), {
-                            user_id: currentUser.uid,
-                            fcm_token: currentToken,
-                            updated_at: serverTimestamp(),
-                            insta_enabled: true,
-                            media_enabled: true
+                            user_id: currentUser.uid, fcm_token: currentToken, updated_at: serverTimestamp(),
+                            insta_enabled: true, media_enabled: true, tweet_enabled: true // 全て初期ON
                         }, { merge: true });
                         statusText.innerText = "通知設定：ON (準備完了)";
                         subSettings.style.display = 'flex';
@@ -715,41 +581,20 @@ async function fetchLatestAnnouncement(uid) {
                     statusText.innerText = "通知がブロックされています";
                     e.target.checked = false;
                 }
-            } catch (err) {
-                statusText.innerText = "エラーが発生しました";
-                e.target.checked = false;
-            }
+            } catch (err) { statusText.innerText = "エラーが発生しました"; e.target.checked = false; }
         } else {
-            try {
-                await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
-                statusText.innerText = "通知設定：OFF";
-                subSettings.style.display = 'none';
-            } catch (err) {
-                console.error(err);
-            }
+            await deleteDoc(doc(db, 'subscriptions', currentUser.uid));
+            statusText.innerText = "通知設定：OFF";
+            subSettings.style.display = 'none';
         }
     });
 
-    instaSwitch.addEventListener('change', async (e) => {
-        if (!currentUser) return;
-        try {
-            await setDoc(doc(db, 'subscriptions', currentUser.uid), {
-                insta_enabled: e.target.checked
-            }, { merge: true });
-        } catch (err) {
-            console.error("インスタ設定保存エラー:", err);
-        }
-    });
-
-    mediaSwitch.addEventListener('change', async (e) => {
-        if (!currentUser) return;
-        try {
-            await setDoc(doc(db, 'subscriptions', currentUser.uid), {
-                media_enabled: e.target.checked
-            }, { merge: true });
-        } catch (err) {
-            console.error("メディア設定保存エラー:", err);
-        }
+    // 個別スイッチの保存ロジック（ツイート追加）
+    ['insta', 'media', 'tweet'].forEach(type => {
+        document.getElementById(`${type}-switch`).addEventListener('change', async (e) => {
+            if (!currentUser) return;
+            await setDoc(doc(db, 'subscriptions', currentUser.uid), { [`${type}_enabled`]: e.target.checked }, { merge: true });
+        });
     });
 
     window.setTheme = (theme) => {
@@ -758,9 +603,7 @@ async function fetchLatestAnnouncement(uid) {
         document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`btn-${theme}`).classList.add('active');
     };
-
-    const savedTheme = localStorage.getItem('theme') || 'warm';
-    setTheme(savedTheme);
+    setTheme(localStorage.getItem('theme') || 'warm');
 
 </script>
 </body>
