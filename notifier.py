@@ -6,7 +6,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 
 # ---------------------------------------------------------
-# 1. Firebaseの初期化 (既存通り)
+# 1. Firebaseの初期化
 # ---------------------------------------------------------
 if not firebase_admin._apps:
     service_account_info_str = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
@@ -19,9 +19,20 @@ if not firebase_admin._apps:
             print(f"Firebase初期化エラー: {e}")
 
 # ---------------------------------------------------------
-# 2. 古いデータの削除（クリーンアップ）
+# 2. 定数・設定
+# ---------------------------------------------------------
+# ソースごとの表示名と設定キーの定義
+SOURCE_CONFIG = {
+    "insta": {"label": "【ストーリー】", "title": "インスタ更新"},
+    "media": {"label": "【出演情報】", "title": "メディア出演情報"},
+    "tweet": {"label": "【ツイート】", "title": "ツイート更新情報"}
+}
+
+# ---------------------------------------------------------
+# 3. 古いデータの削除（クリーンアップ）
 # ---------------------------------------------------------
 def cleanup_expired_docs(db):
+    """expire_at が現在時刻を過ぎているドキュメントを削除する"""
     now = datetime.datetime.now(timezone.utc)
     collections = ["notification_history", "analysis_logs"]
     
@@ -38,15 +49,13 @@ def cleanup_expired_docs(db):
             print(f"{coll_name} クリーンアップエラー: {e}")
 
 # ---------------------------------------------------------
-# 3. メイン処理：キーワード照合と通知
+# 4. メイン処理：キーワード照合と通知
 # ---------------------------------------------------------
 def check_keywords_and_notify(content_text, image_ids=None, source="insta"):
     if not content_text:
         return
 
-    if image_ids is None:
-        image_ids = []
-        
+    image_ids = image_ids or []
     db = firestore.client()
     now = datetime.datetime.now(timezone.utc)
     
@@ -54,9 +63,12 @@ def check_keywords_and_notify(content_text, image_ids=None, source="insta"):
     expire_7days = now + timedelta(days=7)
     expire_2days = now + timedelta(days=2)
 
+    # ソース設定の取得（未定義のソースが来た場合のフォールバック付き）
+    config = SOURCE_CONFIG.get(source, {"label": f"【{source}】", "title": f"{source}監視"})
+    
     print(f"--- ログ保存 & 通知処理開始 (ソース: {source}) ---")
 
-    # --- ステップA: 全体ログの保存 ---
+    # --- ステップA: 全体ログの保存 (Webアプリのお知らせ欄用) ---
     try:
         db.collection("analysis_logs").add({
             "content": content_text,
@@ -85,36 +97,36 @@ def check_keywords_and_notify(content_text, image_ids=None, source="insta"):
     for uid, matched_words in user_matches.items():
         try:
             # 購読設定の確認
-            subs_query = db.collection("subscriptions").where("user_id", "==", uid).limit(1).stream()
-            subs_docs = list(subs_query)
-            if not subs_docs: continue
+            subs_docs = list(db.collection("subscriptions").where("user_id", "==", uid).limit(1).stream())
+            if not subs_docs:
+                continue
                 
             sub_data = subs_docs[0].to_dict()
-            # 通知設定がオフならスキップ
-            if not sub_data.get(f"{source}_enabled", True):
+            
+            # 通知スイッチの判定 (例: insta_enabled, media_enabled, tweet_enabled)
+            enabled_key = f"{source}_enabled"
+            if not sub_data.get(enabled_key, True):
+                print(f"⏩ ユーザー {uid}: {enabled_key} がOFFのためスキップ")
                 continue
 
-            # 表示用ラベルの決定
-            display_source = "【ストーリー】" if source == "insta" else "【明日のメディア出演】"
-            # キーワードを並び替えて1つの文字列にする (例: "キンプリ, 永瀬廉")
+            # 送信メッセージの構築
             keyword_str = ", ".join(sorted(list(matched_words)))
-            message_body = f"{display_source} キーワード「{keyword_str}」を発見"
+            message_body = f"{config['label']} キーワード「{keyword_str}」を発見"
 
-            # 【重要】重複送信防止：過去1分以内に同じメッセージを送信済みかチェック
-            # これにより「各々1回」を確実に実現します
-            twelve_hours_ago = now - timedelta(minutes=1)
-            recent_logs = db.collection("notification_history") \
+            # 重複送信防止：直近1分間に全く同じメッセージを送っていないか
+            one_min_ago = now - timedelta(minutes=1)
+            recent_exists = db.collection("notification_history") \
                 .where("user_id", "==", uid) \
                 .where("source", "==", source) \
                 .where("message", "==", message_body) \
-                .where("updated_at", ">", twelve_hours_ago) \
+                .where("updated_at", ">", one_min_ago) \
                 .limit(1).get()
 
-            if len(recent_logs) > 0:
-                print(f"⏩ ユーザー {uid}: 同内容の通知を最近送信済みのためスキップします。")
+            if recent_exists:
+                print(f"⏩ ユーザー {uid}: 同内容を送信済みのたスキップ")
                 continue
 
-            # 1. 個別通知履歴への保存
+            # 1. 個別通知履歴（Webの通知一覧用）への保存
             db.collection("notification_history").add({
                 "user_id": uid,
                 "message": message_body,
@@ -124,12 +136,12 @@ def check_keywords_and_notify(content_text, image_ids=None, source="insta"):
                 "expire_at": expire_2days
             })
 
-            # 2. プッシュ通知の送信
+            # 2. プッシュ通知(FCM)の送信
             token = sub_data.get("fcm_token")
             if token:
                 message = messaging.Message(
                     notification=messaging.Notification(
-                        title=f"{display_source} 監視アラート",
+                        title=f"{config['title']} 監視アラート",
                         body=message_body
                     ),
                     token=token,
@@ -140,5 +152,6 @@ def check_keywords_and_notify(content_text, image_ids=None, source="insta"):
         except Exception as e:
             print(f"通知送信エラー (UID: {uid}): {e}")
 
-    # --- ステップD: 古いデータのクリーンアップ実行 ---
+    # --- ステップD: クリーンアップ実行 ---
     cleanup_expired_docs(db)
+    
