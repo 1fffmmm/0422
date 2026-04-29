@@ -1,7 +1,6 @@
 name: Integrated Monitor System
 
 on:
-  schedule:
   workflow_dispatch:      # 手動実行用
 
 jobs:
