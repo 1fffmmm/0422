@@ -110,7 +110,7 @@
             box-shadow: 0 8px 24px rgba(180,110,60,0.12);
             text-align: center;
         }
-        .install-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 12px; }
+        .install-title { font-size: 1.4rem; font-weight: normal; margin-bottom: 12px; }
         .install-desc { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 20px; line-height: 1.6; text-align: left; }
         .install-steps { background: var(--bg); padding: 16px; border-radius: 12px; text-align: left; font-size: 0.9rem; color: var(--text-main); line-height: 1.8; }
 
@@ -124,8 +124,8 @@
         }
         
         /* 共通テキストスタイル */
-        .text-main { font-size: 0.9rem; line-height: 1.6; }
-        .text-sub { font-size: 0.8rem; line-height: 1.5; color: var(--text-sub); }
+        .text-main { font-size: 0.9rem; line-height: 1.6; font-weight: normal; }
+        .text-sub { font-size: 0.8rem; line-height: 1.5; color: var(--text-sub); font-weight: normal; }
 
         /* ヘッダー・見出しの統一 */
         .card-header {
@@ -137,7 +137,7 @@
         .card-header.no-margin { margin-bottom: 0; }
         .card-header h2 {
             font-size: 1.05rem;
-            font-weight: 700;
+            font-weight: normal;
             margin: 0;
             line-height: 1.4;
         }
@@ -149,8 +149,8 @@
         .icon-wrap svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
         .hero { text-align: center; padding: 12px 0; }
-        .hero h1 { font-size: 1.8rem; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
-        .hero p { font-size: 0.9rem; color: var(--text-main); line-height: 1.8; margin-top: 12px; text-align: center; }
+        .hero h1 { font-size: 1.8rem; font-weight: normal; color: var(--accent); letter-spacing: -0.02em; }
+        .hero p { font-size: 0.9rem; color: var(--text-main); line-height: 1.8; margin-top: 12px; text-align: center; font-weight: normal; }
         
         /* ステップリスト */
         .step-list { display: flex; flex-direction: column; gap: 12px; }
@@ -158,7 +158,7 @@
         .step-num { 
             width: 24px; height: 24px; background: var(--accent); color: white; 
             border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 0.75rem; flex-shrink: 0;
+            font-weight: normal; font-size: 0.75rem; flex-shrink: 0;
         }
 
         /* 通知モックアップ */
@@ -172,10 +172,10 @@
         }
         .app-icon-mock svg { width: 20px; height: 20px; stroke: white; }
         .notif-header { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-sub); margin-bottom: 2px; }
-        .notif-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 2px; }
-        .notif-body { font-size: 0.8rem; color: var(--text-main); }
+        .notif-title { font-size: 0.85rem; font-weight: normal; margin-bottom: 2px; }
+        .notif-body { font-size: 0.8rem; color: var(--text-main); font-weight: normal; }
 
-        .env-list { list-style: none; font-size: 0.85rem; display: flex; flex-direction: column; gap: 10px; }
+        .env-list { list-style: none; font-size: 0.85rem; display: flex; flex-direction: column; gap: 10px; font-weight: normal; }
         .env-list li { display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
         .env-list svg { width: 16px; height: 16px; stroke: var(--text-sub); flex-shrink: 0; margin-top: 2px; }
 
@@ -184,7 +184,7 @@
             display: inline-flex; align-items: center; justify-content: center; gap: 8px;
             background: linear-gradient(135deg, var(--accent-mid) 0%, var(--accent) 100%);
             color: white; border: none; padding: 16px; border-radius: 18px;
-            font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; width: 100%;
+            font-family: inherit; font-size: 0.95rem; font-weight: normal; cursor: pointer; width: 100%;
             box-shadow: 0 4px 15px rgba(217, 122, 74, 0.25); transition: all 0.2s;
         }
         
@@ -195,7 +195,7 @@
         }
         .btn-insta, .btn-x, .btn-jr {
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            text-decoration: none; padding: 16px; border-radius: 16px; font-weight: 700; font-size: 0.9rem;
+            text-decoration: none; padding: 16px; border-radius: 16px; font-weight: normal; font-size: 0.9rem;
             width: 100%; transition: transform 0.2s;
         }
         .btn-insta {
@@ -207,17 +207,17 @@
             border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .btn-jr { flex-direction: column; gap: 2px; padding: 12px 16px; }
-        .btn-jr-title { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-        .btn-jr-sub { color: #888; font-size: 0.7rem; font-weight: 500; }
+        .btn-jr-title { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: normal; }
+        .btn-jr-sub { color: #888; font-size: 0.7rem; font-weight: normal; }
         
         .btn-outline {
             background: var(--card); color: var(--accent); border: 1.5px solid var(--border);
-            padding: 14px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; width: 100%; cursor: pointer;
+            padding: 14px; border-radius: 16px; font-weight: normal; font-size: 0.9rem; width: 100%; cursor: pointer;
             margin-top: 12px; display: block;
         }
         .btn-sub {
             background: none; border: 1.5px solid var(--border); color: var(--text-sub);
-            padding: 6px 12px; border-radius: 10px; font-size: 0.8rem; cursor: pointer; font-weight: 600;
+            padding: 6px 12px; border-radius: 10px; font-size: 0.8rem; cursor: pointer; font-weight: normal;
         }
 
         /* トグルスイッチ */
@@ -228,7 +228,7 @@
         input:checked + .slider { background: var(--accent); }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* 入力フォーム（ボタンを内側に収納） */
+        /* 入力フォーム */
         .input-group { 
             position: relative; 
             display: flex; 
@@ -237,13 +237,14 @@
         }
         input[type="text"] {
             width: 100%; 
-            padding: 14px 50px 14px 16px; /* 右側にボタン用の余白を確保 */
+            padding: 14px 50px 14px 16px; 
             border: 1.5px solid var(--border); 
             border-radius: 14px; 
             font-family: inherit; 
             background: #fffdf9; 
             outline: none; 
             font-size: 0.95rem;
+            font-weight: normal;
         }
         input[type="text"]:focus { border-color: var(--accent); }
         .btn-add { 
@@ -262,14 +263,15 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
+            font-weight: normal;
         }
         
         /* キーワードタグ */
         #keywords-list { display: flex; flex-wrap: wrap; gap: 8px; }
         .keyword-tag {
-            background: var(--tag-bg); color: var(--tag-text); padding: 6px 12px; border-radius: 16px; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--tag-border); display: flex; align-items: center;
+            background: var(--tag-bg); color: var(--tag-text); padding: 6px 12px; border-radius: 16px; font-size: 0.8rem; font-weight: normal; border: 1px solid var(--tag-border); display: flex; align-items: center;
         }
-        .btn-del { margin-left: 8px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; font-size: 1rem; }
+        .btn-del { margin-left: 8px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: normal; font-size: 1rem; }
 
         /* テーマ設定 */
         :root[data-theme="cool"] {
@@ -286,29 +288,28 @@
         .theme-card-layout { display: flex; align-items: center; justify-content: space-between; }
         .theme-btn-group { display: flex; gap: 12px; }
         
-        /* カラーモードの◯を消去し、選択中は少し大きく表示 */
-        .theme-btn { width: 30px; height: 30px; border-radius: 50%; border: none; background: none; cursor: pointer; outline: none; padding: 0; transition: transform 0.2s, box-shadow 0.2s; }
+        /* カラーモード（選択前後の変化を削除） */
+        .theme-btn { width: 30px; height: 30px; border-radius: 50%; border: none; background: none; cursor: pointer; outline: none; padding: 0; }
         .theme-swatch { width: 100%; height: 100%; border-radius: 50%; display: block; }
         .swatch-warm { background: linear-gradient(135deg, #faeee4, #d97a4a); }
         .swatch-cool { background: linear-gradient(135deg, #e8f0fb, #6fa3d8); }
         .swatch-mono { background: linear-gradient(135deg, #e8e8e8, #444444); }
-        .theme-btn.active { transform: scale(1.15); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 
         /* お知らせリスト */
         .announcement-list { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 8px; }
         .announcement-item { padding: 10px 0; border-bottom: 1px dashed var(--border); }
         .announcement-item:last-child { border-bottom: none; padding-bottom: 0; }
-        .announcement-label { font-size: 0.65rem; font-weight: 700; color: white; background: var(--accent-mid); padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; display: inline-block; }
-        .announcement-text { font-size: 0.9rem; line-height: 1.5; color: var(--text-main); white-space: pre-wrap; word-break: break-all; }
-        .announcement-meta { font-size: 0.7rem; color: var(--text-sub); margin-top: 4px; text-align: right; }
+        .announcement-label { font-size: 0.65rem; font-weight: normal; color: white; background: var(--accent-mid); padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; display: inline-block; }
+        .announcement-text { font-size: 0.9rem; line-height: 1.5; color: var(--text-main); white-space: pre-wrap; word-break: break-all; font-weight: normal; }
+        .announcement-meta { font-size: 0.7rem; color: var(--text-sub); margin-top: 4px; text-align: right; font-weight: normal; }
         
-        #android-notice-box { display: none; background: #fff3cd; color: #856404; padding: 12px; border-radius: 12px; font-size: 0.8rem; border: 1px solid #ffeeba; margin-top: 8px; line-height: 1.5; }
+        #android-notice-box { display: none; background: #fff3cd; color: #856404; padding: 12px; border-radius: 12px; font-size: 0.8rem; border: 1px solid #ffeeba; margin-top: 8px; line-height: 1.5; font-weight: normal; }
 
         /* セパレーター */
         .divider { height: 1px; background: var(--border); margin: 16px 0; }
         
         .sub-setting-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
-        .sub-setting-label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500; }
+        .sub-setting-label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: normal; }
         .sub-setting-icon { width: 16px; height: 16px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
     </style>
@@ -360,7 +361,7 @@
                 <p class="text-sub">
                     取得情報はメールアドレス等の最小限のみです。また、プライバシー保護のため通知ログは48時間でシステムから自動消去されます。<br>
                     Googleアカウントにログイン中の端末（スマホ、PC）や、Google連携しているサードパーティアプリ・サイトの一覧は、Googleアカウントのセキュリティページから確認・管理できます。<br>
-                    <a href="https://support.google.com/accounts/answer/13867826?sjid=13050151934834091648-NC" target="_blank" rel="noopener" style="color: var(--accent); font-weight: 600; display: inline-block; margin-top: 8px;">Googleサポートページを確認</a>
+                    <a href="https://support.google.com/accounts/answer/13867826?sjid=13050151934834091648-NC" target="_blank" rel="noopener" style="color: var(--accent); font-weight: normal; display: inline-block; margin-top: 8px;">Googleサポートページを確認</a>
                 </p>
             </div>
 
@@ -385,7 +386,7 @@
                 <div class="notification-mock">
                     <div class="app-icon-mock"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
                     <div style="flex: 1;">
-                        <div class="notif-header"><span style="font-weight: 700;">INSTAMONITOR</span><span>23:00</span></div>
+                        <div class="notif-header"><span style="font-weight: normal;">INSTAMONITOR</span><span>23:00</span></div>
                         <div class="notif-title">【ストーリー】</div>
                         <div class="notif-body">キーワード「〇〇,＊＊,@@」を発見</div>
                     </div>
@@ -426,7 +427,7 @@
                 <p class="text-sub" style="text-align: center; font-size: 0.75rem;">
                     ジュニアは100人以上所属しているのに、窓口はひとつ。情報の流れが速く、情報を見逃すことが多々ありました。「担当の情報を逃したくない」「更新情報をまとめて知りたい」という個人的な想いから制作された非公式の個人サイトです
                 </p>
-                <p style="text-align: center; margin-top: 20px; font-size: 0.7rem; font-weight: 600; color: var(--text-sub);">
+                <p style="text-align: center; margin-top: 20px; font-size: 0.7rem; font-weight: normal; color: var(--text-sub);">
                     © 2026 InstaMonitor Project
                 </p>
             </footer>
@@ -453,7 +454,7 @@
                 </a>
                 <a href="https://jr-official.starto.jp/s/jr/media/list" target="_blank" class="btn-jr">
                     <div class="btn-jr-title">
-                        <span style="color:#1a6bff; font-weight:800;">ジュニア</span>
+                        <span style="color:#1a6bff; font-weight:normal;">ジュニア</span>
                         <span>Official Website</span>
                     </div>
                     <span class="btn-jr-sub">明日のメディア情報を開く</span>
@@ -471,7 +472,7 @@
                 </div>
                 <div id="keywords-list"></div>
                 <div style="margin-top: 16px; text-align: right;">
-                    <a href="about_txt.html" style="color: var(--accent); font-size: 0.8rem; font-weight: 600; text-decoration: underline;">通知が来ない場合は</a>
+                    <a href="about_txt.html" style="color: var(--accent); font-size: 0.8rem; font-weight: normal; text-decoration: underline;">通知が来ない場合は</a>
                 </div>
             </div>
 
@@ -481,7 +482,7 @@
                     <h2>カラー</h2>
                 </div>
                 <div class="theme-btn-group">
-                    <button class="theme-btn active" id="btn-warm" onclick="setTheme('warm')"><span class="theme-swatch swatch-warm"></span></button>
+                    <button class="theme-btn" id="btn-warm" onclick="setTheme('warm')"><span class="theme-swatch swatch-warm"></span></button>
                     <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')"><span class="theme-swatch swatch-cool"></span></button>
                     <button class="theme-btn" id="btn-mono" onclick="setTheme('mono')"><span class="theme-swatch swatch-mono"></span></button>
                 </div>
@@ -491,7 +492,7 @@
                 <div class="card-header no-margin" style="align-items: flex-start;">
                     <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
                     <div style="flex: 1;">
-                        <div id="user-email" style="font-size: 0.9rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px;"></div>
+                        <div id="user-email" style="font-size: 0.9rem; font-weight: normal; color: var(--text-main); margin-bottom: 6px;"></div>
                         <button onclick="signOut()" class="btn-sub">ログアウト</button>
                     </div>
                 </div>
@@ -509,7 +510,7 @@
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <div id="status-text" style="font-size: 0.8rem; font-weight: 600; color: var(--text-sub); margin-top: 8px; margin-left: 42px;">状態を確認中…</div>
+                    <div id="status-text" style="font-size: 0.8rem; font-weight: normal; color: var(--text-sub); margin-top: 8px; margin-left: 42px;">状態を確認中…</div>
                     
                     <div id="notification-sub-settings" style="display: none; flex-direction: column; gap: 4px; border-top: 1px dashed var(--border); margin-top: 12px; padding-top: 12px;">
                         <div class="sub-setting-row">
@@ -557,7 +558,7 @@
                     <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"></path>
                 </svg>
                 <div>
-                    <b style="font-size: 0.9rem; display: block; margin-bottom: 2px;">Androidの方へ</b>
+                    <b style="font-size: 0.9rem; display: block; margin-bottom: 2px; font-weight: normal;">Androidの方へ</b>
                     ブラウザのメニューから「アプリをインストール」を行ってからご利用いただくとより安定して通知を受け取れます。
                 </div>
             </div>
@@ -795,8 +796,6 @@
     window.setTheme = (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme); 
-        document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`btn-${theme}`).classList.add('active');
     };
     setTheme(localStorage.getItem('theme') || 'warm');
 
