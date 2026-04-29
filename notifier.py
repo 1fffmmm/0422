@@ -95,7 +95,7 @@ def check_keywords_and_notify(content_text, image_ids=None, source="insta"):
                 continue
 
             # 表示用ラベルの決定
-            display_source = "【ストーリー更新】" if source == "insta" else "【明日のメディア出演】"
+            display_source = "【ストーリー】" if source == "insta" else "【明日のメディア出演】"
             # キーワードを並び替えて1つの文字列にする (例: "キンプリ, 永瀬廉")
             keyword_str = ", ".join(sorted(list(matched_words)))
             message_body = f"{display_source} キーワード「{keyword_str}」を発見"
