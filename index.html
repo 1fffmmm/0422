@@ -753,9 +753,21 @@
         const input = document.getElementById('keyword-input');
         const kw = input.value.trim();
         if (!kw || !currentUser) return;
+
+        // 【追加】現在の登録キーワード数を取得
+        const currentKeywordCount = document.querySelectorAll('#keywords-list .keyword-tag').length;
+        
+        // 【追加】7個以上の場合はアラートを出して追加処理をストップ
+        if (currentKeywordCount >= 7) {
+            alert('登録できるキーワードは1アカウントにつき7個までです。');
+            return;
+        }
+
+        // Firestoreへ追加
         await addDoc(collection(db, 'keywords'), { keyword: kw, user_id: currentUser.uid, createdAt: serverTimestamp() });
         input.value = '';
     };
+    
 
     document.getElementById('push-switch').addEventListener('change', async (e) => {
         const statusText = document.getElementById('status-text');
