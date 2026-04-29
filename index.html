@@ -78,7 +78,7 @@
             display: none;
             width: 100%;
             flex-direction: column;
-            gap: 24px; /* LP部分は少し広めに */
+            gap: 24px;
             animation: fadeIn 0.4s ease forwards;
         }
 
@@ -87,7 +87,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* PWA誘導 */
         #screen-install {
             display: none;
             position: fixed;
@@ -125,7 +124,6 @@
         }
         .icon-wrap svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-        /* 追加：LP用スタイル */
         .hero { text-align: center; padding: 20px 0; }
         .hero h1 { font-size: 2rem; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
         
@@ -145,7 +143,7 @@
             width: 40px; height: 40px; background: var(--accent); border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
         }
-        .app-icon-mock svg { width: 24px; height: 24px; stroke: #white; stroke: white; }
+        .app-icon-mock svg { width: 24px; height: 24px; stroke: white; }
         .notif-header { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-sub); margin-bottom: 2px; }
         .notif-title { font-size: 0.85rem; font-weight: 700; }
         .notif-body { font-size: 0.8rem; color: var(--text-main); }
@@ -154,7 +152,6 @@
         .env-list li { margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         .env-list svg { width: 16px; height: 16px; stroke: var(--text-sub); flex-shrink: 0; }
 
-        /* ボタン */
         .btn-primary {
             display: inline-flex; align-items: center; justify-content: center; gap: 10px;
             background: linear-gradient(135deg, var(--accent-mid) 0%, var(--accent) 100%);
@@ -183,7 +180,6 @@
             padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; cursor: pointer;
         }
 
-        /* スイッチ */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; inset: 0; background: #e8d8c8; transition: .3s; border-radius: 34px; }
@@ -191,7 +187,6 @@
         input:checked + .slider { background: var(--accent); }
         input:checked + .slider:before { transform: translateX(22px); }
 
-        /* キーワード入力 */
         .input-group { display: flex; gap: 8px; margin-bottom: 16px; }
         input[type="text"] {
             flex: 1; padding: 12px 16px; border: 1.5px solid var(--border);
@@ -204,7 +199,6 @@
         }
         .btn-del { margin-left: 8px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; }
 
-        /* テーマ定義 */
         :root[data-theme="cool"] {
             --bg: #f0f5fc; --card: #f8fbff; --border: #d0e0f0; --accent: #4a7abf;
             --accent-light: #e4eef9; --accent-mid: #7aaad8; --text-main: #1e2c3a; --text-sub: #607080;
@@ -244,9 +238,9 @@
             <h1 class="install-title">アプリをインストール</h1>
             <p class="install-desc">Safariでは通知機能が制限されるため、ホーム画面に追加してご利用ください。</p>
             <div class="install-steps">
-                1. 画面下部の「共有アイコン」をタップ<br>
+                1. 共有アイコンをタップ<br>
                 2. 「ホーム画面に追加」を選択<br>
-                3. ホーム画面に追加されたアイコンから起動
+                3. アイコンから起動
             </div>
         </div>
     </section>
@@ -266,26 +260,24 @@
                 </p>
             </section>
 
-            
-            <section style="padding: 20px 0;">
+            <section style="padding: 10px 0;">
                 <button onclick="signInWithGoogle()" class="btn-primary">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
                     Googleでログインして始める
                 </button>
             </section>
 
-            
             <section class="card">
                 <h2 style="margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center;">
                     <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
                     安全性について
                 </h2>
                 <p style="margin-bottom: 16px; font-size: 0.9rem; line-height: 1.6;">
-                    本サービスでは個人ごとのキーワード登録、通知を管理するためにGoogleアカウントでのログインを利用しています。これはOAuth 2.0という安全な仕組みであり、<strong>パスワードが当サイトに共有されることはありません。</strong>
+                    本サービスではGoogleアカウントでのログインを利用しています。これはOAuth 2.0という安全な仕組みであり、<strong>パスワードが当サイトに共有されることはありません。</strong>
                 </p>
                 <p style="font-size: 0.8rem; border-top: 1px solid var(--border); padding-top: 12px; color: var(--text-sub);">
-                    取得情報はメールアドレス等の最小限のみです。また、プライバシー保護のため通知ログは48時間でシステムから自動消去されます。<br>
-                    <a href="https://support.google.com/accounts/answer/13867826" target="_blank" rel="noopener" style="color: var(--accent); word-break: break-all; font-size: 0.75rem;">Googleサポートページを確認</a>
+                    通知ログは48時間で自動消去されます。<br>
+                    <a href="https://support.google.com/accounts/answer/13867826" target="_blank" rel="noopener" style="color: var(--accent); font-size: 0.75rem;">Googleサポートページを確認</a>
                 </p>
             </section>
 
@@ -295,22 +287,10 @@
                     使い方
                 </h2>
                 <div class="step-list">
-                    <div class="step-item">
-                        <div class="step-num">1</div>
-                        <p style="font-size: 0.9rem;">Googleアカウントでサインイン</p>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-num">2</div>
-                        <p style="font-size: 0.9rem;">設定パネルから通知をオンにする</p>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-num">3</div>
-                        <p style="font-size: 0.9rem;">追跡したい単語（名前等）を登録</p>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-num">4</div>
-                        <p style="font-size: 0.9rem;">更新があれば毎日23時頃にお知らせ</p>
-                    </div>
+                    <div class="step-item"><div class="step-num">1</div><p style="font-size: 0.9rem;">Googleサインイン</p></div>
+                    <div class="step-item"><div class="step-num">2</div><p style="font-size: 0.9rem;">通知をオンにする</p></div>
+                    <div class="step-item"><div class="step-num">3</div><p style="font-size: 0.9rem;">キーワードを登録</p></div>
+                    <div class="step-item"><div class="step-num">4</div><p style="font-size: 0.9rem;">毎日23時頃にお知らせ</p></div>
                 </div>
             </section>
 
@@ -320,24 +300,20 @@
                     通知イメージ
                 </h2>
                 <div class="notification-mock">
-                    <div class="app-icon-mock">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    </div>
+                    <div class="app-icon-mock"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
                     <div class="notif-content" style="flex: 1;">
-                        <div class="notif-header">
-                            <span class="app-name">INSTAMONITOR</span>
-                            <span class="notif-time">23:00</span>
-                        </div>
+                        <div class="notif-header"><span class="app-name">INSTAMONITOR</span><span class="notif-time">23:00</span></div>
                         <div class="notif-title">【ストーリー】</div>
                         <div class="notif-body">キーワード「〇〇,＊＊,@@」を発見</div>
                     </div>
                 </div>
             </section>
 
-            
             <section class="card">
                 <h2 style="margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center;">
-                    <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <div class="icon-wrap">
+                        <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                    </div>
                     最新のお知らせイメージ
                 </h2>
                 <div class="announcement-item">
@@ -350,9 +326,8 @@
                     <div class="announcement-text">キーワード「〇〇,＊＊,@@」を発見</div>
                     <div class="announcement-meta">2026/04/30 23:00</div>
                 </div>
-            </div>
-        </section>
-            
+            </section>
+
             <section class="card">
                 <h2 style="margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center;">
                     <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
@@ -360,15 +335,13 @@
                 </h2>
                 <ul class="env-list">
                     <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg> iOS: Safariからホーム画面に追加</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg> Android: ブラウザメニューからインストール</li>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg> Android: インストールして利用</li>
                 </ul>
             </section>
 
-
-
             <footer style="margin-top: 20px; padding-bottom: 40px;">
                 <p style="font-size: 0.75rem; color: var(--text-sub); line-height: 1.6; text-align: center;">
-                    ジュニアは100人以上所属しているのに、SNSの窓口はひとつ。情報の流れが速く、情報を見逃すことが多々ありました。 「担当の情報だけは逃したくない」という想いから制作された非公式の個人サイトです。
+                    情報の流れが速く、情報を見逃すことが多々ありました。 「担当の情報だけは逃したくない」という想いから制作された非公式の個人サイトです。
                 </p>
                 <p style="text-align: center; margin-top: 24px; font-size: 0.7rem; color: var(--text-sub);">
                     © 2026 InstaMonitor Project
@@ -379,9 +352,7 @@
         <section id="main-screen">
             <div class="card">
                 <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
-                    <div class="icon-wrap">
-                        <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-                    </div>
+                    <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
                     <h2 style="margin: 0; font-size: 1.1rem;">最新のお知らせ</h2>
                 </div>
                 <div id="announcement-content" style="padding-top: 12px;">
@@ -442,7 +413,6 @@
     </div>
 
 <script type="module">
-    // Firebaseの設定やロジックは以前のものをそのまま維持
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp, setDoc, getDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -503,8 +473,8 @@
         }
     });
 
-    // --- その他 fetchLatestAnnouncement, loadKeywords などの関数は既存のものをそのまま貼り付け ---
-    // (中略: 文脈維持のため省略しますが、以前のコードの関数部分をここに含めてください)
+    // ここに fetchLatestAnnouncement などの以前のJSロジックを含めてください
+    // (省略: ロジック部分は以前のものをそのまま使用してください)
 
     window.setTheme = (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
