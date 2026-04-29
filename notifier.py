@@ -98,7 +98,7 @@ def check_keywords_and_notify(content_text, image_ids=None, source="insta"):
             display_source = "【ストーリー更新】" if source == "insta" else "【明日のメディア出演】"
             # キーワードを並び替えて1つの文字列にする (例: "キンプリ, 永瀬廉")
             keyword_str = ", ".join(sorted(list(matched_words)))
-            message_body = f"{display_source} キーワード「{keyword_str}」を検知しました"
+            message_body = f"{display_source} キーワード「{keyword_str}」を発見"
 
             # 【重要】重複送信防止：過去1分以内に同じメッセージを送信済みかチェック
             # これにより「各々1回」を確実に実現します
