@@ -501,6 +501,16 @@
             );
 
             const [instaSnap, mediaSnap] = await Promise.all([getDocs(qInsta), getDocs(qMedia)]);
+            // --- ここから追加 ---
+console.log("インスタ取得件数:", instaSnap.size);
+console.log("メディア取得件数:", mediaSnap.size);
+
+if (!mediaSnap.empty) {
+    console.log("メディア出演のデータ内容:", mediaSnap.docs[0].data());
+} else {
+    console.warn("メディア出演のデータが空です（条件に一致するものがありません）");
+}
+// --- ここまで追加 ---
             
             contentEl.innerHTML = ''; // クリア
 
