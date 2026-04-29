@@ -13,7 +13,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gap-main: 12px;
+            /* 全体の余白設定を統一・少し広げて美しく */
+            --gap-main: 20px; 
+            --card-padding: 24px;
+            
             --bg: #fdf6ee;
             --card: #fffaf5;
             --border: #f0e4d0;
@@ -68,7 +71,7 @@
         .container {
             width: 100%;
             max-width: 440px;
-            padding: 16px 16px 80px;
+            padding: 24px 20px 80px;
             display: flex;
             flex-direction: column;
             gap: var(--gap-main);
@@ -78,7 +81,7 @@
             display: none;
             width: 100%;
             flex-direction: column;
-            gap: 24px;
+            gap: var(--gap-main);
             animation: fadeIn 0.4s ease forwards;
         }
 
@@ -87,6 +90,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* インストール画面 */
         #screen-install {
             display: none;
             position: fixed;
@@ -110,23 +114,45 @@
         .install-desc { font-size: 0.95rem; color: var(--text-sub); margin-bottom: 24px; line-height: 1.6; text-align: left; }
         .install-steps { background: var(--bg); padding: 16px; border-radius: 12px; text-align: left; font-size: 0.9rem; color: var(--text-main); line-height: 1.8; }
 
+        /* カードデザイン */
         .card {
             background: var(--card);
             border-radius: 24px;
-            padding: 24px;
+            padding: var(--card-padding);
             border: 1px solid var(--border);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* 共通テキストスタイル */
+        .text-main { font-size: 0.9rem; line-height: 1.6; }
+        .text-sub { font-size: 0.8rem; line-height: 1.5; color: var(--text-sub); }
+
+        /* ヘッダー・見出しの統一 */
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .card-header.no-margin { margin-bottom: 0; }
+        .card-header h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.4;
         }
 
         .icon-wrap {
             width: 36px; height: 36px; border-radius: 12px; background: var(--accent-light);
-            display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-right: 8px;
+            display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
         .icon-wrap svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-        .hero { text-align: center; padding: 20px 0; }
+        .hero { text-align: center; padding: 16px 0; }
         .hero h1 { font-size: 2rem; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
+        .hero p { font-size: 0.95rem; color: var(--text-main); line-height: 1.8; margin-top: 16px; text-align: center; }
         
+        /* ステップリスト */
         .step-list { display: flex; flex-direction: column; gap: 16px; }
         .step-item { display: flex; align-items: center; gap: 12px; }
         .step-num { 
@@ -135,23 +161,25 @@
             font-weight: bold; font-size: 0.8rem; flex-shrink: 0;
         }
 
+        /* 通知モックアップ */
         .notification-mock {
-            background: #fff; border-radius: 16px; padding: 12px; border: 1px solid var(--border);
-            display: flex; gap: 12px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: #fff; border-radius: 16px; padding: 16px; border: 1px solid var(--border);
+            display: flex; gap: 16px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         .app-icon-mock {
-            width: 40px; height: 40px; background: var(--accent); border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
+            width: 44px; height: 44px; background: var(--accent); border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
         .app-icon-mock svg { width: 24px; height: 24px; stroke: white; }
-        .notif-header { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-sub); margin-bottom: 2px; }
-        .notif-title { font-size: 0.85rem; font-weight: 700; }
-        .notif-body { font-size: 0.8rem; color: var(--text-main); }
+        .notif-header { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-sub); margin-bottom: 4px; }
+        .notif-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
+        .notif-body { font-size: 0.85rem; color: var(--text-main); }
 
-        .env-list { list-style: none; font-size: 0.85rem; }
-        .env-list li { margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .env-list svg { width: 16px; height: 16px; stroke: var(--text-sub); flex-shrink: 0; }
+        .env-list { list-style: none; font-size: 0.85rem; display: flex; flex-direction: column; gap: 12px; }
+        .env-list li { display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+        .env-list svg { width: 18px; height: 18px; stroke: var(--text-sub); flex-shrink: 0; margin-top: 2px; }
 
+        /* ボタン群 */
         .btn-primary {
             display: inline-flex; align-items: center; justify-content: center; gap: 10px;
             background: linear-gradient(135deg, var(--accent-mid) 0%, var(--accent) 100%);
@@ -159,46 +187,64 @@
             font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%;
             box-shadow: 0 4px 15px rgba(217, 122, 74, 0.25); transition: all 0.2s;
         }
-        .btn-insta {
+        
+        .external-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn-insta, .btn-x, .btn-jr {
             display: flex; align-items: center; justify-content: center; gap: 10px;
-            background: var(--insta); color: white; text-decoration: none;
-            padding: 18px; border-radius: 20px; font-weight: 600; font-size: 0.95rem;
-            box-shadow: 0 6px 20px rgba(214,51,132,0.25);
+            text-decoration: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 0.95rem;
+            width: 100%; transition: transform 0.2s;
+        }
+        .btn-insta {
+            background: var(--insta); color: white;
+            box-shadow: 0 4px 15px rgba(214,51,132,0.2);
         }
         .btn-x, .btn-jr {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            background: #ffffff; color: #1a1a1a; text-decoration: none;
-            padding: 18px; border-radius: 20px; font-weight: 700; font-size: 0.95rem;
-            border: 1.5px solid #e0e0e0; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            background: #ffffff; color: #1a1a1a;
+            border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
+        .btn-jr { flex-direction: column; gap: 4px; padding: 14px 18px; }
+        .btn-jr-title { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+        .btn-jr-sub { color: #888; font-size: 0.75rem; font-weight: 500; }
+        
         .btn-outline {
             background: var(--card); color: var(--accent); border: 1.5px solid var(--border);
             padding: 16px; border-radius: 18px; font-weight: 600; width: 100%; cursor: pointer;
+            margin-top: 16px; display: block;
         }
         .btn-sub {
             background: none; border: 1.5px solid var(--border); color: var(--text-sub);
-            padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; cursor: pointer;
+            padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; cursor: pointer; font-weight: 600;
         }
 
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        /* トグルスイッチ */
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; inset: 0; background: #e8d8c8; transition: .3s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background: white; transition: .3s; border-radius: 50%; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         input:checked + .slider { background: var(--accent); }
         input:checked + .slider:before { transform: translateX(22px); }
 
+        /* 入力フォーム */
         .input-group { display: flex; gap: 8px; margin-bottom: 16px; }
         input[type="text"] {
-            flex: 1; padding: 12px 16px; border: 1.5px solid var(--border);
-            border-radius: 14px; font-family: inherit; background: #fffdf9; outline: none;
+            flex: 1; padding: 14px 16px; border: 1.5px solid var(--border);
+            border-radius: 16px; font-family: inherit; background: #fffdf9; outline: none; font-size: 0.95rem;
         }
-        .btn-add { background: var(--accent); color: white; border: none; width: 44px; height: 44px; border-radius: 14px; font-size: 1.4rem; cursor: pointer; }
+        input[type="text"]:focus { border-color: var(--accent); }
+        .btn-add { background: var(--accent); color: white; border: none; width: 48px; height: 48px; border-radius: 16px; font-size: 1.4rem; cursor: pointer; flex-shrink: 0; }
+        
+        /* キーワードタグ */
         #keywords-list { display: flex; flex-wrap: wrap; gap: 8px; }
         .keyword-tag {
-            background: var(--tag-bg); color: var(--tag-text); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--tag-border); display: flex; align-items: center;
+            background: var(--tag-bg); color: var(--tag-text); padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid var(--tag-border); display: flex; align-items: center;
         }
-        .btn-del { margin-left: 8px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; }
+        .btn-del { margin-left: 10px; color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; font-size: 1.1rem; }
 
+        /* テーマ設定 */
         :root[data-theme="cool"] {
             --bg: #f0f5fc; --card: #f8fbff; --border: #d0e0f0; --accent: #4a7abf;
             --accent-light: #e4eef9; --accent-mid: #7aaad8; --text-main: #1e2c3a; --text-sub: #607080;
@@ -210,21 +256,32 @@
             --tag-bg: #3d3d3d; --tag-text: #cccccc; --tag-border: #555555;
         }
 
-        .announcement-item { padding: 10px 0; border-bottom: 1px dashed var(--border); }
-        .announcement-item:last-child { border-bottom: none; }
-        .announcement-label { font-size: 0.7rem; font-weight: 700; color: white; background: var(--accent-mid); padding: 2px 8px; border-radius: 6px; margin-bottom: 4px; display: inline-block; }
-        .announcement-text { font-size: 0.9rem; line-height: 1.5; color: var(--text-main); white-space: pre-wrap; word-break: break-all; }
-        .announcement-meta { font-size: 0.65rem; color: var(--text-sub); margin-top: 4px; text-align: right; }
-        
-        #android-notice-box { display: none; background: #fff3cd; color: #856404; padding: 12px; border-radius: 12px; font-size: 0.85rem; border: 1px solid #ffeeba; margin-top: 8px; }
-
+        .theme-card-layout { display: flex; align-items: center; justify-content: space-between; }
         .theme-btn-group { display: flex; gap: 10px; }
-        .theme-btn { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent; background: none; cursor: pointer; outline: none; }
-        .theme-swatch { width: 24px; height: 24px; border-radius: 50%; display: block; }
+        .theme-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent; background: none; cursor: pointer; outline: none; padding: 2px; }
+        .theme-swatch { width: 100%; height: 100%; border-radius: 50%; display: block; }
         .swatch-warm { background: linear-gradient(135deg, #faeee4, #d97a4a); }
         .swatch-cool { background: linear-gradient(135deg, #e8f0fb, #6fa3d8); }
         .swatch-mono { background: linear-gradient(135deg, #e8e8e8, #444444); }
-        .theme-btn.active { border-color: transparent; }
+        .theme-btn.active { border-color: var(--text-main); }
+
+        /* お知らせリスト */
+        .announcement-list { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 8px; }
+        .announcement-item { padding: 12px 0; border-bottom: 1px dashed var(--border); }
+        .announcement-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .announcement-label { font-size: 0.7rem; font-weight: 700; color: white; background: var(--accent-mid); padding: 4px 10px; border-radius: 8px; margin-bottom: 8px; display: inline-block; }
+        .announcement-text { font-size: 0.95rem; line-height: 1.6; color: var(--text-main); white-space: pre-wrap; word-break: break-all; }
+        .announcement-meta { font-size: 0.75rem; color: var(--text-sub); margin-top: 6px; text-align: right; }
+        
+        #android-notice-box { display: none; background: #fff3cd; color: #856404; padding: 16px; border-radius: 16px; font-size: 0.85rem; border: 1px solid #ffeeba; margin-top: 8px; line-height: 1.6; }
+
+        /* セパレーター */
+        .divider { height: 1px; background: var(--border); margin: 20px 0; }
+        
+        .sub-setting-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
+        .sub-setting-label { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 500; }
+        .sub-setting-icon { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
     </style>
 </head>
 <body>
@@ -248,103 +305,99 @@
     <div class="container">
         
         <section id="auth-screen">
-            <header class="hero">
+            <div class="hero">
                 <h1>担当を見逃さない</h1>
-            </header>
-
-            <section>
-                <p style="font-size: 0.9rem; color: var(--text-main); line-height: 1.9; padding: 0 4px; text-align: center;">
+                <p>
                     Instagramのストーリー・𝕏・明日のメディア出演情報 をチェック。<br>
                     登録したキーワードがヒットすると、毎日23時頃にまとめてお知らせします。<br>
                     キーワード式なので <strong>無所属・東西</strong> 関係なく <strong>帝劇・松竹座</strong> 等、あなたの好きなキーワードを通知いたします。
                 </p>
-            </section>
+            </div>
 
-            <section style="padding: 10px 0;">
-                <button onclick="signInWithGoogle()" class="btn-primary">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
-                    Googleでログインして始める
-                </button>
-            </section>
+            <button onclick="signInWithGoogle()" class="btn-primary">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
+                Googleでログインして始める
+            </button>
 
-            <section class="card">
-                <h2 style="margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center;">
+            <div class="card">
+                <div class="card-header">
                     <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-                    安全性について
-                </h2>
-                <p style="margin-bottom: 16px; font-size: 0.9rem; line-height: 1.6;">
+                    <h2>安全性について</h2>
+                </div>
+                <p class="text-main">
                     本サービスでは個人ごとのキーワード登録、通知を管理するためにGoogleアカウントでのログインを利用しています。これはOAuth 2.0という安全な仕組みであり、<strong>パスワードが当サイトに共有されることはありません。</strong>
                 </p>
-                <p style="font-size: 0.8rem; border-top: 1px solid var(--border); padding-top: 12px; color: var(--text-sub);">
+                <div class="divider" style="margin: 16px 0;"></div>
+                <p class="text-sub">
                     取得情報はメールアドレス等の最小限のみです。また、プライバシー保護のため通知ログは48時間でシステムから自動消去されます。<br>
-                    Googleアカウントにログイン中の端末（スマホ、PC）や、Google連携しているサードパーティアプリ・サイトの一覧は、Googleアカウントのセキュリティページから確認・管理できます。不要な端末や連携はここからログアウト・削除が可能です。詳しくはgoogleのサポートページをご覧ください。<br>
-                    <a href="https://support.google.com/accounts/answer/13867826?sjid=13050151934834091648-NC" target="_blank" rel="noopener" style="color: var(--accent); font-size: 0.75rem;">Googleサポートページを確認</a>
+                    Googleアカウントにログイン中の端末（スマホ、PC）や、Google連携しているサードパーティアプリ・サイトの一覧は、Googleアカウントのセキュリティページから確認・管理できます。不要な端末や連携はここからログアウト・削除が可能です。<br>
+                    <a href="https://support.google.com/accounts/answer/13867826?sjid=13050151934834091648-NC" target="_blank" rel="noopener" style="color: var(--accent); font-weight: 600; display: inline-block; margin-top: 8px;">Googleサポートページを確認</a>
                 </p>
-            </section>
+            </div>
 
-            <section class="card">
-                <h2 style="margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center;">
+            <div class="card">
+                <div class="card-header">
                     <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
-                    使い方
-                </h2>
-                <div class="step-list">
-                    <div class="step-item"><div class="step-num">1</div><p style="font-size: 0.9rem;">Googleサインイン</p></div>
-                    <div class="step-item"><div class="step-num">2</div><p style="font-size: 0.9rem;">通知をオンにする</p></div>
-                    <div class="step-item"><div class="step-num">3</div><p style="font-size: 0.9rem;">キーワードを登録</p></div>
-                    <div class="step-item"><div class="step-num">4</div><p style="font-size: 0.9rem;">毎日23時頃にお知らせ</p></div>
+                    <h2>使い方</h2>
                 </div>
-            </section>
+                <div class="step-list">
+                    <div class="step-item"><div class="step-num">1</div><p class="text-main">Googleサインイン</p></div>
+                    <div class="step-item"><div class="step-num">2</div><p class="text-main">通知をオンにする</p></div>
+                    <div class="step-item"><div class="step-num">3</div><p class="text-main">キーワードを登録</p></div>
+                    <div class="step-item"><div class="step-num">4</div><p class="text-main">毎日23時頃にお知らせ</p></div>
+                </div>
+            </div>
 
-            <section>
-                <h2 style="margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center;">
+            <div class="card">
+                <div class="card-header">
                     <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
-                    通知イメージ
-                </h2>
+                    <h2>通知イメージ</h2>
+                </div>
                 <div class="notification-mock">
                     <div class="app-icon-mock"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
-                    <div class="notif-content" style="flex: 1;">
-                        <div class="notif-header"><span class="app-name">INSTAMONITOR</span><span class="notif-time">23:00</span></div>
+                    <div style="flex: 1;">
+                        <div class="notif-header"><span style="font-weight: 700;">INSTAMONITOR</span><span>23:00</span></div>
                         <div class="notif-title">【ストーリー】</div>
                         <div class="notif-body">キーワード「〇〇,＊＊,@@」を発見</div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <section class="card">
-                <h2 style="margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center;">
-                    <div class="icon-wrap">
-                        <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
+                    <h2>最新のお知らせイメージ</h2>
+                </div>
+                <div class="announcement-list" style="border-top: none; margin-top: 0; padding-top: 0;">
+                    <div class="announcement-item">
+                        <span class="announcement-label">明日のメディア出演</span>
+                        <div class="announcement-text">キーワード「□□,▲▲」を発見</div>
+                        <div class="announcement-meta">2026/04/30 23:00</div>
                     </div>
-                    最新のお知らせイメージ
-                </h2>
-                <div class="announcement-item">
-                    <span class="announcement-label">明日のメディア出演</span>
-                    <div class="announcement-text">キーワード「□□,▲▲」を発見</div>
-                    <div class="announcement-meta">2026/04/30 23:00</div>
+                    <div class="announcement-item">
+                        <span class="announcement-label">ストーリー</span>
+                        <div class="announcement-text">キーワード「〇〇,＊＊,@@」を発見</div>
+                        <div class="announcement-meta">2026/04/30 23:00</div>
+                    </div>
                 </div>
-                <div class="announcement-item">
-                    <span class="announcement-label">ストーリー</span>
-                    <div class="announcement-text">キーワード「〇〇,＊＊,@@」を発見</div>
-                    <div class="announcement-meta">2026/04/30 23:00</div>
-                </div>
-            </section>
+            </div>
 
-            <section class="card">
-                <h2 style="margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center;">
+            <div class="card">
+                <div class="card-header">
                     <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                    推奨環境
-                </h2>
+                    <h2>推奨環境</h2>
+                </div>
                 <ul class="env-list">
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg> iOS: Safariからホーム画面に追加してご利用ください</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg> Android: ブラウザのメニューから「アプリをインストール」を行ってからご利用ください</li>
+                    <li><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg> <span>iOS: Safariからホーム画面に追加してご利用ください</span></li>
+                    <li><svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg> <span>Android: ブラウザのメニューから「アプリをインストール」を行ってからご利用ください</span></li>
                 </ul>
-            </section>
+            </div>
 
-            <footer style="margin-top: 20px; padding-bottom: 40px;">
-                <p style="font-size: 0.75rem; color: var(--text-sub); line-height: 1.6; text-align: center;">
+            <footer style="padding: 20px 0 40px;">
+                <p class="text-sub" style="text-align: center;">
                     ジュニアは100人以上所属しているのに、窓口はひとつ。情報の流れが速く、情報を見逃すことが多々ありました。「担当の情報を逃したくない」「更新情報をまとめて知りたい」という個人的な想いから制作された非公式の個人サイトです
                 </p>
-                <p style="text-align: center; margin-top: 24px; font-size: 0.7rem; color: var(--text-sub);">
+                <p style="text-align: center; margin-top: 24px; font-size: 0.75rem; font-weight: 600; color: var(--text-sub);">
                     © 2026 InstaMonitor Project
                 </p>
             </footer>
@@ -353,120 +406,109 @@
          <section id="main-screen">
 
             <div class="card">
-                <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
-                    <div class="icon-wrap">
-                        <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-                    </div>
-                    <h2 style="margin: 0; font-size: 1.1rem;">最新のお知らせ</h2>
+                <div class="card-header no-margin">
+                    <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
+                    <h2>最新のお知らせ</h2>
                 </div>
-                <div id="announcement-content" style="padding-top: 12px;">
-                    <div style="font-size: 0.95rem; color: var(--text-sub);">読み込み中...</div>
+                <div id="announcement-content" class="announcement-list">
+                    <div class="text-sub" style="text-align: center; padding: 10px 0;">読み込み中...</div>
                 </div>
             </div>
 
-            <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="btn-insta">
-                Instagramストーリーを開く 
-            </a>
-
-            <a href="https://x.com/jr_official_X" target="_blank" class="btn-x">
-                𝕏 を開く
-            </a>
-
-            <a href="https://jr-official.starto.jp/s/jr/media/list" target="_blank" class="btn-jr" style="flex-direction: column; gap: 2px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="color:#1a6bff; font-weight:800;">ジュニア</span>
-                    <span style="font-weight:700;">Official Website</span>
-                </div>
-                <span style="color:#888; font-size:0.75rem;">明日のメディア情報を開く</span>
-            </a>
-
-            <div class="card" style="padding-top: 18px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; margin-top: -4px;">
-                    <div class="icon-wrap">
-                        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <div class="external-links">
+                <a href="https://www.instagram.com/stories/jr_official_/" target="_blank" class="btn-insta">
+                    Instagramストーリーを開く 
+                </a>
+                <a href="https://x.com/jr_official_X" target="_blank" class="btn-x">
+                    𝕏 を開く
+                </a>
+                <a href="https://jr-official.starto.jp/s/jr/media/list" target="_blank" class="btn-jr">
+                    <div class="btn-jr-title">
+                        <span style="color:#1a6bff; font-weight:800;">ジュニア</span>
+                        <span>Official Website</span>
                     </div>
-                    <span style="font-size: 1.05rem; font-weight: 600;">登録キーワード</span>
+                    <span class="btn-jr-sub">明日のメディア情報を開く</span>
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
+                    <h2>登録キーワード</h2>
                 </div>
                 <div class="input-group">
                     <input type="text" id="keyword-input" placeholder="新しいキーワードを入力…">
                     <button class="btn-add" onclick="addKeyword()">＋</button>
                 </div>
                 <div id="keywords-list"></div>
-                <div style="margin-top: 16px; font-size: 0.8rem; color: var(--text-sub);">
-                    <a href="about_txt.html" style="color: var(--accent); text-decoration: underline;">通知が来ない場合は</a>
+                <div style="margin-top: 20px; text-align: right;">
+                    <a href="about_txt.html" style="color: var(--accent); font-size: 0.85rem; font-weight: 600; text-decoration: underline;">通知が来ない場合は</a>
                 </div>
             </div>
-             
 
-            <div class="card" style="padding: 14px 20px;">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 600;">
-                        <div class="icon-wrap">
-                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 0 20"></path><path d="M12 2c2.5 2.5 4 5.5 4 10s-1.5 7.5-4 10"></path></svg>
-                        </div>
-                        カラー
-                    </div>
-                    <div class="theme-btn-group">
-                        <button class="theme-btn active" id="btn-warm" onclick="setTheme('warm')"><span class="theme-swatch swatch-warm"></span></button>
-                        <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')"><span class="theme-swatch swatch-cool"></span></button>
-                        <button class="theme-btn" id="btn-mono" onclick="setTheme('mono')"><span class="theme-swatch swatch-mono"></span></button>
-                    </div>
+            <div class="card theme-card-layout">
+                <div class="card-header no-margin">
+                    <div class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 0 20"></path><path d="M12 2c2.5 2.5 4 5.5 4 10s-1.5 7.5-4 10"></path></svg></div>
+                    <h2>カラー</h2>
+                </div>
+                <div class="theme-btn-group">
+                    <button class="theme-btn active" id="btn-warm" onclick="setTheme('warm')"><span class="theme-swatch swatch-warm"></span></button>
+                    <button class="theme-btn" id="btn-cool" onclick="setTheme('cool')"><span class="theme-swatch swatch-cool"></span></button>
+                    <button class="theme-btn" id="btn-mono" onclick="setTheme('mono')"><span class="theme-swatch swatch-mono"></span></button>
                 </div>
             </div>
 
             <div class="card">
-                <div style="display: flex; align-items: center; gap: 15px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
-                    <div class="icon-wrap">
-                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    </div>
+                <div class="card-header no-margin" style="align-items: flex-start;">
+                    <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
                     <div style="flex: 1;">
-                        <div id="user-email" style="font-size: 0.9rem; font-weight: 500; color: var(--text-sub);"></div>
-                        <button onclick="signOut()" class="btn-sub" style="margin-top: 8px;">ログアウト</button>
+                        <div id="user-email" style="font-size: 0.95rem; font-weight: 600; color: var(--text-main); margin-bottom: 8px;"></div>
+                        <button onclick="signOut()" class="btn-sub">ログアウト</button>
                     </div>
                 </div>
 
-                <div style="padding-top: 16px;">
-                    <div class="card-header" style="margin-bottom: 0; align-items: flex-start;">
-                        <div class="card-title" style="align-items: flex-start;">
-                            <div class="icon-wrap">
-                                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                            </div>
-                            通知マスター設定
+                <div class="divider"></div>
+
+                <div>
+                    <div class="card-header no-margin" style="justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
+                            <h2>通知マスター設定</h2>
                         </div>
-                        <label class="switch" style="margin-top: 4px;">
+                        <label class="switch">
                             <input type="checkbox" id="push-switch">
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <div id="status-text" class="status" style="font-size: 0.8rem; color: var(--text-sub); margin-top: 10px;">状態を確認中…</div>
+                    <div id="status-text" style="font-size: 0.85rem; font-weight: 600; color: var(--text-sub); margin-top: 12px; margin-left: 48px;">状態を確認中…</div>
                     
-                    <div id="notification-sub-settings" style="border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; display: none; flex-direction: column; gap: 12px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500;">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                    <div id="notification-sub-settings" style="display: none; flex-direction: column; gap: 4px; border-top: 1px dashed var(--border); margin-top: 16px; padding-top: 16px;">
+                        <div class="sub-setting-row">
+                            <span class="sub-setting-label">
+                                <svg class="sub-setting-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                                 ストーリー通知
                             </span>
-                            <label class="switch" style="transform: scale(0.85);">
+                            <label class="switch" style="transform: scale(0.85); transform-origin: right center;">
                                 <input type="checkbox" id="insta-switch" checked>
                                 <span class="slider"></span>
                             </label>
                         </div>
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500;">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="15" height="10" rx="2"/><polyline points="17 11 22 7 22 17 17 13"/></svg>
+                        <div class="sub-setting-row">
+                            <span class="sub-setting-label">
+                                <svg class="sub-setting-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="15" height="10" rx="2"/><polyline points="17 11 22 7 22 17 17 13"/></svg>
                                 メディア出演通知
                             </span>
-                            <label class="switch" style="transform: scale(0.85);">
+                            <label class="switch" style="transform: scale(0.85); transform-origin: right center;">
                                 <input type="checkbox" id="media-switch" checked>
                                 <span class="slider"></span>
                             </label>
                         </div>
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500;">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--accent)"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        <div class="sub-setting-row">
+                            <span class="sub-setting-label">
+                                <svg class="sub-setting-icon" style="fill: var(--accent); stroke: none;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                                 ポスト通知
                             </span>
-                            <label class="switch" style="transform: scale(0.85);">
+                            <label class="switch" style="transform: scale(0.85); transform-origin: right center;">
                                 <input type="checkbox" id="tweet-switch" checked>
                                 <span class="slider"></span>
                             </label>
@@ -474,27 +516,23 @@
                     </div>
                 </div>
 
-                <div style="padding-top: 16px; border-top: 1px solid var(--border); margin-top: 16px;">
-                    <button class="btn-outline" onclick="window.location.reload();">最新の情報に更新</button>
-                </div>
+                <button class="btn-outline" onclick="window.location.reload();">最新の情報に更新</button>
             </div>
         </section>
-        
 
-       <div id="android-notice-box">
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-            <path d="M9 18h6"></path>
-            <path d="M10 22h4"></path>
-            <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"></path>
-        </svg>
-        <div>
-            <b>Androidの方へ</b><br>
-            ブラウザのメニューから「アプリをインストール」を行ってからご利用いただくとより安定して通知を受け取れます。
+        <div id="android-notice-box">
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+                    <path d="M9 18h6"></path>
+                    <path d="M10 22h4"></path>
+                    <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"></path>
+                </svg>
+                <div>
+                    <b style="font-size: 0.95rem; display: block; margin-bottom: 4px;">Androidの方へ</b>
+                    ブラウザのメニューから「アプリをインストール」を行ってからご利用いただくとより安定して通知を受け取れます。
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-        
 
     </div>
 
@@ -540,14 +578,13 @@
         catch (error) { if (error.code !== 'auth/cancelled-popup-request') alert("失敗: " + error.message); }
     };
 
-    // ★ お知らせ取得ロジック（ツイート対応版）
     async function fetchLatestAnnouncement(uid) {
         const contentEl = document.getElementById('announcement-content');
         try {
             const sources = [
                 { id: "insta", label: "ストーリー" },
                 { id: "media", label: "明日のメディア出演" },
-                { id: "tweet", label: "ツイート更新" } // フェーズ4追加
+                { id: "tweet", label: "ツイート更新" } 
             ];
 
             const queries = sources.map(s => query(
@@ -572,11 +609,10 @@
             });
 
             if (items.length === 0) {
-                contentEl.innerHTML = '<div style="font-size: 0.95rem; color: var(--text-sub);">直近のお知らせはありません</div>';
+                contentEl.innerHTML = '<div class="text-sub" style="text-align: center; padding: 10px 0;">直近のお知らせはありません</div>';
                 return;
             }
 
-            // 日付順にソートして表示
             items.sort((a, b) => (b.updated_at?.seconds || 0) - (a.updated_at?.seconds || 0));
 
             items.forEach(item => {
@@ -592,56 +628,53 @@
             });
         } catch (err) {
             console.error(err);
-            contentEl.innerText = "お知らせの取得に失敗しました。";
+            contentEl.innerHTML = '<div class="text-sub" style="text-align: center; padding: 10px 0;">お知らせの取得に失敗しました。</div>';
         }
     }
+
     onAuthStateChanged(auth, async (user) => {
-    const authScreen = document.getElementById('auth-screen');
-    const mainScreen = document.getElementById('main-screen');
-    const screenInstall = document.getElementById('screen-install');
-    const overlay = document.getElementById('loading-overlay');
-    const androidNotice = document.getElementById('android-notice-box'); // 追加
+        const authScreen = document.getElementById('auth-screen');
+        const mainScreen = document.getElementById('main-screen');
+        const screenInstall = document.getElementById('screen-install');
+        const overlay = document.getElementById('loading-overlay');
+        const androidNotice = document.getElementById('android-notice-box');
 
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    const ua = navigator.userAgent.toLowerCase();
-    const isAndroid = /android/.test(ua);
-    const isIOS = /iphone|ipad|ipod/.test(ua);
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        const ua = navigator.userAgent.toLowerCase();
+        const isAndroid = /android/.test(ua);
+        const isIOS = /iphone|ipad|ipod/.test(ua);
 
-    // Androidかつブラウザ実行時のみ通知を表示
-    if (isAndroid && !isStandalone) {
-        androidNotice.style.display = 'block';
-    } else {
-        androidNotice.style.display = 'none';
-    }
-
-    if (isIOS && !isStandalone) {
-        // iOS未インストール時の処理（既存通り）
-        screenInstall.style.display = 'block';
-        overlay.style.display = 'none';
-    } else {
-        // ...以下、既存のログイン判定ロジック...
-        screenInstall.style.display = 'none';
-        if (user) {
-            currentUser = user;
-            authScreen.style.display = 'none';
-            mainScreen.style.display = 'flex';
-            document.getElementById('user-email').innerText = user.email;
-            
-            fetchLatestAnnouncement(user.uid); // 実装に合わせて有効化
-            loadKeywords(); // 実装に合わせて有効化
-
-            
+        if (isAndroid && !isStandalone) {
+            androidNotice.style.display = 'block';
         } else {
-            currentUser = null;
-            mainScreen.style.display = 'none';
-            authScreen.style.display = 'flex';
+            androidNotice.style.display = 'none';
         }
-        overlay.style.opacity = '0';
-        setTimeout(() => overlay.style.display = 'none', 300);
-    }
-});
+
+        if (isIOS && !isStandalone) {
+            screenInstall.style.display = 'block';
+            overlay.style.display = 'none';
+        } else {
+            screenInstall.style.display = 'none';
+            if (user) {
+                currentUser = user;
+                authScreen.style.display = 'none';
+                mainScreen.style.display = 'flex';
+                document.getElementById('user-email').innerText = user.email;
+                
+                fetchLatestAnnouncement(user.uid); 
+                loadKeywords(); 
+                checkPushSubscription(user.uid);
+            } else {
+                currentUser = null;
+                mainScreen.style.display = 'none';
+                authScreen.style.display = 'flex';
+            }
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 300);
+        }
+    });
     
-async function checkPushSubscription(uid) {
+    async function checkPushSubscription(uid) {
         const pushSwitch = document.getElementById('push-switch');
         const subSettings = document.getElementById('notification-sub-settings');
         try {
@@ -652,7 +685,7 @@ async function checkPushSubscription(uid) {
                 subSettings.style.display = 'flex';
                 document.getElementById('insta-switch').checked = data.insta_enabled !== false;
                 document.getElementById('media-switch').checked = data.media_enabled !== false;
-                document.getElementById('tweet-switch').checked = data.tweet_enabled !== false; // 追加
+                document.getElementById('tweet-switch').checked = data.tweet_enabled !== false; 
                 document.getElementById('status-text').innerText = "通知設定：ON (準備完了)";
             } else {
                 pushSwitch.checked = false;
@@ -694,7 +727,6 @@ async function checkPushSubscription(uid) {
         input.value = '';
     };
 
-    // 通知スイッチの連動
     document.getElementById('push-switch').addEventListener('change', async (e) => {
         const statusText = document.getElementById('status-text');
         const subSettings = document.getElementById('notification-sub-settings');
@@ -707,7 +739,7 @@ async function checkPushSubscription(uid) {
                     if (currentToken) {
                         await setDoc(doc(db, 'subscriptions', currentUser.uid), {
                             user_id: currentUser.uid, fcm_token: currentToken, updated_at: serverTimestamp(),
-                            insta_enabled: true, media_enabled: true, tweet_enabled: true // 全て初期ON
+                            insta_enabled: true, media_enabled: true, tweet_enabled: true 
                         }, { merge: true });
                         statusText.innerText = "通知設定：ON (準備完了)";
                         subSettings.style.display = 'flex';
@@ -724,7 +756,6 @@ async function checkPushSubscription(uid) {
         }
     });
 
-    // 個別スイッチの保存ロジック（ツイート追加）
     ['insta', 'media', 'tweet'].forEach(type => {
         document.getElementById(`${type}-switch`).addEventListener('change', async (e) => {
             if (!currentUser) return;
@@ -743,4 +774,3 @@ async function checkPushSubscription(uid) {
 </script>
 </body>
 </html>
-
