@@ -6,14 +6,19 @@ import os
 def main():
     print("===== 統合監視システム 起動 =====")
 
-    # --- 1. メディア情報の取得と通知 ---
+# --- 1. メディア情報の取得と通知 ---
     print("\n--- [Step 1] メディア情報チェック開始 ---")
     try:
-        # scraping_media.py の main 関数を呼び出す
-        # ※内部でFirestore保存と通知(check_keywords_and_notify)まで行われます
-        scraping_media.main()
+        # 修正：戻り値を受け取るようにする
+        media_text = scraping_media.main()
+        
+        # main.py側で通知を呼ぶ
+        if media_text:
+            check_keywords_and_notify(media_text, source="media")
+            
     except Exception as e:
         print(f"メディア監視でエラーが発生しました: {e}")
+        
 
     # --- 2. Google Drive (インスタ) 情報の取得と通知 ---
     print("\n--- [Step 2] Google Drive チェック開始 ---")
