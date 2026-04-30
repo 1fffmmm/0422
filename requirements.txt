@@ -3,15 +3,11 @@ google-auth
 google-auth-httplib2
 google-auth-oauthlib
 firebase-admin
-
 selenium
 webdriver-manager
-firebase-admin
-google-api-python-client
 supabase
 pywebpush
-
 instaloader
-firebase-admin
 google-generativeai
 pillow
+requests
