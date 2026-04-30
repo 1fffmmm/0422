@@ -45,36 +45,55 @@ def main():
         print(f"初期ロード完了: {driver.current_url}")
         time.sleep(5) # スクリプト実行の安定のため少し待機
 
-        # ステップ3: 明日が1日の場合のみ「＞」ボタンを探してクリック
+        # ==========================================
+        # Step 3: [月末限定] 翌月への強制遷移ロジック
+        # ==========================================
         if tomorrow.day == 1:
-            print("【月末判定】翌月ボタンを探してクリックします...")
-            try:
-                # 「＞」ボタンの特定（hrefに次の月が含まれているか、特定のクラスを持つもの）
-                # サイトの構造に合わせ、複数の候補からボタンを探します
-                selectors = [
-                    f"//a[contains(@href, 'dy={target_ym}')]", # hrefに202605を含むaタグ
-                    "//a[contains(@class, 'next')]",           # classにnextを含む
-                    "//span[contains(text(), '次月')]/..",      # 「次月」という文字の親要素
-                    "//a[text()='>']"                          # 単純な「>」テキスト
-                ]
-                
-                next_button = None
-                for s in selectors:
-                    try:
-                        next_button = driver.find_element(By.XPATH, s)
-                        if next_button: break
-                    except:
-                        continue
-                
-                if next_button:
-                    # JavaScriptでクリックを実行
-                    driver.execute_script("arguments[0].click();", next_button)
-                    print("翌月ボタンをクリックしました。遷移を待ちます...")
-                    time.sleep(10)
-                else:
-                    print("翌月ボタンが見つかりませんでした。")
-            except Exception as e:
-                print(f"クリック処理中にエラー: {e}")
+            print(f"【月末判定】翌月({target_ym})への遷移を開始します...")
+            
+            # ページが安定するまで少し待機
+            time.sleep(5)
+
+            # ユーザーが取得したピンポイントな住所（Full XPath）
+            # span[2]（外枠）と img（画像）の両方を候補に入れます
+            xpath_candidates = [
+                "/html/body/div[1]/main/div[1]/div/div[3]/section/div/div[1]/div/div[2]/span[2]",
+                "/html/body/div[1]/main/div[1]/div/div[3]/section/div/div[1]/div/div[2]/span[2]/img"
+            ]
+
+            success = False
+            for path in xpath_candidates:
+                try:
+                    # 要素が見つかり、クリック可能になるまで待機
+                    element = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, path))
+                    )
+                    
+                    # 1. 念のためその場所までスクロール
+                    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                    time.sleep(1)
+                    
+                    # 2. JavaScriptで直接クリックイベントを発生させる
+                    driver.execute_script("arguments[0].click();", element)
+                    
+                    print(f"成功: 要素をクリックしました (XPath: {path})")
+                    success = True
+                    break # 成功したらループを抜ける
+                except Exception as e:
+                    print(f"試行失敗: {path} は見つからないかクリックできませんでした。")
+                    continue
+
+            if success:
+                print("遷移後の読み込みを待機中 (15秒)...")
+                time.sleep(15)
+                # 本当にURLや中身が変わったか確認
+                print(f"現在のURL: {driver.current_url}")
+            else:
+                print("致命的エラー: 翌月ボタンを特定できませんでした。")
+
+        # --- 以降、テキスト抽出ロジックへ ---
+        
+
 
         # ステップ4: テキスト抽出
         main_element = driver.find_element(By.TAG_NAME, 'main')
