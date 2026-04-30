@@ -10,3 +10,4 @@ pywebpush
 instaloader
 google-genai
 pillow
+playwright
