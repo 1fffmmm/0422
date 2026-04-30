@@ -3,7 +3,7 @@ import json
 import time
 import re
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -16,18 +16,24 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 def main():
     # ==========================================
-    # 1. 自動日付計算
+    # 1. 自動日付計算 (JST固定)
     # ==========================================
-    now = datetime.now()
+    # これでサーバーがどこにあっても日本時間で計算されます
+    jst = timezone(timedelta(hours=9), 'JST')
+    now = datetime.now(jst)
     tomorrow = now + timedelta(days=1)
+    
     url_ym = tomorrow.strftime("%Y%m")
-    target_day = tomorrow.strftime("%d") # "01", "02" 形式
+    # target_day は 比較しやすいように "1", "2" 形式（zfillなし）にするのが確実です
+    target_day = str(tomorrow.day) 
 
     url = f"https://jr-official.starto.jp/s/jr/media/list?dy={url_ym}"
 
     print(f"--- メディア監視システム起動 ---")
+    print(f"現在時刻 (JST): {now.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"対象日: {tomorrow.strftime('%Y年%m月%d日')}")
     print(f"URL: {url}")
+    
 
     # ==========================================
     # 2. ブラウザ設定
@@ -61,7 +67,7 @@ def main():
              main_element = driver.find_element(By.TAG_NAME, 'main')
              text_lines = main_element.text.splitlines()
 
-        # ==========================================
+# ==========================================
         # 3. 明日のスケジュール抽出ロジック
         # ==========================================
         date_pattern = re.compile(r"^(\d{1,2})(?:\s*\(.\))?$")
@@ -74,7 +80,8 @@ def main():
             
             match = date_pattern.match(line)
             if match:
-                current_day_str = match.group(1).zfill(2)
+                # 取得した日付も zfill せずに比較
+                current_day_str = match.group(1) 
                 if current_day_str == target_day:
                     recording = True
                     continue 
