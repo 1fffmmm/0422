@@ -25,7 +25,7 @@ if not firebase_admin._apps:
 SOURCE_CONFIG = {
     "insta": {"label": "【ストーリー】", "title": "インスタ更新"},
     "media": {"label": "【出演情報】", "title": "メディア出演情報"},
-    "tweet": {"label": "【ツイート】", "title": "ツイート更新情報"}
+    "tweet": {"label": "【ツイート】", "title": "ツイート更新情報"},
     "blog":  {"label": "【ブログ】", "title": "ブログ更新情報"}
 }
 
