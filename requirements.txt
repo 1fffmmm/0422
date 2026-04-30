@@ -10,3 +10,8 @@ firebase-admin
 google-api-python-client
 supabase
 pywebpush
+
+instaloader
+google-cloud-vision
+firebase-admin
+google-api-python-client
