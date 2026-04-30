@@ -5,7 +5,7 @@ import requests
 import instaloader
 import firebase_admin
 from firebase_admin import credentials
-import google.generativeai as genai
+from google import genai
 from PIL import Image
 
 # notifier.py から通知・保存関数をインポート
@@ -30,16 +30,20 @@ def initialize_firebase():
         firebase_admin.initialize_app(cred)
 
 def analyze_text_with_gemini(image_path):
-    """Gemini 1.5 Flashを使用して画像から文字を抽出する"""
+    """最新の google-genai を使用して画像から文字を抽出する"""
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # 新しいクライアントの初期化方法
+        client = genai.Client(api_key=GEMINI_API_KEY)
         
         img = Image.open(image_path)
-        # Geminiへの指示（プロンプト）
         prompt = "この画像内に書かれているテキストをすべて正確に抽出してください。テキストが含まれていない場合は「なし」とだけ出力してください。"
         
-        response = model.generate_content([prompt, img])
+        # 新しい generate_content の呼び出し方
+        response = client.models.generate_content(
+            model='gemini-2.5-flash', # 最新のFlashモデルを指定
+            contents=[prompt, img]
+        )
+        
         text = response.text.strip()
         
         if text and text != "なし":
