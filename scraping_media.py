@@ -8,6 +8,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 def main():
@@ -18,10 +20,10 @@ def main():
     now = datetime.now(jst)
     tomorrow = now + timedelta(days=1)
     
-    target_ym = tomorrow.strftime("%Y%m") # 例: "202605"
-    target_day = str(tomorrow.day)         # 例: "1"
+    target_ym = tomorrow.strftime("%Y%m") 
+    target_day = str(tomorrow.day)
 
-    # 最初は基本URL（現在の月のページ）にアクセスする
+    # 常に「今月のリスト」からスタートする
     base_url = "https://jr-official.starto.jp/s/jr/media/list"
 
     print(f"--- メディア監視システム起動 ---")
@@ -37,6 +39,8 @@ def main():
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-gpu')
     options.add_argument('--lang=ja-JP')
+    # リアルなブラウザに見せかけるためのUser-Agent設定
+    options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
     options.add_experimental_option('prefs', {'intl.accept_languages': 'ja'})
     options.add_argument('--window-size=1920,1080')
 
@@ -45,40 +49,58 @@ def main():
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
         
-        print(f"基本URLにアクセス: {base_url}")
+        print(f"サイトにアクセス中: {base_url}")
         driver.get(base_url)
-        time.sleep(15) 
+
+        # 画面が読み込まれるのを待つ
+        wait = WebDriverWait(driver, 20)
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, "main")))
 
         # ==========================================
-        # [重要] 月末時の翌月遷移ロジック
+        # [改良] 月末時の翌月遷移ロジック
         # ==========================================
-        # 明日が1日、かつ現在の画面がまだ前月(現在月)の場合
         if tomorrow.day == 1:
-            print(f"【月末判定】翌月({target_ym})のボタンを探します...")
+            print("【月末判定】翌月ボタンを検索中...")
             try:
-                # リンク内に "dy=202605" のような文字列が含まれるaタグを探す
-                # 遷移ボタンが <a> タグである前提のセレクタです
-                next_link_xpath = f"//a[contains(@href, 'dy={target_ym}')]"
-                next_button = driver.find_element(By.XPATH, next_link_xpath)
+                # 複数の方法で「翌月ボタン」を探索
+                # 1. クラス名に 'next' を含む a タグ
+                # 2. href に dy=202605 を含む a タグ
+                # 3. テキストに '次月' や '＞' を含む要素
+                next_selectors = [
+                    f"//a[contains(@href, 'dy={target_ym}')]",
+                    "//li[contains(@class, 'next')]/a",
+                    "//a[contains(@class, 'next')]",
+                    "//span[contains(text(), '次月')]/.."
+                ]
                 
-                print("翌月ボタンを発見。クリックして遷移します。")
-                driver.execute_script("arguments[0].click();", next_button)
-                time.sleep(10) # 遷移後の読み込み待機
-            except Exception:
-                # 指定した月のリンクがない場合（サイト側が未公開の場合）
-                print(f"通知: サイト上に翌月({target_ym})のリンクが見つかりません。")
-                print("まだ翌月のスケジュールが公開されていない可能性があります。")
+                next_button = None
+                for selector in next_selectors:
+                    try:
+                        next_button = driver.find_element(By.XPATH, selector)
+                        if next_button: break
+                    except:
+                        continue
 
-        # コンテンツの取得
+                if next_button:
+                    print(f"翌月ボタンを発見しました。クリックします。")
+                    # 画面外にある場合を考慮してスクロール
+                    driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
+                    time.sleep(1)
+                    driver.execute_script("arguments[0].click();", next_button)
+                    
+                    print("遷移完了を待機中 (10秒)...")
+                    time.sleep(10)
+                else:
+                    print("翌月ボタンが見つかりませんでした。URLの直接指定を試みます。")
+                    driver.get(f"{base_url}?dy={target_ym}")
+                    time.sleep(10)
+
+            except Exception as e:
+                print(f"ボタン操作中にエラーが発生しました。続行します: {e}")
+
+        # コンテンツの抽出
         main_element = driver.find_element(By.TAG_NAME, 'main')
         text_lines = main_element.text.splitlines()
-
-        # ロード待ち判定
-        if "Loading" in main_element.text or len(text_lines) < 5:
-             print("再ロード待機中...")
-             time.sleep(10)
-             main_element = driver.find_element(By.TAG_NAME, 'main')
-             text_lines = main_element.text.splitlines()
 
         # ==========================================
         # 3. スケジュール抽出ロジック
@@ -86,6 +108,8 @@ def main():
         date_pattern = re.compile(r"^(\d{1,2})(?:\s*\(.\))?$")
         recording = False
         tomorrow_schedule = []
+
+        print(f"デバッグ: 取得したテキストの最初の5行:\n{text_lines[:5]}")
 
         for line in text_lines:
             line = line.strip()
@@ -104,11 +128,11 @@ def main():
                 tomorrow_schedule.append(line)
 
         # ==========================================
-        # 4. 結果判定
+        # 4. 結果確定
         # ==========================================
         if tomorrow_schedule:
             content_text = "\n".join(tomorrow_schedule)
-            print(f"データ取得成功: {len(tomorrow_schedule)}件の情報を抽出しました。")
+            print(f"データ取得成功: {target_day}日の予定を {len(tomorrow_schedule)} 行取得しました。")
         else:
             content_text = "明日の出演予定は見つかりませんでした。"
             print(content_text)
@@ -116,7 +140,7 @@ def main():
         return content_text 
 
     except Exception as e:
-        print(f"エラーが発生しました: {e}")
+        print(f"致命的なエラー: {e}")
         return None
 
     finally:
@@ -126,4 +150,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
