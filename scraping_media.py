@@ -10,30 +10,23 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-# ※ Firestoreの初期化は notifier.py 側で行うため、ここでは不要になりますが、
-# もし単体で動かすテストをしたい場合は残しておいてもOKです。
-# 今回は notifier.py に任せる前提で書き換えを最小限にします。
-
 def main():
     # ==========================================
     # 1. 自動日付計算 (JST固定)
     # ==========================================
-    # これでサーバーがどこにあっても日本時間で計算されます
     jst = timezone(timedelta(hours=9), 'JST')
     now = datetime.now(jst)
     tomorrow = now + timedelta(days=1)
     
-    url_ym = tomorrow.strftime("%Y%m")
-    # target_day は 比較しやすいように "1", "2" 形式（zfillなし）にするのが確実です
-    target_day = str(tomorrow.day) 
+    target_ym = tomorrow.strftime("%Y%m") # 例: "202605"
+    target_day = str(tomorrow.day)         # 例: "1"
 
-    url = f"https://jr-official.starto.jp/s/jr/media/list?dy={url_ym}"
+    # 最初は基本URL（現在の月のページ）にアクセスする
+    base_url = "https://jr-official.starto.jp/s/jr/media/list"
 
     print(f"--- メディア監視システム起動 ---")
     print(f"現在時刻 (JST): {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"対象日: {tomorrow.strftime('%Y年%m月%d日')}")
-    print(f"URL: {url}")
-    
+    print(f"取得対象日: {tomorrow.strftime('%Y年%m月%d日')}")
 
     # ==========================================
     # 2. ブラウザ設定
@@ -49,44 +42,46 @@ def main():
 
     driver = None
     try:    
-        # WebDriverのセットアップ
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
-        driver.get(url)
-
-        print("サイト読み込み中 (15秒待機)...")
+        
+        print(f"基本URLにアクセス: {base_url}")
+        driver.get(base_url)
         time.sleep(15) 
 
         # ==========================================
-        # [追加] 月末時の翌月カレンダークリック処理
+        # [重要] 月末時の翌月遷移ロジック
         # ==========================================
+        # 明日が1日、かつ現在の画面がまだ前月(現在月)の場合
         if tomorrow.day == 1:
-            print("【月末判定】明日が1日のため、ブラウザ上で翌月への切り替えを試行します...")
+            print(f"【月末判定】翌月({target_ym})のボタンを探します...")
             try:
-                # 対象の年月（dy=YYYYMM）をリンクに含む要素を探す
-                target_xpath = f"//a[contains(@href, 'dy={url_ym}')]"
-                next_button = driver.find_element(By.XPATH, target_xpath)
+                # リンク内に "dy=202605" のような文字列が含まれるaタグを探す
+                # 遷移ボタンが <a> タグである前提のセレクタです
+                next_link_xpath = f"//a[contains(@href, 'dy={target_ym}')]"
+                next_button = driver.find_element(By.XPATH, next_link_xpath)
                 
-                # 通常のclick()ではなく、JS経由でクリック（ヘッドレス環境での安定性向上のため）
+                print("翌月ボタンを発見。クリックして遷移します。")
                 driver.execute_script("arguments[0].click();", next_button)
-                print(f"翌月({url_ym})へのリンクをクリックしました。再読み込みを待機します (10秒)...")
-                time.sleep(10)
-            except Exception as e:
-                print(f"翌月へのリンクが見つからないか、クリックできませんでした。そのまま続行します。詳細: {e}")
+                time.sleep(10) # 遷移後の読み込み待機
+            except Exception:
+                # 指定した月のリンクがない場合（サイト側が未公開の場合）
+                print(f"通知: サイト上に翌月({target_ym})のリンクが見つかりません。")
+                print("まだ翌月のスケジュールが公開されていない可能性があります。")
 
-        # 要素の取得
+        # コンテンツの取得
         main_element = driver.find_element(By.TAG_NAME, 'main')
         text_lines = main_element.text.splitlines()
 
-        # 再読み込み判定
+        # ロード待ち判定
         if "Loading" in main_element.text or len(text_lines) < 5:
-             print("コンテンツが未ロードのため再待機します...")
+             print("再ロード待機中...")
              time.sleep(10)
              main_element = driver.find_element(By.TAG_NAME, 'main')
              text_lines = main_element.text.splitlines()
 
         # ==========================================
-        # 3. 明日のスケジュール抽出ロジック
+        # 3. スケジュール抽出ロジック
         # ==========================================
         date_pattern = re.compile(r"^(\d{1,2})(?:\s*\(.\))?$")
         recording = False
@@ -98,7 +93,6 @@ def main():
             
             match = date_pattern.match(line)
             if match:
-                # 取得した日付も zfill せずに比較
                 current_day_str = match.group(1) 
                 if current_day_str == target_day:
                     recording = True
@@ -110,21 +104,19 @@ def main():
                 tomorrow_schedule.append(line)
 
         # ==========================================
-        # 4. 取得結果の確定
+        # 4. 結果判定
         # ==========================================
         if tomorrow_schedule:
             content_text = "\n".join(tomorrow_schedule)
+            print(f"データ取得成功: {len(tomorrow_schedule)}件の情報を抽出しました。")
         else:
             content_text = "明日の出演予定は見つかりませんでした。"
+            print(content_text)
 
-        # 【削除】Firestoreへの保存処理(db.collection...set)をここから消しました。
-        # 保存は main.py から呼ばれる notifier.py 側で自動的に行われます。
-        
-        print(f"データ取得成功。")
         return content_text 
 
     except Exception as e:
-        print(f"致命的なエラーが発生しました: {e}")
+        print(f"エラーが発生しました: {e}")
         return None
 
     finally:
@@ -134,3 +126,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
