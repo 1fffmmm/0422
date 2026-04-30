@@ -1,9 +1,9 @@
 import os
 from playwright.sync_api import sync_playwright
-# notifier.pyから通知関数をインポート
+# notifier.pyから通知関数をインポート（同じディレクトリにある前提）
 from notifier import check_keywords_and_notify
 
-# 環境変数から取得するように変更（GitHub Secretsで管理）
+# 環境変数から取得（GitHub Secretsで管理）
 AUTH_TOKEN = os.environ.get("X_AUTH_TOKEN")
 
 def run_scraper_and_notify():
@@ -12,10 +12,10 @@ def run_scraper_and_notify():
         return
 
     with sync_playwright() as p:
-        # GitHub Actions（サーバー）上で動かすためheadless=Trueは必須
+        # サーバー上で動かすためheadless=True
         browser = p.chromium.launch(headless=True)
         
-        # User-AgentはMacのChromeを装う設定を維持
+        # User-Agentの設定
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
         )
@@ -61,15 +61,13 @@ def run_scraper_and_notify():
                 # 取得したリストを1つの文字列に結合
                 content_text = "\n---\n".join(results)
                 
-                # ドライブを介さず、直接notifierの関数へ渡す
+                # notifierの関数へ渡す
                 check_keywords_and_notify(content_text, source="tweet")
             else:
                 print("【確認】 検索結果にポストが見つかりませんでした。")
                 
         except Exception as e:
             print(f"【エラー】 発生しました: {e}")
-            # ※GitHub Actions上ではスクリーンショットを保存しても終了後に消えるため、
-            # アーティファクトとしてアップロードする設定にしない限り確認はできません。
             
         finally:
             browser.close()
