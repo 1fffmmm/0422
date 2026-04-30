@@ -27,18 +27,22 @@ jobs:
 
       - name: Run Integrated System
         env:
-          # 全体共通・Firebase用
-          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          # --- Firebase用 ---
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           
-          # Google Drive監視用
-          DRIVE_FILE_ID: ${{ secrets.DRIVE_FILE_ID }}
+          # --- Instagram & Gemini & ImgBB用 (新規追加) ---
+          INSTA_SESSION_ID: ${{ secrets.INSTA_SESSION_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          IMGBB_API_KEY: ${{ secrets.IMGBB_API_KEY }}
           
-          # 通知システム(notifier.py)用
+          # --- 通知システム(notifier.py)用 ---
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           VAPID_EMAIL: ${{ secrets.VAPID_EMAIL }}
+          
+          # --- Google Drive監視(Tweet等)用 ---
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          DRIVE_FILE_ID: ${{ secrets.DRIVE_FILE_ID }}
           TWEET_FILE_ID: ${{ secrets.TWEET_FILE_ID }}
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         run: python main.py
-        
