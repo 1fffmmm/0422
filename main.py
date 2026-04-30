@@ -1,6 +1,7 @@
 import scraping_media
 import scraping_insta
-import scraping_x  # 先ほど成功したスクリプトをインポート
+import scraping_x
+import blog_scraper  # ★追加
 from notifier import check_keywords_and_notify
 import os
 
@@ -19,22 +20,24 @@ def main():
         print(f"メディア監視でエラーが発生しました: {e}")
 
     # --- 2. Instagram 情報の取得 ---
-    print("\n--- [Step 2] Instagram チェック開始 ---")
-    try:
-        scraping_insta.main()
-    except Exception as e:
-        print(f"インスタ監視でエラーが発生しました: {e}")
+    # ...既存のまま...
 
-    # --- 3. Twitter(X) 情報の取得 (新システム: サーバー完結型) ---
-    print("\n--- [Step 3] Twitter (X) チェック開始 ---")
+    # --- 3. Twitter(X) 情報の取得 ---
+    # ...既存のまま...
+
+    # --- 4. ブログ 情報の取得 (新規追加) ---
+    print("\n--- [Step 4] ブログ チェック開始 ---")
     try:
-        # Drive認証やファイルID取得は不要。直接関数を呼び出す
-        scraping_x.run_scraper_and_notify() 
+        blog_text = blog_scraper.run_scraper()
+        if blog_text:
+            # 取得したテキストを通知判定に回す
+            check_keywords_and_notify(blog_text, source="blog")
+        else:
+             print("ブログ情報が取得できませんでした。")
     except Exception as e:
-        print(f"ツイート監視でエラーが発生しました: {e}")
+        print(f"ブログ監視でエラーが発生しました: {e}")
 
     print("\n===== 全ての監視タスクが完了しました =====")
 
 if __name__ == "__main__":
     main()
-    
