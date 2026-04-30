@@ -57,6 +57,24 @@ def main():
         print("サイト読み込み中 (15秒待機)...")
         time.sleep(15) 
 
+        # ==========================================
+        # [追加] 月末時の翌月カレンダークリック処理
+        # ==========================================
+        if tomorrow.day == 1:
+            print("【月末判定】明日が1日のため、ブラウザ上で翌月への切り替えを試行します...")
+            try:
+                # 対象の年月（dy=YYYYMM）をリンクに含む要素を探す
+                target_xpath = f"//a[contains(@href, 'dy={url_ym}')]"
+                next_button = driver.find_element(By.XPATH, target_xpath)
+                
+                # 通常のclick()ではなく、JS経由でクリック（ヘッドレス環境での安定性向上のため）
+                driver.execute_script("arguments[0].click();", next_button)
+                print(f"翌月({url_ym})へのリンクをクリックしました。再読み込みを待機します (10秒)...")
+                time.sleep(10)
+            except Exception as e:
+                print(f"翌月へのリンクが見つからないか、クリックできませんでした。そのまま続行します。詳細: {e}")
+
+        # 要素の取得
         main_element = driver.find_element(By.TAG_NAME, 'main')
         text_lines = main_element.text.splitlines()
 
@@ -67,7 +85,7 @@ def main():
              main_element = driver.find_element(By.TAG_NAME, 'main')
              text_lines = main_element.text.splitlines()
 
-# ==========================================
+        # ==========================================
         # 3. 明日のスケジュール抽出ロジック
         # ==========================================
         date_pattern = re.compile(r"^(\d{1,2})(?:\s*\(.\))?$")
@@ -116,4 +134,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
