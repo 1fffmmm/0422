@@ -8,6 +8,6 @@ webdriver-manager
 supabase
 pywebpush
 instaloader
-google-generativeai
+google-genai
 pillow
 requests
