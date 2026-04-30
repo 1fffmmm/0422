@@ -1,32 +1,29 @@
 import os
 import shutil
-import io
 import json
+from datetime import datetime, timedelta, timezone
 import instaloader
-from google.cloud import vision
-from google.oauth2 import service_account
 import firebase_admin
 from firebase_admin import credentials, storage
+import google.generativeai as genai
+from PIL import Image
 
 # notifier.py から通知・保存関数をインポート
 from notifier import check_keywords_and_notify
 
-# --- 環境変数から設定を取得 (サーバー運用向け) ---
+# --- 環境変数から設定を取得 ---
 USER_ID = os.environ.get("INSTA_USER_ID", "jrdebut")
 TARGET_PROFILE = os.environ.get("INSTA_TARGET_PROFILE", "jr_official_")
 SESSION_ID = os.environ.get("INSTA_SESSION_ID")
-
-# サーバーの一時ディレクトリを使用（GitHub ActionsやCloud Run等では /tmp が一般的）
 SAVE_DIR = "/tmp/insta_downloads"
 
-# Firebase と GCP の認証情報 (JSON文字列として環境変数に保存)
-GCP_SA_KEY_STR = os.environ.get("GCP_SERVICE_ACCOUNT_KEY")
 FIREBASE_SA_KEY_STR = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
-FIREBASE_STORAGE_BUCKET = os.environ.get("FIREBASE_STORAGE_BUCKET") # 例: your-project-id.appspot.com
+FIREBASE_STORAGE_BUCKET = os.environ.get("FIREBASE_STORAGE_BUCKET")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 # --- 初期化処理 ---
 def initialize_firebase():
-    """Firebaseの初期化 (Storageバケットを含む)"""
+    """Firebaseの初期化"""
     if not firebase_admin._apps:
         cred_dict = json.loads(FIREBASE_SA_KEY_STR)
         cred = credentials.Certificate(cred_dict)
@@ -34,41 +31,64 @@ def initialize_firebase():
             'storageBucket': FIREBASE_STORAGE_BUCKET
         })
 
-def get_vision_client():
-    """Vision APIクライアントの初期化"""
-    info = json.loads(GCP_SA_KEY_STR)
-    creds = service_account.Credentials.from_service_account_info(info)
-    return vision.ImageAnnotatorClient(credentials=creds)
+def cleanup_expired_storage_images():
+    """【お掃除機能】Firebase Storage内の7日以上古い画像を自動削除する"""
+    bucket = storage.bucket()
+    blobs = bucket.list_blobs(prefix=f"instagram_stories/{TARGET_PROFILE}/")
+    now = datetime.now(timezone.utc)
+    deleted_count = 0
+    
+    for blob in blobs:
+        if blob.time_created and (now - blob.time_created > timedelta(days=7)):
+            try:
+                blob.delete()
+                deleted_count += 1
+            except Exception as e:
+                print(f"画像削除エラー ({blob.name}): {e}")
+                
+    if deleted_count > 0:
+        print(f"🗑️ Firebase Storageから古い画像を {deleted_count} 件削除しました。")
 
-def analyze_text(client, image_path):
-    """Vision APIを使用して画像から文字を抽出する"""
-    with io.open(image_path, 'rb') as image_file:
-        content = image_file.read()
-    
-    image = vision.Image(content=content)
-    response = client.text_detection(image=image)
-    texts = response.text_annotations
-    
-    return texts[0].description if texts else ""
+def analyze_text_with_gemini(image_path):
+    """Gemini 1.5 Flashを使用して画像から文字を抽出する"""
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        img = Image.open(image_path)
+        # Geminiへの指示（プロンプト）
+        prompt = "この画像内に書かれているテキストをすべて正確に抽出してください。テキストが含まれていない場合は「なし」とだけ出力してください。"
+        
+        response = model.generate_content([prompt, img])
+        text = response.text.strip()
+        
+        if text and text != "なし":
+            return text
+        return ""
+    except Exception as e:
+        print(f"Gemini解析エラー: {e}")
+        return ""
 
 def upload_to_firebase_storage(local_image_path, filename):
     """画像をFirebase Storageにアップロードし、URLを返す"""
     bucket = storage.bucket()
     blob = bucket.blob(f"instagram_stories/{TARGET_PROFILE}/{filename}")
     blob.upload_from_filename(local_image_path)
-    blob.make_public() # 必要に応じて公開設定
+    blob.make_public()
     return blob.public_url
 
 def main():
     initialize_firebase()
-    vision_client = get_vision_client()
+    
+    # 実行のたびに古い画像を削除して無料枠（5GB）を維持
+    cleanup_expired_storage_images()
 
-    # 1. フォルダの準備（既存データのクリア）
+    # 1. フォルダの準備
     if os.path.exists(SAVE_DIR):
         shutil.rmtree(SAVE_DIR)
     os.makedirs(SAVE_DIR)
 
-    # 2. Instaloaderの設定とダウンロード
+    # 2. Instaloaderの設定
     L = instaloader.Instaloader(
         dirname_pattern=SAVE_DIR,
         filename_pattern='{date_utc:%H%M%S}_{shortcode}',
@@ -87,8 +107,8 @@ def main():
         print(f"最新ストーリーを取得中: {TARGET_PROFILE}")
         L.download_stories(userids=[profile.userid])
         
-        # 3. Vision APIでの解析とFirebase Storageへの画像アップロード
-        print("画像の解析とアップロードを実行しています...")
+        # 3. Geminiでの解析とStorageへのアップロード
+        print("Geminiによる画像解析とアップロードを実行しています...")
         results_text = ""
         uploaded_image_urls = []
 
@@ -96,8 +116,8 @@ def main():
             if filename.endswith(".jpg"):
                 img_path = os.path.join(SAVE_DIR, filename)
                 
-                # 文字解析
-                text = analyze_text(vision_client, img_path)
+                # Geminiで文字解析
+                text = analyze_text_with_gemini(img_path)
                 if text:
                     results_text += f"【ファイル名: {filename}】\n{text}\n" + "="*30 + "\n"
                 
@@ -105,10 +125,9 @@ def main():
                 image_url = upload_to_firebase_storage(img_path, filename)
                 uploaded_image_urls.append(image_url)
 
-        # 4. notifier.py の関数を呼び出して保存と通知を実行
+        # 4. 通知と保存
         if results_text:
             print("解析完了。通知とデータベース保存を実行します。")
-            # Google DriveのファイルIDの代わりに、Firebase StorageのURLリストを渡す
             check_keywords_and_notify(results_text, uploaded_image_urls, source="insta")
         else:
             print("解析可能な文字は見つかりませんでした。")
@@ -118,4 +137,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-  
+    
