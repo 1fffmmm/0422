@@ -1,10 +1,10 @@
 import os
 import shutil
 import json
-from datetime import datetime, timedelta, timezone
+import requests
 import instaloader
 import firebase_admin
-from firebase_admin import credentials, storage
+from firebase_admin import credentials
 import google.generativeai as genai
 from PIL import Image
 
@@ -18,36 +18,16 @@ SESSION_ID = os.environ.get("INSTA_SESSION_ID")
 SAVE_DIR = "/tmp/insta_downloads"
 
 FIREBASE_SA_KEY_STR = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
-FIREBASE_STORAGE_BUCKET = os.environ.get("FIREBASE_STORAGE_BUCKET")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+IMGBB_API_KEY = os.environ.get("IMGBB_API_KEY")
 
 # --- 初期化処理 ---
 def initialize_firebase():
-    """Firebaseの初期化"""
+    """Firebaseの初期化（Storageは使わないため認証のみ）"""
     if not firebase_admin._apps:
         cred_dict = json.loads(FIREBASE_SA_KEY_STR)
         cred = credentials.Certificate(cred_dict)
-        firebase_admin.initialize_app(cred, {
-            'storageBucket': FIREBASE_STORAGE_BUCKET
-        })
-
-def cleanup_expired_storage_images():
-    """【お掃除機能】Firebase Storage内の7日以上古い画像を自動削除する"""
-    bucket = storage.bucket()
-    blobs = bucket.list_blobs(prefix=f"instagram_stories/{TARGET_PROFILE}/")
-    now = datetime.now(timezone.utc)
-    deleted_count = 0
-    
-    for blob in blobs:
-        if blob.time_created and (now - blob.time_created > timedelta(days=7)):
-            try:
-                blob.delete()
-                deleted_count += 1
-            except Exception as e:
-                print(f"画像削除エラー ({blob.name}): {e}")
-                
-    if deleted_count > 0:
-        print(f"🗑️ Firebase Storageから古い画像を {deleted_count} 件削除しました。")
+        firebase_admin.initialize_app(cred)
 
 def analyze_text_with_gemini(image_path):
     """Gemini 1.5 Flashを使用して画像から文字を抽出する"""
@@ -69,20 +49,31 @@ def analyze_text_with_gemini(image_path):
         print(f"Gemini解析エラー: {e}")
         return ""
 
-def upload_to_firebase_storage(local_image_path, filename):
-    """画像をFirebase Storageにアップロードし、URLを返す"""
-    bucket = storage.bucket()
-    blob = bucket.blob(f"instagram_stories/{TARGET_PROFILE}/{filename}")
-    blob.upload_from_filename(local_image_path)
-    blob.make_public()
-    return blob.public_url
+def upload_to_imgbb(image_path):
+    """画像をImgBBにアップロードし、URLを返す"""
+    url = "https://api.imgbb.com/1/upload"
+    try:
+        with open(image_path, "rb") as file:
+            payload = {
+                "key": IMGBB_API_KEY,
+            }
+            files = {
+                "image": file
+            }
+            response = requests.post(url, data=payload, files=files)
+            
+        if response.status_code == 200:
+            return response.json()["data"]["url"]
+        else:
+            print(f"ImgBBアップロード失敗: {response.text}")
+            return None
+    except Exception as e:
+        print(f"ImgBB通信エラー: {e}")
+        return None
 
 def main():
     initialize_firebase()
     
-    # 実行のたびに古い画像を削除して無料枠（5GB）を維持
-    cleanup_expired_storage_images()
-
     # 1. フォルダの準備
     if os.path.exists(SAVE_DIR):
         shutil.rmtree(SAVE_DIR)
@@ -107,7 +98,7 @@ def main():
         print(f"最新ストーリーを取得中: {TARGET_PROFILE}")
         L.download_stories(userids=[profile.userid])
         
-        # 3. Geminiでの解析とStorageへのアップロード
+        # 3. Geminiでの解析とImgBBへのアップロード
         print("Geminiによる画像解析とアップロードを実行しています...")
         results_text = ""
         uploaded_image_urls = []
@@ -121,9 +112,10 @@ def main():
                 if text:
                     results_text += f"【ファイル名: {filename}】\n{text}\n" + "="*30 + "\n"
                 
-                # 画像をFirebase Storageへアップロード
-                image_url = upload_to_firebase_storage(img_path, filename)
-                uploaded_image_urls.append(image_url)
+                # 画像をImgBBへアップロード
+                image_url = upload_to_imgbb(img_path)
+                if image_url:
+                    uploaded_image_urls.append(image_url)
 
         # 4. 通知と保存
         if results_text:
@@ -137,4 +129,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
