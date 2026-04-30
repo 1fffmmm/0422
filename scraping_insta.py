@@ -1,7 +1,6 @@
 import os
 import shutil
 import json
-import requests
 import instaloader
 import firebase_admin
 from firebase_admin import credentials
@@ -19,7 +18,6 @@ SAVE_DIR = "/tmp/insta_downloads"
 
 FIREBASE_SA_KEY_STR = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-IMGBB_API_KEY = os.environ.get("IMGBB_API_KEY")
 
 # --- 初期化処理 ---
 def initialize_firebase():
@@ -32,15 +30,13 @@ def initialize_firebase():
 def analyze_text_with_gemini(image_path):
     """最新の google-genai を使用して画像から文字を抽出する"""
     try:
-        # 新しいクライアントの初期化方法
         client = genai.Client(api_key=GEMINI_API_KEY)
         
         img = Image.open(image_path)
         prompt = "この画像内に書かれているテキストをすべて正確に抽出してください。テキストが含まれていない場合は「なし」とだけ出力してください。"
         
-        # 新しい generate_content の呼び出し方
         response = client.models.generate_content(
-            model='gemini-2.5-flash', # 最新のFlashモデルを指定
+            model='gemini-2.5-flash',
             contents=[prompt, img]
         )
         
@@ -52,28 +48,6 @@ def analyze_text_with_gemini(image_path):
     except Exception as e:
         print(f"Gemini解析エラー: {e}")
         return ""
-
-def upload_to_imgbb(image_path):
-    """画像をImgBBにアップロードし、URLを返す"""
-    url = "https://api.imgbb.com/1/upload"
-    try:
-        with open(image_path, "rb") as file:
-            payload = {
-                "key": IMGBB_API_KEY,
-            }
-            files = {
-                "image": file
-            }
-            response = requests.post(url, data=payload, files=files)
-            
-        if response.status_code == 200:
-            return response.json()["data"]["url"]
-        else:
-            print(f"ImgBBアップロード失敗: {response.text}")
-            return None
-    except Exception as e:
-        print(f"ImgBB通信エラー: {e}")
-        return None
 
 def main():
     initialize_firebase()
@@ -102,10 +76,9 @@ def main():
         print(f"最新ストーリーを取得中: {TARGET_PROFILE}")
         L.download_stories(userids=[profile.userid])
         
-        # 3. Geminiでの解析とImgBBへのアップロード
-        print("Geminiによる画像解析とアップロードを実行しています...")
+        # 3. Geminiでの解析
+        print("Geminiによる画像解析を実行しています...")
         results_text = ""
-        uploaded_image_urls = []
 
         for filename in sorted(os.listdir(SAVE_DIR)):
             if filename.endswith(".jpg"):
@@ -115,16 +88,11 @@ def main():
                 text = analyze_text_with_gemini(img_path)
                 if text:
                     results_text += f"【ファイル名: {filename}】\n{text}\n" + "="*30 + "\n"
-                
-                # 画像をImgBBへアップロード
-                image_url = upload_to_imgbb(img_path)
-                if image_url:
-                    uploaded_image_urls.append(image_url)
 
         # 4. 通知と保存
         if results_text:
             print("解析完了。通知とデータベース保存を実行します。")
-            check_keywords_and_notify(results_text, uploaded_image_urls, source="insta")
+            check_keywords_and_notify(results_text, source="insta")
         else:
             print("解析可能な文字は見つかりませんでした。")
 
