@@ -1,11 +1,7 @@
-name: X Scraper and Notification
+name: Test X Scraper
 
 on:
-  schedule:
-    # 例: 毎日日本時間の 12:00 と 20:00 に実行 (UTC指定のため-9時間)
-    - cron: '0 3,11 * * *'
-  # 手動実行用ボタンも有効化しておきます
-  workflow_dispatch:
+  workflow_dispatch: # 手動実行用
 
 jobs:
   scrape-and-notify:
@@ -18,20 +14,20 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10' # 普段お使いのバージョンに合わせてください
+        python-version: '3.10'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # 必要なライブラリをインストール
-        pip install playwright firebase-admin
-        # PlaywrightのブラウザとOS依存パッケージをインストール
+        # requirements.txt から依存パッケージを一括インストール
+        pip install -r requirements.txt
+        # Playwrightのブラウザをインストール
         playwright install chromium --with-deps
 
     - name: Run Scraper and Notifier
       env:
-        # GitHub Secrets から環境変数を展開
         X_AUTH_TOKEN: ${{ secrets.X_AUTH_TOKEN }}
         FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
       run: |
+        # 実行ファイルを scraping_x.py に指定
         python scraping_x.py
