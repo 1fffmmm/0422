@@ -12,6 +12,6 @@ supabase
 pywebpush
 
 instaloader
-google-cloud-vision
 firebase-admin
-google-api-python-client
+google-generativeai
+pillow
