@@ -33,7 +33,6 @@ jobs:
           # --- Instagram & Gemini & ImgBB用 (新規追加) ---
           INSTA_SESSION_ID: ${{ secrets.INSTA_SESSION_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          IMGBB_API_KEY: ${{ secrets.IMGBB_API_KEY }}
           
           # --- 通知システム(notifier.py)用 ---
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
