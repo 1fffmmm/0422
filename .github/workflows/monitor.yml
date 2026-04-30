@@ -1,9 +1,6 @@
 name: Integrated Monitor System
 
 on:
-  schedule:
-    # 毎日数回定期実行したい場合はここを設定
-    - cron: '0 3,6,9,12 * * *' 
   workflow_dispatch:      # 手動実行用
 
 jobs:
