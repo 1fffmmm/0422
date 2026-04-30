@@ -20,10 +20,19 @@ def main():
         print(f"メディア監視でエラーが発生しました: {e}")
 
     # --- 2. Instagram 情報の取得 ---
-    # ...既存のまま...
+    print("\n--- [Step 2] Instagram チェック開始 ---")
+    try:
+        scraping_insta.main()
+    except Exception as e:
+        print(f"インスタ監視でエラーが発生しました: {e}")
 
-    # --- 3. Twitter(X) 情報の取得 ---
-    # ...既存のまま...
+    # --- 3. Twitter(X) 情報の取得 (新システム: サーバー完結型) ---
+    print("\n--- [Step 3] Twitter (X) チェック開始 ---")
+    try:
+        # Drive認証やファイルID取得は不要。直接関数を呼び出す
+        scraping_x.run_scraper_and_notify() 
+    except Exception as e:
+        print(f"ツイート監視でエラーが発生しました: {e}")
 
     # --- 4. ブログ 情報の取得 (新規追加) ---
     print("\n--- [Step 4] ブログ チェック開始 ---")
